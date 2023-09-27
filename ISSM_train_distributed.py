@@ -386,8 +386,7 @@ def main() -> None:
     # args.log_writer = SummaryWriter(args.log_dir) if args.verbose else None  
     args.log_writer = None if args.verbose else None  
 
-    model_dir = args.model_dir
-    date = args.date   
+    model_dir = args.model_dir   
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
@@ -411,10 +410,6 @@ def main() -> None:
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     torch.cuda.empty_cache() 
-
-    ##### PHYSICS OR NOT #####
-    phy = "nophy"
-    ##########################
 
     if device == "cpu":
         device_name = "cpu"
