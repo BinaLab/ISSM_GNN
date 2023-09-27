@@ -474,9 +474,6 @@ def main() -> None:
 
         for data in train_loader:
             
-            if args.cuda:
-                data = data.cuda()
-            
             optimizer.zero_grad()  # Clear gradients.
             
             # print(data.x.shape, data.edge_index.shape)
