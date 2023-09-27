@@ -21,6 +21,7 @@ import torch.distributed as dist
 from torch.utils import collect_env
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 # from torch_geometric.loader import DataLoader
  
 # from torch.utils.tensorboard import SummaryWriter
