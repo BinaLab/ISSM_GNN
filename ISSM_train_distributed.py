@@ -410,15 +410,15 @@ def main() -> None:
     train_list = torch.load(f'../Grid_graph_train_data.pt')
     val_list = torch.load(f'../Grid_graph_val_data.pt')   
     
-    train_sampler = DistributedSampler(
-        train_list,
-        num_replicas=dist.get_world_size(),
-        rank=dist.get_rank(),
-    )
+    # train_sampler = DistributedSampler(
+    #     train_list,
+    #     num_replicas=dist.get_world_size(),
+    #     rank=dist.get_rank(),
+    # )
+    
     train_loader = DataLoader(
         train_list,
-        batch_size=args.batch_size,
-        sampler=train_sampler
+        batch_size=args.batch_size
     )
     
     # train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
@@ -441,12 +441,15 @@ def main() -> None:
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"
 
     net.to(device)
+    
+    
 
     if args.no_cuda == False:
-        net = torch.nn.parallel.DistributedDataParallel(
-            net,
-            device_ids=[args.local_rank],
-        )
+        net = nn.DataParallel(net, device_ids=[args.local_rank])
+        # net = torch.nn.parallel.DistributedDataParallel(
+        #     net,
+        #     device_ids=[args.local_rank],
+        # )
 
     if phy == "phy":
         loss_fn = physics_loss() # nn.L1Loss() #nn.CrossEntropyLoss()
