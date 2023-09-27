@@ -441,8 +441,8 @@ def main() -> None:
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
-    if args.no_cuda == False:
-        net = nn.DataParallel(net)
+    # if args.no_cuda == False:
+    #     net = nn.DataParallel(net)
         # net = torch.nn.parallel.DistributedDataParallel(
         #     net,
         #     device_ids=[args.local_rank],
