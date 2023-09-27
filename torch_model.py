@@ -408,7 +408,9 @@ class ConvEGNN(nn.Module):
             nn.Linear(hid_dim, hid_dim))
     
     def forward(self, b, edge_index):
-        e_st, e_end = edge_index[0, :], edge_index[1, :]
+        e_st = edge_index[0, :]
+        e_end = edge_index[1, :]
+        
         dists = torch.norm(b.pos[e_st] - b.pos[e_end], dim=1).reshape(-1, 1)
         
         # compute messages
