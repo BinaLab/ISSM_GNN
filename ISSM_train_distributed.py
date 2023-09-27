@@ -230,13 +230,15 @@ def train(
         desc=f'Epoch {epoch:3d}/{args.epochs:3d}',
         disable=not args.verbose,
     ) as t:
-        for batch_idx, (data, target) in enumerate(train_loader):
+        for batch_idx, data in enumerate(train_loader):
             mini_step += 1
             if args.cuda:
-                data, target = data.cuda(), target.cuda()
+                data = data.cuda()
                 
-            output = model(data)
-            loss = loss_func(output, target)
+            y_pred = model(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
+            y_true = torch.tensor(data.y, dtype=torch.float32)
+
+            loss = loss_func(y_pred, y_true)
 
             with torch.no_grad():
                 step_loss += loss
@@ -291,12 +293,15 @@ def validate(
         disable=not args.verbose
     ) as t:
         with torch.no_grad():
-            for i, (data, target) in enumerate(val_loader):
+            for i, data in enumerate(val_loader):
+
                 if args.cuda:
-                    data, target = data.cuda(), target.cuda()
-                output = model(data)
+                    data = data.cuda()
+
+                y_pred = model(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
+                y_true = torch.tensor(data.y, dtype=torch.float32) 
                 
-                val_loss.update(loss_func(output, target))
+                val_loss.update(loss_func(y_pred, y_true))
 
                 t.update(1)
                 if i + 1 == len(val_loader):
