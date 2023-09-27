@@ -233,7 +233,8 @@ def train(
     ) as t:
         for batch_idx, data in enumerate(train_loader):
             mini_step += 1
-                
+            
+            print(data['x'].shape)
             y_pred = model(torch.tensor(data['x'], dtype=torch.float32).cuda(), data['edge_index'].cuda())  # Perform a single forward pass.
             y_true = torch.tensor(data['y'], dtype=torch.float32).cuda()
 
