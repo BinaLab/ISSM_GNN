@@ -410,7 +410,19 @@ def main() -> None:
     train_list = torch.load(f'../Grid_graph_train_data.pt')
     val_list = torch.load(f'../Grid_graph_val_data.pt')   
     
-    train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
+    train_sampler = DistributedSampler(
+        train_list,
+        num_replicas=dist.get_world_size(),
+        rank=dist.get_rank(),
+    )
+    train_loader = DataLoader(
+        train_list,
+        batch_size=args.batch_size,
+        sampler=train_sampler,
+        **kwargs,
+    )
+    
+    # train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_list)
 
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
