@@ -348,16 +348,16 @@ def main() -> None:
     """Main train and eval function."""
     args = parse_args()
 
-    torch.distributed.init_process_group(
-        backend=args.backend,
-        init_method='env://',
-    )
+    # torch.distributed.init_process_group(
+    #     backend=args.backend,
+    #     init_method='env://',
+    # )
 
-    if args.cuda:
-        torch.cuda.set_device(args.local_rank)
-        torch.cuda.manual_seed(args.seed)
-        # torch.backends.cudnn.benchmark = False
-        # torch.backends.cudnn.deterministic = True
+    # if args.cuda:
+    #     torch.cuda.set_device(args.local_rank)
+    #     torch.cuda.manual_seed(args.seed)
+    #     # torch.backends.cudnn.benchmark = False
+    #     # torch.backends.cudnn.deterministic = True
     
     if args.no_cuda:
         device = torch.device('cpu')
@@ -368,24 +368,24 @@ def main() -> None:
         
     torch.cuda.empty_cache()
     
-    args.verbose = dist.get_rank() == 0
-    world_size = int(os.environ['WORLD_SIZE'])
+    # args.verbose = dist.get_rank() == 0
+    # world_size = int(os.environ['WORLD_SIZE'])
 
     if args.verbose:
         print('Collecting env info...')
         # print(collect_env.get_pretty_env_info())
         # print()
 
-    for r in range(torch.distributed.get_world_size()):
-        if r == torch.distributed.get_rank():
-            print(
-                f'Global rank {torch.distributed.get_rank()} initialized: '
-                f'local_rank = {args.local_rank}, '
-                f'world_size = {torch.distributed.get_world_size()}',
-            )
-        torch.distributed.barrier()
+#     for r in range(torch.distributed.get_world_size()):
+#         if r == torch.distributed.get_rank():
+#             print(
+#                 f'Global rank {torch.distributed.get_rank()} initialized: '
+#                 f'local_rank = {args.local_rank}, '
+#                 f'world_size = {torch.distributed.get_world_size()}',
+#             )
+#         torch.distributed.barrier()
     
-    args.global_rank = torch.distributed.get_rank()
+#     args.global_rank = torch.distributed.get_rank()
 
     os.makedirs(args.log_dir, exist_ok=True)
     args.checkpoint_format = os.path.join(args.log_dir, args.checkpoint_format)
@@ -402,9 +402,6 @@ def main() -> None:
     phy = args.phy ## PHYSICS OR NOT
     
     #### READ DATA ##################################################################    
-    
-    ### PREDICT ONLY SEA ICE U & V
-    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
     ##########################################################################################
     train_list = torch.load(f'../Grid_graph_train_data.pt')
@@ -445,7 +442,7 @@ def main() -> None:
     
 
     if args.no_cuda == False:
-        net = nn.DataParallel(net, device_ids=[args.local_rank])
+        net = nn.DataParallel(net)
         # net = torch.nn.parallel.DistributedDataParallel(
         #     net,
         #     device_ids=[args.local_rank],
