@@ -231,6 +231,7 @@ def train(
         disable=not args.verbose,
     ) as t:
         for batch_idx, data in enumerate(train_loader):
+            print(data)
             mini_step += 1
             if args.cuda:
                 data = data.cuda()
@@ -406,8 +407,8 @@ def main() -> None:
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
     ##########################################################################################
-    val_list = torch.load(f'../Grid_graph_val_data.pt')
     train_list = torch.load(f'../Grid_graph_train_data.pt')
+    val_list = torch.load(f'../Grid_graph_val_data.pt')   
     
     train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_list)
@@ -489,6 +490,8 @@ def main() -> None:
     for epoch in range(n_epochs):
 
         train_cnt = 0
+        
+        print(train_loader)
         
         train_loss = train(
             epoch,
