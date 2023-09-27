@@ -477,8 +477,8 @@ def main() -> None:
             optimizer.zero_grad()  # Clear gradients.
             
             # print(data.x.shape, data.edge_index.shape)
-            y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
-            y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
+            y_pred = net(torch.tensor(data['x'], dtype=torch.float32).to(device), data['edge_index'].to(device))  # Perform a single forward pass.
+            y_true = torch.tensor(data['y'], dtype=torch.float32).to(device)
             loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients. 
@@ -487,8 +487,8 @@ def main() -> None:
         net.eval()
 
         for val_data in val_loader:
-            y_pred = net(torch.tensor(val_data.x, dtype=torch.float32).to(device), val_data.edge_index.to(device))  # Perform a single forward pass.
-            y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
+            y_pred = net(torch.tensor(val_data['x'], dtype=torch.float32).to(device), val_data['edge_index'].to(device))  # Perform a single forward pass.
+            y_true = torch.tensor(val_data['y'], dtype = torch.float32).to(device)
             val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
 
         history['loss'].append(train_loss/len(loader))
