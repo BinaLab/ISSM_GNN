@@ -414,7 +414,6 @@ class ConvEGNN(nn.Module):
         dists = torch.norm(b.pos[e_st] - b.pos[e_end], dim=1).reshape(-1, 1)
         
         # compute messages
-        print(b.h[e_st].size(), b.h[e_end].size(), dists.size())
         tmp = torch.hstack([b.h[e_st], b.h[e_end], dists])
         m_ij = self.f_e(tmp)
         
