@@ -109,7 +109,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--phy',
         type=str,
-        default='phy',
+        default='nophy',
         help='filename of dataset',
     )
     parser.add_argument(
@@ -421,7 +421,7 @@ def main() -> None:
     elif args.model_type == "egcn":
         net = EGCNet(4, 5)  # Equivariant Graph convolutional network
     
-    model_name = f"torch_gcn_lr{lr}_wo{year}_{phy}_{device_name}"
+    model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"
 
     net.to(device)
 
@@ -482,11 +482,8 @@ def main() -> None:
     
     ## Train model (distributed parallel) ######################################
     for epoch in range(n_epochs):
-        
-        train_loss = 0.0
+
         train_cnt = 0
-        
-        net.train()
         
         train_loss = train(
             epoch,
