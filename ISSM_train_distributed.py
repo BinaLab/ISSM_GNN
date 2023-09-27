@@ -443,14 +443,13 @@ def main() -> None:
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
+    net.to(device)
+    
     if args.no_cuda == False:
-        # net = nn.DataParallel(net)
         net = torch.nn.parallel.DistributedDataParallel(
             net,
             device_ids=[args.local_rank],
         )
-        
-    net.to(device) 
 
     if phy == "phy":
         loss_fn = physics_loss() # nn.L1Loss() #nn.CrossEntropyLoss()
