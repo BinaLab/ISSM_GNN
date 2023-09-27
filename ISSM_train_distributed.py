@@ -439,9 +439,7 @@ def main() -> None:
     elif args.model_type == "egcn":
         net = EGCNet(4, 5)  # Equivariant Graph convolutional network
     
-    model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"
-
-    net.to(device)    
+    model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
     if args.no_cuda == False:
         net = nn.DataParallel(net)
@@ -449,6 +447,8 @@ def main() -> None:
         #     net,
         #     device_ids=[args.local_rank],
         # )
+        
+    net.to(device) 
 
     if phy == "phy":
         loss_fn = physics_loss() # nn.L1Loss() #nn.CrossEntropyLoss()
@@ -479,8 +479,8 @@ def main() -> None:
             optimizer.zero_grad()  # Clear gradients.
             
             print(data.x.shape, data.edge_index.shape)
-            y_pred = net(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
-            y_true = torch.tensor(data.y, dtype=torch.float32)
+            y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
+            y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
             loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients. 
@@ -490,7 +490,7 @@ def main() -> None:
 
         for val_data in val_loader:
             y_pred = net(torch.tensor(val_data.x, dtype=torch.float32).to(device), val_data.edge_index.to(device))  # Perform a single forward pass.
-            y_true = torch.tensor(val_data.y, dtype = torch.float32)
+            y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
             val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
 
         history['loss'].append(train_loss/len(loader))
