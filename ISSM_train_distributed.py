@@ -87,7 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--batch-size',
         type=int,
-        default=16,
+        default=8,
         metavar='N',
         help='input batch size for training (default: 16)',
     )
@@ -102,7 +102,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--val-batch-size',
         type=int,
-        default=16,
+        default=8,
         help='input batch size for validation (default: 16)',
     )
     parser.add_argument(
@@ -478,7 +478,7 @@ def main() -> None:
             
             optimizer.zero_grad()  # Clear gradients.
             
-            print(data.x.shape, data.edge_index.shape)
+            # print(data.x.shape, data.edge_index.shape)
             y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
             y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
             loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
