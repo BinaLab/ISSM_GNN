@@ -20,8 +20,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 import torch.distributed as dist
 from torch.utils import collect_env
 from torch.utils.data import TensorDataset
-from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
+from torch_geometric.loader import DataLoader
  
 # from torch.utils.tensorboard import SummaryWriter
 
@@ -442,9 +441,7 @@ def main() -> None:
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"
 
-    net.to(device)
-    
-    
+    net.to(device)    
 
     if args.no_cuda == False:
         net = nn.DataParallel(net)
