@@ -425,11 +425,6 @@ def main() -> None:
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     torch.cuda.empty_cache() 
-
-    if device == "cpu":
-        device_name = "cpu"
-    else:
-        device_name = "gpu"
     
     if args.model_type == "gcn":
         net = GCNet(4, 5)  # Graph convolutional network
