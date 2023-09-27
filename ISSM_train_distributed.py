@@ -368,7 +368,7 @@ def main() -> None:
         
     torch.cuda.empty_cache()
     
-    # args.verbose = dist.get_rank() == 0
+    args.verbose = dist.get_rank() == 0
     # world_size = int(os.environ['WORLD_SIZE'])
 
     # if args.verbose:
