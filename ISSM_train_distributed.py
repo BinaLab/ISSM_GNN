@@ -418,8 +418,7 @@ def main() -> None:
     train_loader = DataLoader(
         train_list,
         batch_size=args.batch_size,
-        sampler=train_sampler,
-        **kwargs,
+        sampler=train_sampler
     )
     
     # train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
