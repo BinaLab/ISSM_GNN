@@ -464,33 +464,33 @@ def main() -> None:
     t0 = time.time()
 
     ## Train model #############################################################
-#     for n in range(0, n_epochs):
-#         net.train()    
-#         train_loss = 0.0
-#         val_loss = 0.0
+    for n in range(0, n_epochs):
+        net.train()    
+        train_loss = 0.0
+        val_loss = 0.0
 
-#         for data in loader:
-#             optimizer.zero_grad()  # Clear gradients.
-#             y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
-#             y_true = torch.tensor(data.y, dtype=torch.float32)
-#             loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
-#             loss.backward()  # Derive gradients.
-#             optimizer.step()  # Update parameters based on gradients. 
-#             train_loss += loss.item()
+        for data in train_loader:
+            optimizer.zero_grad()  # Clear gradients.
+            y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
+            y_true = torch.tensor(data.y, dtype=torch.float32)
+            loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
+            loss.backward()  # Derive gradients.
+            optimizer.step()  # Update parameters based on gradients. 
+            train_loss += loss.item()
 
-#         net.eval()
+        net.eval()
 
-#         for val_data in val_loader:
-#             y_pred = net(torch.tensor(val_data.x, dtype=torch.float32).to(device), val_data.edge_index.to(device))  # Perform a single forward pass.
-#             y_true = torch.tensor(val_data.y, dtype = torch.float32)
-#             val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
+        for val_data in val_loader:
+            y_pred = net(torch.tensor(val_data.x, dtype=torch.float32).to(device), val_data.edge_index.to(device))  # Perform a single forward pass.
+            y_true = torch.tensor(val_data.y, dtype = torch.float32)
+            val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
 
-#         history['loss'].append(train_loss/len(loader))
-#         history['val_loss'].append(val_loss/len(val_loader))
-#         history['time'].append(time.time()-t0)
+        history['loss'].append(train_loss/len(loader))
+        history['val_loss'].append(val_loss/len(val_loader))
+        history['time'].append(time.time()-t0)
 
-#         if n % 2== 0:
-#             print(n, "Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
+        if n % 2== 0:
+            print(n, "Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
 
 #     torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
 
