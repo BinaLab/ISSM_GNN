@@ -232,13 +232,10 @@ def train(
         disable=not args.verbose,
     ) as t:
         for batch_idx, data in enumerate(train_loader):
-            print(data)
             mini_step += 1
-            if args.cuda:
-                data = data.cuda()
                 
-            y_pred = model(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
-            y_true = torch.tensor(data.y, dtype=torch.float32)
+            y_pred = model(torch.tensor(data.x, dtype=torch.float32).cuda(), data.edge_index.cuda())  # Perform a single forward pass.
+            y_true = torch.tensor(data.y, dtype=torch.float32).cuda()
 
             loss = loss_func(y_pred, y_true)
 
@@ -297,11 +294,8 @@ def validate(
         with torch.no_grad():
             for i, data in enumerate(val_loader):
 
-                if args.cuda:
-                    data = data.cuda()
-
-                y_pred = model(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
-                y_true = torch.tensor(data.y, dtype=torch.float32) 
+                y_pred = model(torch.tensor(data.x, dtype=torch.float32).cuda(), data.edge_index.cuda())  # Perform a single forward pass.
+                y_true = torch.tensor(data.y, dtype=torch.float32) .cuda()
                 
                 val_loss.update(loss_func(y_pred, y_true))
 
