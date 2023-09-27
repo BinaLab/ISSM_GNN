@@ -20,7 +20,8 @@ from torch.optim.lr_scheduler import ExponentialLR
 import torch.distributed as dist
 from torch.utils import collect_env
 from torch.utils.data import TensorDataset
-from torch_geometric.loader import DataLoader
+from torch.utils.data import DataLoader
+# from torch_geometric.loader import DataLoader
  
 # from torch.utils.tensorboard import SummaryWriter
 
@@ -403,8 +404,8 @@ def main() -> None:
     #### READ DATA ##################################################################    
 
     ##########################################################################################
-    train_list = torch.load(f'../Grid_graph_train_data.pt')
-    val_list = torch.load(f'../Grid_graph_val_data.pt')   
+    train_list = torch.load(f'../Graph_y20_train_data.pt')
+    val_list = torch.load(f'../Graph_y20_val_data.pt')   
     
     # train_sampler = DistributedSampler(
     #     train_list,
@@ -441,8 +442,8 @@ def main() -> None:
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
-    # if args.no_cuda == False:
-    #     net = nn.DataParallel(net)
+    if args.no_cuda == False:
+        net = nn.DataParallel(net)
         # net = torch.nn.parallel.DistributedDataParallel(
         #     net,
         #     device_ids=[args.local_rank],
@@ -467,7 +468,7 @@ def main() -> None:
 
     ## Train model #############################################################
     for n in range(0, n_epochs):
-        net.train()    
+        net.train()
         train_loss = 0.0
         val_loss = 0.0
 
@@ -500,10 +501,10 @@ def main() -> None:
         if n % 2== 0:
             print(n, "Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
 
-#     torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
+    torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
 
-#     with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
-#         pickle.dump(history, file)
+    with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
+        pickle.dump(history, file)
     
     ## Train model (distributed parallel) ######################################
     for epoch in range(n_epochs):
