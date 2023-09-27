@@ -472,8 +472,14 @@ def main() -> None:
         val_loss = 0.0
 
         for data in train_loader:
+            
+            if args.cuda:
+                data = data.cuda()
+            
             optimizer.zero_grad()  # Clear gradients.
-            y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), data.edge_index.to(device))  # Perform a single forward pass.
+            
+            print(data.x.shape, data.edge_index.shape)
+            y_pred = net(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
             y_true = torch.tensor(data.y, dtype=torch.float32)
             loss = loss_fn(y_pred.to(device), y_true.to(device))  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
