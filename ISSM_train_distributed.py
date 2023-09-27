@@ -418,8 +418,13 @@ def main() -> None:
         batch_size=args.batch_size
     )
     
+    val_loader = DataLoader(
+        val_list,
+        batch_size=args.batch_size
+    )
+    
     # train_sampler, train_loader = make_sampler_and_loader(args, train_list) 
-    val_sampler, val_loader = make_sampler_and_loader(args, val_list)
+    # val_sampler, val_loader = make_sampler_and_loader(args, val_list)
 
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
