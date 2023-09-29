@@ -365,11 +365,17 @@ class EGCNet(torch.nn.Module):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
-        self.emb = nn.Linear(ch_input, 16) 
-        self.gnn = ConvEGNN(16, 16)
+        self.emb = nn.Linear(ch_input, 32) 
+        self.gnn = ConvEGNN(32, 32)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
         self.lin = nn.Sequential(
+            nn.Linear(32, hidden_channels),
+            nn.Dropout(0.25),
+            nn.Tanh(),
+            nn.Linear(hidden_channels, hidden_channels),
+            nn.Dropout(0.25),
+            nn.Tanh(),
             nn.Linear(hidden_channels, hidden_channels),
             nn.Dropout(0.25),
             nn.Tanh(),

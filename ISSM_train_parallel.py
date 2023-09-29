@@ -551,14 +551,12 @@ def main() -> None:
     rates = np.zeros(len(val_list))
     years = np.zeros(len(val_list))
 
-    print("Train")
+    print("#### Train done!! ####") 
     for k in range(0, len(val_list)):
         data = val_list[k]
         r = data.x[0, 2]
         year = data.x[0, 3]*20
-        if r not in rates:
-            rates.append(r)
-            print(r, year)
+
         prd = net(data.x.to(torch.float).to(device), data.edge_index.to(device)).to('cpu').detach().numpy()
         tru = data.y.to('cpu').detach().numpy()
         for i in range(0, prd.shape[1]):
@@ -572,15 +570,12 @@ def main() -> None:
 
         count += 1
 
-    test_save = [rates, years, y_true.to('cpu').detach().numpy(), y_pred.to('cpu').detach().numpy()]
+    test_save = [rates, years, y_true, y_pred]
 
     with open(f'../results/test_{model_name}.pkl', 'wb') as file:
-        pickle.dump(test_save, file)
-            
-    
-                        
-    if dist.get_rank() == 0:
-        print("#### Validation done!! ####")     
+        pickle.dump(test_save, file)      
+
+    print("#### Validation done!! ####")     
     # ===============================================================================
 
 if __name__ == '__main__':
