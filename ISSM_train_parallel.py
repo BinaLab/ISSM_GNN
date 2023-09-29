@@ -430,7 +430,7 @@ def main() -> None:
     if args.model_type == "gcn":
         net = GCNet(4, 5)  # Graph convolutional network
     elif args.model_type == "egcn":
-        net = EGCNet(4, 5, 32)  # Equivariant Graph convolutional network
+        net = EGCNet(4, 5, 128)  # Equivariant Graph convolutional network
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
