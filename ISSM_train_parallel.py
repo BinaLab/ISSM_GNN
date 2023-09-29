@@ -484,7 +484,7 @@ def main() -> None:
             y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
             val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
 
-        history['loss'].append(train_loss/len(loader))
+        history['loss'].append(train_loss/len(train_loader))
         history['val_loss'].append(val_loss/len(val_loader))
         history['time'].append(time.time()-t0)
 
