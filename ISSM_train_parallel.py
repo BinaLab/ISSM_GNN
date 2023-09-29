@@ -494,7 +494,7 @@ def main() -> None:
         torch.cuda.empty_cache()
 
         if n % 2== 0:
-            print(n, "Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
+            print("Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
 
     torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
 

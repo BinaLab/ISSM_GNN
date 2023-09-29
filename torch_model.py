@@ -328,8 +328,10 @@ class GCNet(torch.nn.Module):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
-        self.conv1 = GCNConv(ch_input, hidden_channels, improved=True)
+        self.emb = nn.Linear(ch_input, hidden_channels)
+        self.conv1 = GCNConv(hidden_channels, hidden_channels, improved=True)
         self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
+        self.conv3 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
         self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
@@ -339,8 +341,10 @@ class GCNet(torch.nn.Module):
         self.dropout = nn.Dropout(0.25)
 
     def forward(self, x, edge_index):
-        x = self.activation(self.conv1(x, edge_index)); #self.conv1(x)
-        x = self.activation(self.conv2(x, edge_index));
+        x = self.emb(x);
+        x = self.conv1(x, edge_index); #self.conv1(x)
+        x = self.conv2(x, edge_index);
+        x = self.conv3(x, edge_index);
         x = self.dropout(self.activation(self.lin1(x)));
         x = self.dropout(self.activation(self.lin2(x)));
         x = self.dropout(self.activation(self.lin3(x)));
