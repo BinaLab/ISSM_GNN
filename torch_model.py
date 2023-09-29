@@ -365,12 +365,12 @@ def index_sum(agg_size, source, idx, cuda):
     return res
 
 class EGCNet(torch.nn.Module):
-    def __init__(self, ch_input, ch_output, hidden_channels = 128):
+    def __init__(self, ch_input, ch_output, hidden_channels = 128, cuda=True):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
         self.emb = nn.Linear(ch_input, 32) 
-        self.gnn = ConvEGNN(32, 32)
+        self.gnn = ConvEGNN(32, 32, cuda=cuda)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
         self.lin = nn.Sequential(

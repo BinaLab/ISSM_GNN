@@ -359,9 +359,11 @@ def main() -> None:
     if args.no_cuda:
         device = torch.device('cpu')
         device_name = 'cpu'
+        cuda = False
     else:
         device = torch.device('cuda')
         device_name = 'gpu'
+        cuda = True
         
     torch.cuda.empty_cache()
     
@@ -430,7 +432,7 @@ def main() -> None:
     if args.model_type == "gcn":
         net = GCNet(4, 5)  # Graph convolutional network
     elif args.model_type == "egcn":
-        net = EGCNet(4, 5, 128)  # Equivariant Graph convolutional network
+        net = EGCNet(4, 5, 128, cuda)  # Equivariant Graph convolutional network
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
