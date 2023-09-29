@@ -23,6 +23,7 @@ from torch.utils.data import TensorDataset
 # from torch.utils.data import DataLoader
 # from torch.utils.data.distributed import DistributedSampler
 from torch_geometric.loader import DataLoader
+from torch_geometric.loader import NeighborLoader
  
 # from torch.utils.tensorboard import SummaryWriter
 
@@ -436,7 +437,7 @@ def main() -> None:
     # net.to(device)
     
     if args.no_cuda == False:
-        net = nn.DataParallel(net)
+        # net = nn.DataParallel(net)
         # net = torch.nn.parallel.DistributedDataParallel(
         #     net,
         #     device_ids=[args.local_rank],
