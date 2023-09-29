@@ -430,7 +430,7 @@ def main() -> None:
     if args.model_type == "gcn":
         net = GCNet(4, 5)  # Graph convolutional network
     elif args.model_type == "egcn":
-        net = EGCNet(4, 5, 128)  # Equivariant Graph convolutional network
+        net = EGCNet(4, 5, 64)  # Equivariant Graph convolutional network
     
     model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
 
@@ -488,6 +488,8 @@ def main() -> None:
         history['loss'].append(train_loss/len(train_loader))
         history['val_loss'].append(val_loss/len(val_loader))
         history['time'].append(time.time()-t0)
+        
+        torch.cuda.empty_cache()
 
         if n % 2== 0:
             print(n, "Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
