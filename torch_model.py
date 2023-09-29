@@ -387,7 +387,7 @@ class EGCNet(torch.nn.Module):
         return x1
     
 class ConvEGNN(nn.Module):
-    def __init__(self, in_dim, hid_dim, cuda=False):
+    def __init__(self, in_dim, hid_dim, cuda=True):
         super().__init__()
         self.hid_dim=hid_dim
         self.cuda = cuda
