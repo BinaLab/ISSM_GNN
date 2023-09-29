@@ -124,7 +124,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--base-lr',
         type=float,
-        default=0.01,
+        default=0.001,
         metavar='LR',
         help='base learning rate (default: 0.01)',
     )
