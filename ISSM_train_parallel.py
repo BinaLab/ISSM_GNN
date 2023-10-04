@@ -132,7 +132,7 @@ def parse_args() -> argparse.Namespace:
         '--model-type',
         type=str,
         default="egcn",
-        help='types of the neural network model (e.g. unet, cnn, fc)',
+        help='types of the neural network model (e.g. egcn, gcn, fcn)',
     )
     
     parser.add_argument(
@@ -430,11 +430,13 @@ def main() -> None:
     torch.cuda.empty_cache() 
     
     if args.model_type == "gcn":
-        net = GCNet(4, 5)  # Graph convolutional network
+        net = GCNet(4, 5, 128)  # Graph convolutional network    
     elif args.model_type == "egcn":
         net = EGCNet(4, 5, 128, cuda)  # Equivariant Graph convolutional network
+    elif args.model_type == "fcn":
+        net = FCNet(4, 5, 128)  # Fully connected network
     
-    model_name = f"torch_gcn_lr{lr}_{phy}_{device_name}"       
+    model_name = f"torch_{args.model_type}_lr{lr}_{phy}_{device_name}"       
 
     # net.to(device)
     
@@ -461,20 +463,24 @@ def main() -> None:
     print(f"Number of parameters: {total_params}")
     
     t0 = time.time()
+    
+    edge_index = train_list[0].edge_index.to(device)
 
     ## Train model #############################################################
     for n in range(0, n_epochs):
+        t1 = time.time()
         net.train()
         train_loss = 0.0
-        val_loss = 0.0
+        val_loss = 0.0       
 
         for data in train_loader:
             data.to(device)
             optimizer.zero_grad()  # Clear gradients.
-            
+            data.x.pos = data.x[:, :2]
             # print(data.x.shape, data.edge_index.shape)
-            y_pred = net(torch.tensor(data.x, dtype=torch.float32), data.edge_index)  # Perform a single forward pass.
-            y_true = torch.tensor(data.y, dtype=torch.float32)
+            # y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), torch.tensor(data.x[:, :2], dtype=torch.float32).to(device), edge_index)
+            y_pred = net(torch.tensor(data.x, dtype=torch.float32), torch.tensor(data.x, dtype=torch.float32), data.edge_index)
+            y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
             loss = loss_fn(y_pred, y_true)  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients. 
@@ -484,10 +490,11 @@ def main() -> None:
 
         # net.eval()
 
-        # for val_data in val_loader:
-        #     y_pred = net(torch.tensor(val_data.x, dtype=torch.float32).to(device), val_data.edge_index.to(device))  # Perform a single forward pass.
-        #     y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
-        #     val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
+        for val_data in val_loader:
+            val_data.to(device)
+            y_pred = net(torch.tensor(val_data.x, dtype=torch.float32), torch.tensor(val_data.x, dtype=torch.float32), val_data.edge_index)
+            y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
+            val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
 
         history['loss'].append(train_loss/len(train_loader))
         history['val_loss'].append(val_loss/len(val_loader))
@@ -496,7 +503,7 @@ def main() -> None:
         torch.cuda.empty_cache()
 
         if n % 2== 0:
-            print("Epoch {0} - train: {1:.3f}, val: {2:.3f}".format(str(n).zfill(3), train_loss, val_loss))
+            print("Epoch {0} - train: {1:.3f}, val: {2:.3f} [{3:.2f} sec]".format(str(n).zfill(3), train_loss, val_loss, time.time()-t1))
 
     torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
 
@@ -558,8 +565,8 @@ def main() -> None:
         data = val_list[k]
         r = data.x[0, 2]
         year = data.x[0, 3]*20
-
-        prd = net(data.x.to(torch.float).to(device), data.edge_index.to(device)).to('cpu').detach().numpy()
+        
+        prd = net(torch.tensor(data.x, dtype=torch.float32).to(device), torch.tensor(data.x[:, :2], dtype=torch.float32).to(device), edge_index).to('cpu').detach().numpy()
         tru = data.y.to('cpu').detach().numpy()
         for i in range(0, prd.shape[1]):
             prd[:, i] = prd[:, i]*scaling[i]

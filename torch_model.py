@@ -320,7 +320,31 @@ class Net(nn.Module):
         # x = F.linear(self.conv8(x), weight = 1)
         
         return x
+    
+class FCNet(torch.nn.Module):
+    def __init__(self, ch_input, ch_output, hidden_channels = 128):
+        super().__init__()
+        # torch.manual_seed(1234567)
+        self.activation = nn.Tanh()
+        
+        self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
+        self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
+        
+        self.dropout = nn.Dropout(0.20)
 
+    def forward(self, x, pos, edge_index):
+        
+        x = self.dropout(self.activation(self.lin1(x)));
+        x = self.dropout(self.activation(self.lin2(x)));
+        x = self.dropout(self.activation(self.lin3(x)));
+        x = self.activation(self.lin4(x));
+        x = self.lin5(x);
+
+        
+        return x
     
     
 class GCNet(torch.nn.Module):
@@ -338,9 +362,9 @@ class GCNet(torch.nn.Module):
         self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin4 = torch.nn.Linear(hidden_channels, ch_output)
         
-        self.dropout = nn.Dropout(0.25)
+        self.dropout = nn.Dropout(0.20)
 
-    def forward(self, x, edge_index):
+    def forward(self, x, pos, edge_index):
         x = self.emb(x);
         x = self.conv1(x, edge_index); #self.conv1(x)
         x = self.conv2(x, edge_index);
@@ -369,32 +393,30 @@ class EGCNet(torch.nn.Module):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
-        self.emb = nn.Linear(ch_input, 32) 
-        self.gnn = ConvEGNN(32, 32, cuda=cuda)
+        self.emb = nn.Linear(ch_input, hidden_channels) 
+        self.gnn = ConvEGNN(hidden_channels, hidden_channels, cuda=cuda)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
         self.lin = nn.Sequential(
-            nn.Linear(32, hidden_channels),
-            nn.Dropout(0.25),
+            nn.Linear(hidden_channels, hidden_channels),
+            nn.Dropout(0.20),
             nn.Tanh(),
             nn.Linear(hidden_channels, hidden_channels),
-            nn.Dropout(0.25),
+            nn.Dropout(0.20),
             nn.Tanh(),
             nn.Linear(hidden_channels, hidden_channels),
-            nn.Dropout(0.25),
+            nn.Dropout(0.20),
             nn.Tanh(),
             nn.Linear(hidden_channels, ch_output)
         )
 
-    def forward(self, x, edge_index):
-        x.pos = x[:, :2]
-        x.h = x
-        x.h = self.emb(x.h)
-        x = self.gnn(x, edge_index); #self.conv1(x)
+    def forward(self, x, pos, edge_index):
+        x = self.emb(x)
+        x = self.gnn(x, pos, edge_index); #self.conv1(x)
         # x = self.activation(self.conv2(x, edge_index));
-        x1 = self.lin(x.h);
+        x = self.lin(x);
         
-        return x1
+        return x
     
 class ConvEGNN(nn.Module):
     def __init__(self, in_dim, hid_dim, cuda=True):
@@ -404,27 +426,28 @@ class ConvEGNN(nn.Module):
         
         # computes messages based on hidden representations -> [0, 1]
         self.f_e = nn.Sequential(
-            nn.Linear(in_dim*2+1, hid_dim), nn.SiLU(),
-            nn.Linear(hid_dim, hid_dim), nn.SiLU())
+            nn.Linear(in_dim*2+1, hid_dim), nn.Tanh(),
+            nn.Linear(hid_dim, hid_dim), nn.Tanh())
         
         # preducts "soft" edges based on messages 
         self.f_inf = nn.Sequential( 
             nn.Linear(hid_dim, 1),
-            nn.Sigmoid())
+            nn.Tanh())
         
         # updates hidden representations -> [0, 1]
         self.f_h = nn.Sequential(
-            nn.Linear(in_dim+hid_dim, hid_dim), nn.SiLU(),
+            nn.Linear(in_dim+hid_dim, hid_dim), nn.Tanh(),
             nn.Linear(hid_dim, hid_dim))
     
-    def forward(self, b, edge_index):
+    def forward(self, b, pos, edge_index):
         e_st = edge_index[0, :]
         e_end = edge_index[1, :]
-        
-        dists = torch.norm(b.pos[e_st] - b.pos[e_end], dim=1).reshape(-1, 1)
+
+        dists = torch.norm(torch.square(pos[e_st] - pos[e_end]), dim=1).reshape(-1, 1)
         
         # compute messages
-        tmp = torch.hstack([b.h[e_st], b.h[e_end], dists])
+        tmp = torch.hstack([b[e_st], b[e_end], dists])
+        
         m_ij = self.f_e(tmp)
         
         # predict edges
@@ -435,8 +458,8 @@ class ConvEGNN(nn.Module):
         m_i = index_sum(b.shape[0], e_ij*m_ij, edge_index[0,:], self.cuda)
         
         # update hidden representations
-        b.h += self.f_h(torch.hstack([b.h, m_i]))
-
+        b += self.f_h(torch.hstack([b, m_i]))
+        del tmp, m_ij, e_ij, m_i
         return b
     
 class NetEGNN(nn.Module):
