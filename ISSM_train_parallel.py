@@ -403,8 +403,8 @@ def main() -> None:
     #### READ DATA ##################################################################    
 
     ##########################################################################################
-    train_list = torch.load(f'../Grid_graph_train_data.pt')
-    val_list = torch.load(f'../Grid_graph_val_data.pt')   
+    train_list = torch.load(f'../data/Graph_train_data_v2.pt')
+    val_list = torch.load(f'../data/Graph_val_data_v2.pt')   
     
     # train_sampler = DistributedSampler(
     #     train_list,
@@ -427,16 +427,20 @@ def main() -> None:
 
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
-    torch.cuda.empty_cache() 
+    torch.cuda.empty_cache()
+    
+    n_nodes = train_list[0].x.shape[0]
+    in_channels = train_list[0].x.shape[1]
+    out_channels = train_list[0].y.shape[1]
     
     if args.model_type == "gcn":
-        net = GCNet(4, 5, 128)  # Graph convolutional network    
+        net = GCNet(in_channels, out_channels, 128)  # Graph convolutional network    
     elif args.model_type == "egcn":
-        net = EGCNet(4, 5, 128, cuda)  # Equivariant Graph convolutional network
+        net = EGCNet(in_channels, out_channels, 128, cuda)  # Equivariant Graph convolutional network
     elif args.model_type == "fcn":
-        net = FCNet(4, 5, 128)  # Fully connected network
+        net = FCNet(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_{args.model_type}_lr{lr}_{phy}_{device_name}"       
+    model_name = f"torch_{args.model_type}_lr{lr}_{phy}_{device_name}_v2"       
 
     # net.to(device)
     
@@ -552,9 +556,9 @@ def main() -> None:
     
     net.eval()
 
-    scaling = [1, 5000, 5000, 5000, 4000]
-    y_pred = np.zeros([len(val_list), 1112, 5])
-    y_true = np.zeros([len(val_list), 1112, 5])
+    scaling = [1, 5000, 5000, 5000, 4000, 3000]
+    y_pred = np.zeros([len(val_list), n_nodes, out_channels])
+    y_true = np.zeros([len(val_list), n_nodes, out_channels])
     count = 0
 
     rates = np.zeros(len(val_list))
