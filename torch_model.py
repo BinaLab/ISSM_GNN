@@ -161,22 +161,6 @@ class FC(nn.Module):
         
         return x
 
-class linear_regression(torch.nn.Module):
-    def __init__(self, inputSize, outputSize, row, col):
-        super(linear_regression, self).__init__()        
-        self.asiu = torch.nn.Parameter(torch.ones(1, inputSize, row, col)*0.5)
-        self.bsiu = torch.nn.Parameter(torch.ones(1, row, col)*0.5)
-        self.asiv = torch.nn.Parameter(torch.ones(1, inputSize, row, col)*0.5)
-        self.bsiv = torch.nn.Parameter(torch.ones(1, row, col)*0.5)
-        self.asic = torch.nn.Parameter(torch.ones(1, inputSize, row, col)*0.5)
-        self.bsic = torch.nn.Parameter(torch.ones(1, row, col)*0.5)
-
-    def forward(self, x):
-        siu = torch.sum(self.asiu*x, dim=1) + self.bsiu
-        siv = torch.sum(self.asiv*x, dim=1) + self.bsiv
-        sic = torch.sum(self.asic*x, dim=1) + self.bsic
-        out = torch.cat([siu.unsqueeze(1), siv.unsqueeze(1), sic.unsqueeze(1)], dim=1)
-        return out
 
 # CNN model
 class Net(nn.Module):
@@ -225,7 +209,7 @@ class FCNet(torch.nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super().__init__()
         # torch.manual_seed(1234567)
-        self.activation = nn.Tanh()
+        self.activation = nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         
         self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
@@ -233,7 +217,7 @@ class FCNet(torch.nn.Module):
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         
-        self.dropout = nn.Dropout(0.20)
+        self.dropout = nn.Dropout(0.0)
 
     def forward(self, x, pos, edge_index):
         
@@ -251,7 +235,7 @@ class GCNet(torch.nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super().__init__()
         # torch.manual_seed(1234567)
-        self.activation = nn.Tanh()
+        self.activation = nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         # self.emb = nn.Linear(ch_input, hidden_channels)
         self.conv1 = GCNConv(ch_input, hidden_channels, improved=True)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
@@ -263,7 +247,7 @@ class GCNet(torch.nn.Module):
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         
-        self.dropout = nn.Dropout(0.20)
+        self.dropout = nn.Dropout(0.0)
 
     def forward(self, x, pos, edge_index):
         # x = self.emb(x);
@@ -294,7 +278,7 @@ class EGCNet(torch.nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128, cuda=True):
         super().__init__()
         # torch.manual_seed(1234567)
-        self.activation = nn.Tanh()
+        self.activation = nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         # self.emb = nn.Linear(ch_input, hidden_channels) 
         self.gnn = ConvEGNN(ch_input, hidden_channels, cuda=cuda)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
@@ -305,7 +289,7 @@ class EGCNet(torch.nn.Module):
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         
-        self.dropout = nn.Dropout(0.20)
+        self.dropout = nn.Dropout(0.0)
 
     def forward(self, x, pos, edge_index):
         x = self.emb(x)
