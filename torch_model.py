@@ -10,29 +10,7 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.nn.inits import glorot, zeros
 
 ### LOSS FUNCTIONS #####################################################################
-class vel_loss(nn.Module):
-    def __init__(self):
-        super(vel_loss, self).__init__();
 
-    def forward(self, obs, prd):
-        u_o = obs[:, 0, :, :]; v_o = obs[:, 1, :, :]
-        u_p = prd[:, 0, :, :]; v_p = prd[:, 1, :, :]
-        vel_o = (u_o**2 + v_o**2)**0.5
-        vel_p = (u_p**2 + v_p**2)**0.5
-        
-        # theta = (u_o*u_p+v_o*v_p)/(vel_o*vel_p)
-        # theta = (1 - theta**2)**0.5
-        # theta = torch.where(theta >= 0, theta, 0)
-        # err_theta = torch.abs(theta)
-
-        err_u = torch.abs(u_o - u_p)
-        err_v = torch.abs(v_o - v_p)
-        err_vel = torch.abs(vel_o - vel_p)        
-
-        err_sum = torch.mean((err_u + err_v + err_vel))*100
-        # err_sum += torch.nanmean(err_theta)/10000
-        # err_sum = tf.sqrt(tf.reduce_mean(err_u*err_sic)) + tf.sqrt(tf.reduce_mean(err_v*err_sic))
-        return err_sum  
     
 class single_loss(nn.Module):
     def __init__(self, landmask):
@@ -165,84 +143,6 @@ class physics_loss(nn.Module):
         err_sum += w*err_phy
         
         return err_sum    
-    
-    
-class MultiTaskLossWrapper(nn.Module):
-    def __init__(self, task_num):
-        super(MultiTaskLossWrapper, self).__init__()
-        self.task_num = task_num
-        self.log_vars = nn.Parameter(torch.zeros((task_num)))
-
-    def forward(self, obs, sid, sic, sit):
-        
-        # Sea ice drift error
-        err_u = torch.abs(obs[:, 0, :, :] - sid[:, 0, :, :])
-        err_v = torch.abs(obs[:, 1, :, :] - sid[:, 1, :, :])
-        loss0 = torch.mean((err_u + err_v))*100 
-        
-        # SIC error
-        err_sic = torch.abs(obs[:, 2, :, :]-sic)
-        loss1 = torch.mean(err_sic)*100
-        
-        # SIT error
-        err_sit = torch.abs(obs[:, 3, :, :]-sit)
-        loss2 = torch.mean(err_sit)*100
-
-#         precision0 = torch.exp(-self.log_vars[0])
-#         loss0 = precision0*loss0 + self.log_vars[0]
-
-#         precision1 = torch.exp(-self.log_vars[1])
-#         loss1 = precision1*loss1 + self.log_vars[1]
-
-#         precision2 = torch.exp(-self.log_vars[2])
-#         loss2 = precision2*loss2 + self.log_vars[2]
-        
-        return loss0+loss1+loss2
-    
-### MAKE INPUT DATASETS #########################################################
-def convert_cnn_input2D(data_input, data_output, days, months, years, dayint = 3, forecast = 3, exact = False):
-    # dayint: days before forecast (use as input features)
-    # forecast: lead day for forecasting (output features)
-    # exact: if True, only that exact date is forecasted; if False, all days before the lead day is forecasted
-    # Input & output should be entire images for CNN
-    
-    # Cehck sequential days
-    seq_days = []
-    step = 0
-
-    for i in range(0, len(days)):
-        if (days[i] ==1) & (years[i] != years[0]):
-            step += days[i-1]
-        seq_days.append(days[i] + step)
-
-    seq_days = np.array(seq_days)
-    
-    n_samples, row, col, var_ip = np.shape(data_input)
-    _, _, _, var_op = np.shape(data_output)
-
-    cnn_input = np.zeros([n_samples, row, col, var_ip * dayint], dtype = np.float16)
-    if exact:
-        cnn_output = np.zeros([n_samples, row, col, var_op], dtype = np.float16)
-    else:
-        cnn_output = np.zeros([n_samples, row, col, var_op * forecast], dtype = np.float16)
-    valid = []
-    
-    for n in range(dayint-1, n_samples-forecast):
-        if seq_days[n+forecast] - seq_days[n-dayint+1] == dayint + forecast-1:
-            valid.append(n)
-            for i in range(0, dayint):
-                for v in range(0, var_ip):            
-                    cnn_input[n, :, :, v+i*var_ip] = (data_input[n-i, :, :, v]).astype(np.float16)
-            # if v in range(0, var_op):
-            if exact:
-                cnn_output[n, :, :, :] = (data_output[n+forecast-1, :, :, :]).astype(np.float16)
-            else:
-                for j in range(0, forecast):
-                    for v in range(0, var_op):            
-                        cnn_output[n, :, :, v+j*var_op] = (data_output[n+j, :, :, v]).astype(np.float16)
-                
-                
-    return cnn_input[valid, :, :, :], cnn_output[valid, :, :, :], days[valid], months[valid], years[valid]
 
 ### ML MODELS #####################################################################
 class FC(nn.Module):
@@ -352,27 +252,29 @@ class GCNet(torch.nn.Module):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
-        self.emb = nn.Linear(ch_input, hidden_channels)
-        self.conv1 = GCNConv(hidden_channels, hidden_channels, improved=True)
-        self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
-        self.conv3 = GCNConv(hidden_channels, hidden_channels, improved=True)
+        # self.emb = nn.Linear(ch_input, hidden_channels)
+        self.conv1 = GCNConv(ch_input, hidden_channels, improved=True)
+        # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
+        # self.conv3 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
         self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin4 = torch.nn.Linear(hidden_channels, ch_output)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         
         self.dropout = nn.Dropout(0.20)
 
     def forward(self, x, pos, edge_index):
-        x = self.emb(x);
+        # x = self.emb(x);
         x = self.conv1(x, edge_index); #self.conv1(x)
-        x = self.conv2(x, edge_index);
-        x = self.conv3(x, edge_index);
+        # x = self.conv2(x, edge_index);
+        # x = self.conv3(x, edge_index);
         x = self.dropout(self.activation(self.lin1(x)));
         x = self.dropout(self.activation(self.lin2(x)));
         x = self.dropout(self.activation(self.lin3(x)));
-        x = self.lin4(x);
+        x = self.dropout(self.activation(self.lin4(x)));
+        x = self.lin5(x);
         
         return x
 
@@ -393,28 +295,26 @@ class EGCNet(torch.nn.Module):
         super().__init__()
         # torch.manual_seed(1234567)
         self.activation = nn.Tanh()
-        self.emb = nn.Linear(ch_input, hidden_channels) 
-        self.gnn = ConvEGNN(hidden_channels, hidden_channels, cuda=cuda)
+        # self.emb = nn.Linear(ch_input, hidden_channels) 
+        self.gnn = ConvEGNN(ch_input, hidden_channels, cuda=cuda)
         # self.conv2 = GCNConv(hidden_channels, hidden_channels, improved=True)
         
-        self.lin = nn.Sequential(
-            nn.Linear(hidden_channels, hidden_channels),
-            nn.Dropout(0.20),
-            nn.Tanh(),
-            nn.Linear(hidden_channels, hidden_channels),
-            nn.Dropout(0.20),
-            nn.Tanh(),
-            nn.Linear(hidden_channels, hidden_channels),
-            nn.Dropout(0.20),
-            nn.Tanh(),
-            nn.Linear(hidden_channels, ch_output)
-        )
+        self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
+        
+        self.dropout = nn.Dropout(0.20)
 
     def forward(self, x, pos, edge_index):
         x = self.emb(x)
         x = self.gnn(x, pos, edge_index); #self.conv1(x)
-        # x = self.activation(self.conv2(x, edge_index));
-        x = self.lin(x);
+        x = self.dropout(self.activation(self.lin1(x)));
+        x = self.dropout(self.activation(self.lin2(x)));
+        x = self.dropout(self.activation(self.lin3(x)));
+        x = self.dropout(self.activation(self.lin4(x)));
+        x = self.lin5(x);
         
         return x
     

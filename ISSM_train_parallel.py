@@ -406,6 +406,11 @@ def main() -> None:
     train_list = torch.load(f'../data/Graph_train_data_v2.pt')
     val_list = torch.load(f'../data/Graph_val_data_v2.pt')   
     
+    for i in range(0, len(train_list)):
+        train_list[i].y = train_list[i].y[:, [1,2,4]]
+    for i in range(0, len(val_list)):
+        val_list[i].y = val_list[i].y[:, [1,2,4]]
+    
     # train_sampler = DistributedSampler(
     #     train_list,
     #     num_replicas=dist.get_world_size(),
@@ -555,10 +560,16 @@ def main() -> None:
     # if dist.get_rank() == 0:
     
     net.eval()
-
-    scaling = [1, 5000, 5000, 5000, 4000, 3000]
-    y_pred = np.zeros([len(val_list), n_nodes, out_channels])
-    y_true = np.zeros([len(val_list), n_nodes, out_channels])
+    
+    if out_channels == 6:
+        scaling = [1, 5000, 5000, 5000, 4000, 3000] # SMB, U, V, Vel, Thickness, floating
+        y_pred = np.zeros([len(val_list), n_nodes, out_channels])
+        y_true = np.zeros([len(val_list), n_nodes, out_channels])
+    elif out_channels == 3:
+        scaling = [5000, 5000, 4000] # U, V, Thickness
+        y_pred = np.zeros([len(val_list), n_nodes, out_channels+1])
+        y_true = np.zeros([len(val_list), n_nodes, out_channels+1])
+        
     count = 0
 
     rates = np.zeros(len(val_list))
@@ -575,8 +586,13 @@ def main() -> None:
         for i in range(0, prd.shape[1]):
             prd[:, i] = prd[:, i]*scaling[i]
             tru[:, i] = tru[:, i]*scaling[i]
+            
         y_pred[k] = prd
         y_true[k] = tru
+        
+        if out_channels == 3:
+            y_pred[k, :, 3] = (y_pred[k, :, 0]**2 + y_pred[k, :, 1])**0.5
+            y_true[k, :, 3] = (y_true[k, :, 0]**2 + y_true[k, :, 1])**0.5
 
         rates[k] = r
         years[k] = year
