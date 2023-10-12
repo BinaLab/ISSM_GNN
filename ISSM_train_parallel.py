@@ -445,12 +445,12 @@ def main() -> None:
     elif args.model_type == "fcn":
         net = FCNet(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_{args.model_type}_lr{lr}_{phy}_{device_name}_v2"       
+    model_name = f"torch_{args.model_type}_lr{lr}_{phy}_{device_name}_v2_ch{out_channels}"       
 
     # net.to(device)
     
-    # if args.no_cuda == False:
-    #     net = nn.DataParallel(net)
+    if args.no_cuda == False:
+        net = nn.DataParallel(net)
         # net = torch.nn.parallel.DistributedDataParallel(
         #     net,
         #     device_ids=[args.local_rank],
@@ -481,7 +481,8 @@ def main() -> None:
         net.train()
         train_loss = 0.0
         val_loss = 0.0       
-
+        
+        train_step = 0
         for data in train_loader:
             data.to(device)
             optimizer.zero_grad()  # Clear gradients.
@@ -490,20 +491,23 @@ def main() -> None:
             # y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), torch.tensor(data.x[:, :2], dtype=torch.float32).to(device), edge_index)
             y_pred = net(torch.tensor(data.x, dtype=torch.float32), torch.tensor(data.x, dtype=torch.float32), data.edge_index)
             y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
-            loss = loss_fn(y_pred, y_true)  # Compute the loss solely based on the training nodes.
+            loss = loss_fn(y_pred*100, y_true*100)  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients. 
             train_loss += loss.item()
+            train_step += 1
             
             del data, y_pred, y_true
 
         # net.eval()
-
+        
+        val_step = 0
         for val_data in val_loader:
             val_data.to(device)
             y_pred = net(torch.tensor(val_data.x, dtype=torch.float32), torch.tensor(val_data.x, dtype=torch.float32), val_data.edge_index)
             y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
-            val_loss += loss_fn(y_pred.to(device), y_true.to(device)).item()  # Compute the loss solely based on the training nodes.
+            val_loss += loss_fn(y_pred.to(device)*100, y_true.to(device)*100).item()  # Compute the loss solely based on the training nodes.
+            val_step += 1
 
         history['loss'].append(train_loss/len(train_loader))
         history['val_loss'].append(val_loss/len(val_loader))
@@ -512,7 +516,7 @@ def main() -> None:
         torch.cuda.empty_cache()
 
         if n % 2== 0:
-            print("Epoch {0} - train: {1:.3f}, val: {2:.3f} [{3:.2f} sec]".format(str(n).zfill(3), train_loss, val_loss, time.time()-t1))
+            print("Epoch {0} - train: {1:.3f}, val: {2:.3f} [{3:.2f} sec]".format(str(n).zfill(3), train_loss/train_step, val_loss/val_step, time.time()-t1))
 
     torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
 
@@ -555,6 +559,8 @@ def main() -> None:
     
     torch.cuda.empty_cache()
     
+    print("#### Train done!! ####") 
+    
     # Test the model with the trained model ======================================== 
     
     # if dist.get_rank() == 0:
@@ -574,8 +580,7 @@ def main() -> None:
 
     rates = np.zeros(len(val_list))
     years = np.zeros(len(val_list))
-
-    print("#### Train done!! ####") 
+    
     for k in range(0, len(val_list)):
         data = val_list[k]
         r = data.x[0, 2]
@@ -585,14 +590,17 @@ def main() -> None:
         tru = data.y.to('cpu').detach().numpy()
         for i in range(0, prd.shape[1]):
             prd[:, i] = prd[:, i]*scaling[i]
-            tru[:, i] = tru[:, i]*scaling[i]
-            
-        y_pred[k] = prd
-        y_true[k] = tru
+            tru[:, i] = tru[:, i]*scaling[i]      
         
         if out_channels == 3:
+            y_pred[k, :, :3] = prd
+            y_true[k, :, :3] = tru
             y_pred[k, :, 3] = (y_pred[k, :, 0]**2 + y_pred[k, :, 1])**0.5
             y_true[k, :, 3] = (y_true[k, :, 0]**2 + y_true[k, :, 1])**0.5
+        else:
+            y_pred[k] = prd
+            y_true[k] = tru
+            
 
         rates[k] = r
         years[k] = year
