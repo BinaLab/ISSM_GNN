@@ -292,7 +292,7 @@ class EGCNet(torch.nn.Module):
         self.dropout = nn.Dropout(0.0)
 
     def forward(self, x, pos, edge_index):
-        x = self.emb(x)
+        # x = self.emb(x)
         x = self.gnn(x, pos, edge_index); #self.conv1(x)
         x = self.dropout(self.activation(self.lin1(x)));
         x = self.dropout(self.activation(self.lin2(x)));
