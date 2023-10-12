@@ -489,7 +489,7 @@ def main() -> None:
             data.x.pos = data.x[:, :2]
             # print(data.x.shape, data.edge_index.shape)
             # y_pred = net(torch.tensor(data.x, dtype=torch.float32).to(device), torch.tensor(data.x[:, :2], dtype=torch.float32).to(device), edge_index)
-            y_pred = net(torch.tensor(data.x, dtype=torch.float32), torch.tensor(data.x, dtype=torch.float32), data.edge_index)
+            y_pred = net(torch.tensor(data.x, dtype=torch.float32), torch.tensor(data.x, dtype=torch.float32), torch.tensor(data.edge_index))
             y_true = torch.tensor(data.y, dtype=torch.float32).to(device)
             loss = loss_fn(y_pred*100, y_true*100)  # Compute the loss solely based on the training nodes.
             loss.backward()  # Derive gradients.
@@ -504,7 +504,7 @@ def main() -> None:
         val_step = 0
         for val_data in val_loader:
             val_data.to(device)
-            y_pred = net(torch.tensor(val_data.x, dtype=torch.float32), torch.tensor(val_data.x, dtype=torch.float32), val_data.edge_index)
+            y_pred = net(torch.tensor(val_data.x, dtype=torch.float32), torch.tensor(val_data.x, dtype=torch.float32), torch.tensor(val_data.edge_index))
             y_true = torch.tensor(val_data.y, dtype = torch.float32).to(device)
             val_loss += loss_fn(y_pred.to(device)*100, y_true.to(device)*100).item()  # Compute the loss solely based on the training nodes.
             val_step += 1
