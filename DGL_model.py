@@ -47,7 +47,7 @@ class MLP(nn.Module):
     
 ## Graph convolutional network =============================
 class GCN(nn.Module):
-    def __init__(self, in_feats, h_feats, num_classes):
+    def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
         self.conv1 = GraphConv(in_feats, h_feats)
         self.conv2 = GraphConv(h_feats, num_classes)
