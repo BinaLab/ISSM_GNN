@@ -391,14 +391,15 @@ def main():
 
             with torch.no_grad():
                 pred = model(bg, feats)  
-                y_pred[k] = pred
-                y_true[k] = labels
+                y_pred[k] = pred.to('cpu')
+                y_true[k] = labels.to('cpu')
 
         test_save = [rates, years, y_true.to('cpu').detach().numpy(), y_pred.to('cpu').detach().numpy()]
 
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)
-
+            
+    print("##### Validation done! #####")
     dist.destroy_process_group()
 
 ###############################################################################
