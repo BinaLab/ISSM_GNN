@@ -277,7 +277,6 @@ def main():
         device = torch.device('cpu')
     else:
         device = torch.device('cuda')
-        torch.cuda.set_device(device)
         
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
