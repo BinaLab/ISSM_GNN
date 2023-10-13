@@ -338,7 +338,7 @@ def main():
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][: [1,2,4]]            
+                labels = bg.ndata['label'][:, [1,2,4]]            
             pred = model(bg, feats)
 
             loss = criterion(pred, labels)
@@ -357,7 +357,7 @@ def main():
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][: [1,2,4]]
+                labels = bg.ndata['label'][:, [1,2,4]]
             
             with torch.no_grad():
                 pred = model(bg, feats)
@@ -387,7 +387,7 @@ def main():
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][: [1,2,4]] 
+                labels = bg.ndata['label'][:, [1,2,4]] 
 
             with torch.no_grad():
                 pred = model(bg, feats)  
