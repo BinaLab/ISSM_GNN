@@ -370,7 +370,7 @@ def main():
         
         t1 = time.time() - t0
         if args.local_rank == 0:
-            print('Epoch {0} >> Train loss: {0:.4f}; Val loss: {1:.4f} [{2:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+            print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
         
     if args.local_rank == 0:
         test_set = ISSM_test_dataset()
