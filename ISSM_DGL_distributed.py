@@ -260,8 +260,10 @@ def evaluate(model, dataloader, device):
 
 from torch.optim import Adam
 
-def main(rank, world_size, train_set, seed=0):
+def main():
     
+    seed = 0
+    world_size = int(os.environ['WORLD_SIZE'])
     args = parse_args()
     
     torch.distributed.init_process_group(
@@ -313,6 +315,7 @@ def main(rank, world_size, train_set, seed=0):
     criterion = nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lrlr)    
     
+    train_set = ISSM_train_dataset()
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
     for epoch in range(n_epochs):
@@ -396,10 +399,5 @@ def main(rank, world_size, train_set, seed=0):
 
 ###############################################################################
 if __name__ == '__main__':
-    import torch.multiprocessing as mp
-
-    num_gpus = 4
-    procs = []
-    train_set = ISSM_train_dataset()
-    mp.spawn(main, args=(num_gpus, train_set), nprocs=num_gpus)
+    main()
 
