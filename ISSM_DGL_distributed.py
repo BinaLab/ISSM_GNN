@@ -285,8 +285,8 @@ def main():
     if args.no_cuda:
         device = torch.device('cpu')
     else:
-        device = torch.device('cuda:{:d}'.format(rank))
-        torch.cuda.set_device(device)  
+        device = torch.device('cuda')
+        torch.cuda.set_device(device)
         
     print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
@@ -310,7 +310,7 @@ def main():
     if args.no_cuda:
         model = DistributedDataParallel(model)
     else:
-        model = DistributedDataParallel(model, device_ids=[device], output_device=device)
+        model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
     criterion = nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lrlr)    
