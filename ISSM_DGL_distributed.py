@@ -403,8 +403,8 @@ def main():
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
                 
-            rates[k] = r
-            years[k] = year
+            rates[k] = feats[0, 2]
+            years[k] = feats[0, 3] * 20
 
             with torch.no_grad():
                 if args.model_type == "egcn":
