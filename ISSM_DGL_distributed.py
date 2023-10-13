@@ -399,6 +399,7 @@ def main():
             scaling = [5000, 5000, 4000]
         y_pred = np.zeros([len(test_set), n_nodes, out_channels])
         y_true = np.zeros([len(test_set), n_nodes, out_channels])
+        x_inputs = np.zeros([len(test_set), n_nodes, in_channels])
 
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
@@ -408,18 +409,22 @@ def main():
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][:, [1,2,4]] 
+                labels = bg.ndata['label'][:, [1,2,4]]
+                
+            rates[k] = r
+            years[k] = year
 
             with torch.no_grad():
                 if args.model_type == "egcn":
                     pred = model(bg, feats, coord_feat, edge_feat)
                     labels = torch.cat([labels, coord_feat], dim=1)
                 else:
-                    pred = model(bg, feats)  
+                    pred = model(bg, feats)
                 y_pred[k] = pred[:, :out_channels].to('cpu')
                 y_true[k] = labels[:, :out_channels].to('cpu')
+                x_inputs[k] = feats.to('cpu')
 
-        test_save = [rates, years, y_true, y_pred]
+        test_save = [rates, years, x_inputs, y_true, y_pred]
 
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)
