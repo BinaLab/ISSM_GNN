@@ -341,7 +341,7 @@ def main():
                 labels = bg.ndata['label'][:, [1,2,4]]            
             pred = model(bg, feats)
 
-            loss = criterion(pred, labels)
+            loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -361,7 +361,7 @@ def main():
             
             with torch.no_grad():
                 pred = model(bg, feats)
-            loss = criterion(pred, labels)
+            loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
             val_count += 1
             
@@ -378,8 +378,8 @@ def main():
             scaling = [1, 5000, 5000, 5000, 4000]
         elif out_channels == 3:
             scaling = [5000, 5000, 4000]
-        y_pred = np.zeros([len(test_set), n_nodes, out_channel])
-        y_true = np.zeros([len(test_set), n_nodes, out_channel])
+        y_pred = np.zeros([len(test_set), n_nodes, out_channels])
+        y_true = np.zeros([len(test_set), n_nodes, out_channels])
 
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
