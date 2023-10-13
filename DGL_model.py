@@ -14,16 +14,16 @@ class GIN(nn.Module):
         super(GIN, self).__init__()
         
         self.activation = nn.ReLU()
-        self.conv1 = GINConv(nn.Linear(ch_input, ch_output), aggregator_type='sum')
-        self.conv2 = GINConv(nn.Linear(ch_output, ch_output), aggregator_type='sum')
-        self.pool = SumPooling()
+        self.conv1 = GINConv(nn.Linear(ch_input, hidden_channels), aggregator_type='sum')
+        self.conv2 = GINConv(nn.Linear(hidden_channels, ch_output), aggregator_type='sum')
+        # self.pool = SumPooling()
 
     def forward(self, g, feats):
         feats = self.conv1(g, feats)
         feats = self.activation(feats)
         feats = self.conv2(g, feats)
 
-        return self.pool(g, feats)
+        return feats
 
 ## Multi-layer perceptron ===============================
 class MLP(nn.Module):
