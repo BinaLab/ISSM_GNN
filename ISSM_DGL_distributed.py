@@ -155,6 +155,8 @@ import torch.distributed as dist
 
 from dgl import save_graphs, load_graphs
 from dgl.data.utils import makedirs, save_info, load_info
+import dgl
+from dgl.data import DGLDataset
 
 def init_process_group(world_size, rank):
     dist.init_process_group(
@@ -226,16 +228,6 @@ def get_dataloaders(dataset, seed, batch_size=32):
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
-
-def init_model(seed, device):
-    torch.manual_seed(seed)
-    model = GIN().to(device)
-    if device.type == 'cpu':
-        model = DistributedDataParallel(model)
-    else:
-        model = DistributedDataParallel(model, device_ids=[device], output_device=device)
-
-    return model
 
 ###############################################################################
 # Main Function for Each Process

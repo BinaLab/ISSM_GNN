@@ -4,26 +4,26 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from dgl.nn.pytorch import GINConv, SumPooling    
+# from dgl.nn.pytorch import GINConv, SumPooling    
 from dgl.nn import GraphConv
 
 
 ## Graph Isomorphism Network (GIN) ========================
-class GIN(nn.Module):
-    def __init__(self, ch_input, ch_output, hidden_channels = 128):
-        super(GIN, self).__init__()
+# class GIN(nn.Module):
+#     def __init__(self, ch_input, ch_output, hidden_channels = 128):
+#         super(GIN, self).__init__()
         
-        self.activation = nn.ReLU()
-        self.conv1 = GINConv(nn.Linear(ch_input, hidden_channels), aggregator_type='sum')
-        self.conv2 = GINConv(nn.Linear(hidden_channels, ch_output), aggregator_type='sum')
-        self.pool = SumPooling()
+#         self.activation = nn.ReLU()
+#         self.conv1 = GINConv(nn.Linear(ch_input, hidden_channels), aggregator_type='sum')
+#         self.conv2 = GINConv(nn.Linear(hidden_channels, ch_output), aggregator_type='sum')
+#         self.pool = SumPooling()
 
-    def forward(self, g, feats):
-        feats = self.conv1(g, feats)
-        feats = self.activation(feats)
-        feats = self.conv2(g, feats)
+#     def forward(self, g, feats):
+#         feats = self.conv1(g, feats)
+#         feats = self.activation(feats)
+#         feats = self.conv2(g, feats)
 
-        return self.pool(g, feats)
+#         return self.pool(g, feats)
 
 ## Multi-layer perceptron ===============================
 class MLP(nn.Module):
