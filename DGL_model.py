@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from dgl.nn.pytorch import GINConv, SumPooling    
-from dgl.nn import GraphConv
+from dgl.nn import GraphConv, GATConv
 from dgl import function as fn
 
 ## Graph Isomorphism Network (GIN) ========================
@@ -73,6 +73,36 @@ class GCN(nn.Module):
         h = self.lin3(h);
 
         return h
+    
+## Graph attention network =============================
+class GAT(nn.Module):
+    def __init__(self, in_feats, num_classes, h_feats):
+        super(GAT, self).__init__()
+        self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.conv1 = GATConv(in_feats, h_feats, num_heads=3)
+        self.conv2 = GATConv(h_feats, h_feats, num_heads=3)
+        self.lin1 = torch.nn.Linear(h_feats, h_feats)
+        self.lin2 = torch.nn.Linear(h_feats, h_feats)
+        self.lin3 = torch.nn.Linear(h_feats, num_classes)
+    
+    def forward(self, g, in_feat):
+        h = self.activation(self.conv1(g, in_feat))
+        h = torch.mean(h, dim = 1)
+        h = self.activation(self.conv2(g, h))
+        h = torch.mean(h, dim = 1)
+        h = self.activation(self.lin1(h));
+        h = self.activation(self.lin2(h));
+        h = self.lin3(h);
+
+        return h
+    
+    
+g = dgl.graph(([0,1,2,3,2,5], [1,2,3,4,0,3]))
+g = dgl.add_self_loop(g)
+feat = tf.ones((6, 10))
+gatconv = GATConv(10, 2, num_heads=3)
+res = gatconv(g, feat)
+res
     
 class EGNNConv(nn.Module):
     r"""Equivariant Graph Convolutional Layer from `E(n) Equivariant Graph
