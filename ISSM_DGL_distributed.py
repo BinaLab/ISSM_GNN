@@ -301,7 +301,7 @@ def main(rank, world_size, train_set, seed=0):
     elif args.model_type == "mlp":
         model = MLP(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_{device_name}_v2_ch{out_channels}"
+    model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
 
@@ -316,6 +316,7 @@ def main(rank, world_size, train_set, seed=0):
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
     for epoch in range(n_epochs):
+        t0 = time.time()
         model.train()
         # The line below ensures all processes use a different
         # random ordering in data loading for each epoch.
@@ -357,7 +358,8 @@ def main(rank, world_size, train_set, seed=0):
             val_loss += loss.cpu().item()
             val_count += 1
             
-        print('Train loss: {0:.4f}; Val loss: {1:.4f}'.format(train_loss / train_count, val_loss / val_count))
+        if rank == 0:
+            print('Train loss: {0:.4f}; Val loss: {1:.4f} [{2:.2f} sec]'.format(train_loss / train_count, val_loss / val_count, time.time()-t0))
         
     if rank == 0:
         test_set = ISSM_test_dataset()
