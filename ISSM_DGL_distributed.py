@@ -100,7 +100,7 @@ def parse_args() -> argparse.Namespace:
         help='filename of dataset',
     )
     parser.add_argument(
-        '--out_ch',
+        '--out-ch',
         type=int,
         default=6,
         help='Number of output channels (6: include all or 3: u, v, h)',
