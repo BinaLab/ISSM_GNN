@@ -163,13 +163,26 @@ def init_process_group(world_size, rank):
         world_size=world_size,
         rank=rank)
 
-class ISSMDataset(DGLDataset):
-    def __init__(self, file):
+class ISSM_train_dataset(DGLDataset):
+    def __init__(self):
         super().__init__(name='pig')
-        self.file = file
         
     def process(self):
-        glist, _ = load_graphs(self.file)
+        glist, _ = load_graphs("../data/DGL_train_dataset.bin")
+        self.graphs = glist
+        
+    def __getitem__(self, i):
+        return self.graphs[i]
+    
+    def __len__(self):
+        return len(self.graphs)
+    
+class ISSM_test_dataset(DGLDataset):
+    def __init__(self):
+        super().__init__(name='pig')
+        
+    def process(self):
+        glist, _ = load_graphs("../data/DGL_test_dataset.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -355,7 +368,7 @@ def main(rank, world_size, train_set, seed=0):
         print('Train loss: {0:.4f}; Val loss: {1:.4f}'.format(train_loss / train_count, val_loss / val_count))
         
     if rank == 0:
-        test_set = ISSMDataset("../data/DGL_test_dataset.bin")
+        test_set = ISSM_test_dataset()
         ##### TEST ########################
         rates = np.zeros(len(test_set))
         years = np.zeros(len(test_set))
@@ -393,6 +406,6 @@ if __name__ == '__main__':
 
     num_gpus = 4
     procs = []
-    train_set = ISSMDataset("../data/DGL_train_dataset.bin")    
+    train_set = ISSM_train_dataset()
     mp.spawn(main, args=(num_gpus, train_set), nprocs=num_gpus)
 
