@@ -335,9 +335,9 @@ def main():
         for bg in train_loader:
             bg = bg.to(device)
             feats = bg.ndata['feat']
-            if out_channel == 6:
+            if out_channels == 6:
                 labels = bg.ndata['labels']
-            elif out_channel == 3:
+            elif out_channels == 3:
                 labels = bg.ndata['labels'][: [1,2,4]]            
             pred = model(bg, feats)
 
@@ -354,9 +354,9 @@ def main():
         for bg in val_loader:
             bg = bg.to(device)
             feats = bg.ndata['feat']
-            if out_channel == 6:
+            if out_channels == 6:
                 labels = bg.ndata['labels']
-            elif out_channel == 3:
+            elif out_channels == 3:
                 labels = bg.ndata['labels'][: [1,2,4]]
             
             with torch.no_grad():
@@ -374,9 +374,9 @@ def main():
         rates = np.zeros(len(test_set))
         years = np.zeros(len(test_set))
 
-        if out_channel == 6:
+        if out_channels == 6:
             scaling = [1, 5000, 5000, 5000, 4000]
-        elif out_channel == 3:
+        elif out_channels == 3:
             scaling = [5000, 5000, 4000]
         y_pred = np.zeros([len(test_set), n_nodes, out_channel])
         y_true = np.zeros([len(test_set), n_nodes, out_channel])
@@ -384,9 +384,9 @@ def main():
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
             feats = bg.ndata['feat']
-            if out_channel == 6:
+            if out_channels == 6:
                 labels = bg.ndata['labels']
-            elif out_channel == 3:
+            elif out_channels == 3:
                 labels = bg.ndata['labels'][: [1,2,4]] 
 
             with torch.no_grad():
