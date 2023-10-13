@@ -416,8 +416,8 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)  
-                y_pred[k] = pred.to('cpu')
-                y_true[k] = labels.to('cpu')
+                y_pred[k] = pred[:out_channels].to('cpu')
+                y_true[k] = labels[:out_channels].to('cpu')
 
         test_save = [rates, years, y_true, y_pred]
 
