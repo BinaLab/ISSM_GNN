@@ -27,6 +27,7 @@ from torch.utils.data.distributed import DistributedSampler
 # from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
+from dgl.nn import EGNNConv
 
 import argparse
 import os    
@@ -305,6 +306,8 @@ def main():
         model = GIN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "mlp":
         model = MLP(in_channels, out_channels, 128)  # Fully connected network
+    elif args.model_type == "egcn":
+        model = EGNNConv(in_channels, 128, out_channels, 1) # Equivariant Graph convolutional network
     
     model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
     
@@ -338,18 +341,23 @@ def main():
         for bg in train_loader:
             bg = bg.to(device)
             feats = bg.ndata['feat']
+            coord_feat = bg.ndata['feat'][:, :2]
+            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][:, [1,2,4]]            
-            pred = model(bg, feats)
+                labels = bg.ndata['label'][:, [1,2,4]]
+            if args.model_type == "egcn":
+                pred = model(bg, feats, coord_feat, edge_feat)
+            else:
+                pred = model(bg, feats)
 
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            train_count += 1       
+            train_count += 1   
         
         ##### VALIDATION ######################
         val_loss = 0
@@ -357,13 +365,18 @@ def main():
         for bg in val_loader:
             bg = bg.to(device)
             feats = bg.ndata['feat']
+            coord_feat = bg.ndata['feat'][:, :2]
+            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
             
             with torch.no_grad():
-                pred = model(bg, feats)
+                if args.model_type == "egcn":
+                    pred = model(bg, feats, coord_feat, edge_feat)
+                else:
+                    pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
             val_count += 1
@@ -389,13 +402,18 @@ def main():
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
             feats = bg.ndata['feat']
+            coord_feat = bg.ndata['feat'][:, :2]
+            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 6:
                 labels = bg.ndata['label']
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]] 
 
             with torch.no_grad():
-                pred = model(bg, feats)  
+                if args.model_type == "egcn":
+                    pred = model(bg, feats, coord_feat, edge_feat)
+                else:
+                    pred = model(bg, feats)  
                 y_pred[k] = pred.to('cpu')
                 y_true[k] = labels.to('cpu')
 
