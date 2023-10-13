@@ -308,9 +308,9 @@ def main(rank, world_size, train_set, seed=0):
     criterion = nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lrlr)    
     
-    train_loader, val_loader = get_dataloaders(train_set, seed)
+    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
-    for epoch in range(5):
+    for epoch in range(n_epochs):
         model.train()
         # The line below ensures all processes use a different
         # random ordering in data loading for each epoch.
