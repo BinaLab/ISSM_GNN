@@ -94,24 +94,16 @@ def parse_args() -> argparse.Namespace:
         help='input batch size for training (default: 16)',
     )
     parser.add_argument(
-        '--batches-per-allreduce',
-        type=int,
-        default=1,
-        help='number of batches processed locally before '
-        'executing allreduce across workers; it multiplies '
-        'total batch size.',
-    )
-    parser.add_argument(
-        '--val-batch-size',
-        type=int,
-        default=8,
-        help='input batch size for validation (default: 16)',
-    )
-    parser.add_argument(
         '--phy',
         type=str,
         default='nophy',
         help='filename of dataset',
+    )
+    parser.add_argument(
+        '--out_ch',
+        type=int,
+        default=6,
+        help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
         '--epochs',
@@ -255,9 +247,10 @@ from torch.optim import Adam
 
 def main():
     
-    seed = 0
+    
     world_size = int(os.environ['WORLD_SIZE'])
     args = parse_args()
+    seed = args.seed
     
     torch.distributed.init_process_group(
         backend=args.backend,
@@ -297,7 +290,7 @@ def main():
     
     n_nodes = 1112
     in_channels = 4
-    out_channels = 3
+    out_channels = args.out_ch
     
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, 128)  # Graph convolutional network    

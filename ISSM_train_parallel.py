@@ -567,6 +567,7 @@ def main() -> None:
     
     net.eval()
     
+    x_inputs = np.zeros([len(val_list), n_nodes, in_channels])
     if out_channels == 6:
         scaling = [1, 5000, 5000, 5000, 4000, 3000] # SMB, U, V, Vel, Thickness, floating
         y_pred = np.zeros([len(val_list), n_nodes, out_channels])
@@ -575,7 +576,7 @@ def main() -> None:
         scaling = [5000, 5000, 4000] # U, V, Thickness
         y_pred = np.zeros([len(val_list), n_nodes, out_channels+1])
         y_true = np.zeros([len(val_list), n_nodes, out_channels+1])
-        
+       
     count = 0
 
     rates = np.zeros(len(val_list))
@@ -599,8 +600,7 @@ def main() -> None:
             y_true[k, :, 3] = (y_true[k, :, 0]**2 + y_true[k, :, 1])**0.5
         else:
             y_pred[k] = prd
-            y_true[k] = tru
-            
+            y_true[k] = tru            
 
         rates[k] = r
         years[k] = year
