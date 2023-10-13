@@ -274,7 +274,6 @@ def main():
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
-    val_batch = args.val_batch_size  # size of validation batch size
     lr = args.base_lr
 
     phy = args.phy ## PHYSICS OR NOT
