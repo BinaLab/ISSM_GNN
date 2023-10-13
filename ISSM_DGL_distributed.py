@@ -267,6 +267,15 @@ def main():
     if args.cuda:
         torch.cuda.set_device(args.local_rank)
         torch.cuda.manual_seed(args.seed)
+        
+    # for r in range(torch.distributed.get_world_size()):
+    #     if r == torch.distributed.get_rank():
+    #         print(
+    #             f'Global rank {torch.distributed.get_rank()} initialized: '
+    #             f'local_rank = {args.local_rank}, '
+    #             f'world_size = {torch.distributed.get_world_size()}',
+    #         )
+    #     torch.distributed.barrier()
     
     model_dir = args.model_dir   
 
@@ -300,7 +309,8 @@ def main():
     model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
-
+    
+    model.to(device)
     if args.no_cuda:
         model = DistributedDataParallel(model)
     else:
