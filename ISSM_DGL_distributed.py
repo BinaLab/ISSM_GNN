@@ -394,12 +394,12 @@ def main():
                 y_pred[k] = pred.to('cpu')
                 y_true[k] = labels.to('cpu')
 
-        test_save = [rates, years, y_true.to('cpu').detach().numpy(), y_pred.to('cpu').detach().numpy()]
+        test_save = [rates, years, y_true, y_pred]
 
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)
             
-    print("##### Validation done! #####")
+        print("##### Validation done! #####")
     dist.destroy_process_group()
 
 ###############################################################################
