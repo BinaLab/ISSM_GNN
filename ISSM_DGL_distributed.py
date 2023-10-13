@@ -322,6 +322,9 @@ def main():
     train_set = ISSM_train_dataset()
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Number of parameters: {total_params}")
+    
     for epoch in range(n_epochs):
         t0 = time.time()
         model.train()
