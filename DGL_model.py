@@ -10,7 +10,7 @@ from dgl.nn import GraphConv
 
 ## Graph Isomorphism Network (GIN) ========================
 class GIN(nn.Module):
-    def __init__(self, ch_input, ch_output, hidden_channels = 128:
+    def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super(GIN, self).__init__()
         
         self.activation = nn.ReLU()
