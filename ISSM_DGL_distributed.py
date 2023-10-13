@@ -367,9 +367,10 @@ def main():
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
             val_count += 1
-            
+        
+        t1 = time.time() - t0
         if args.local_rank == 0:
-            print('Train loss: {0:.4f}; Val loss: {1:.4f} [{2:.2f} sec]'.format(train_loss / train_count, val_loss / val_count, time.time()-t0))
+            print('Epoch {0} >> Train loss: {0:.4f}; Val loss: {1:.4f} [{2:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
         
     if args.local_rank == 0:
         test_set = ISSM_test_dataset()
