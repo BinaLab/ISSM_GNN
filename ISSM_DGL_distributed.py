@@ -27,7 +27,6 @@ from torch.utils.data.distributed import DistributedSampler
 # from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
-from dgl.nn import EGNNConv
 
 import argparse
 import os    
@@ -348,7 +347,8 @@ def main():
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
             if args.model_type == "egcn":
-                pred, _ = model(bg, feats, coord_feat, edge_feat)
+                pred = model(bg, feats, coord_feat, edge_feat)
+                labels = torch.cat([labels, coord_feat], dim=1)
             else:
                 pred = model(bg, feats)
 
@@ -374,7 +374,8 @@ def main():
             
             with torch.no_grad():
                 if args.model_type == "egcn":
-                    pred, _ = model(bg, feats, coord_feat, edge_feat)
+                    pred = model(bg, feats, coord_feat, edge_feat)
+                    labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
@@ -411,7 +412,8 @@ def main():
 
             with torch.no_grad():
                 if args.model_type == "egcn":
-                    pred, _ = model(bg, feats, coord_feat, edge_feat)
+                    pred = model(bg, feats, coord_feat, edge_feat)
+                    labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)  
                 y_pred[k] = pred.to('cpu')
