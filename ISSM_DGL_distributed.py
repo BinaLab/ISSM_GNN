@@ -158,13 +158,6 @@ from dgl.data.utils import makedirs, save_info, load_info
 import dgl
 from dgl.data import DGLDataset
 
-def init_process_group(world_size, rank):
-    dist.init_process_group(
-        backend='gloo',     # change to 'nccl' for multiple GPUs
-        init_method='tcp://127.0.0.1:12345',
-        world_size=world_size,
-        rank=rank)
-
 class ISSM_train_dataset(DGLDataset):
     def __init__(self):
         super().__init__(name='pig')
@@ -268,9 +261,7 @@ def main():
     
     torch.distributed.init_process_group(
         backend=args.backend,
-        init_method='env://',
-        world_size=world_size,
-        rank=rank
+        init_method='env://'
     )
     
     model_dir = args.model_dir   
@@ -361,10 +352,10 @@ def main():
             val_loss += loss.cpu().item()
             val_count += 1
             
-        if rank == 0:
+        if args.local_rank == 0:
             print('Train loss: {0:.4f}; Val loss: {1:.4f} [{2:.2f} sec]'.format(train_loss / train_count, val_loss / val_count, time.time()-t0))
         
-    if rank == 0:
+    if args.local_rank == 0:
         test_set = ISSM_test_dataset()
         ##### TEST ########################
         rates = np.zeros(len(test_set))
