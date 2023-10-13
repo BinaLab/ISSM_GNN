@@ -13,15 +13,20 @@ class GIN(nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super(GIN, self).__init__()
         
-        self.activation = nn.ReLU()
+        self.activation = nn.LeakyReLU()
         self.conv1 = GINConv(nn.Linear(ch_input, hidden_channels), aggregator_type='sum')
-        self.conv2 = GINConv(nn.Linear(hidden_channels, ch_output), aggregator_type='sum')
+        self.conv2 = GINConv(nn.Linear(hidden_channels, hidden_channels), aggregator_type='sum')
+        self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin3 = torch.nn.Linear(hidden_channels, ch_output)
         # self.pool = SumPooling()
 
     def forward(self, g, feats):
-        feats = self.conv1(g, feats)
-        feats = self.activation(feats)
-        feats = self.conv2(g, feats)
+        feats = self.activation(self.conv1(g, feats))
+        feats = self.activation(self.conv2(g, feats))
+        feats = self.activation(self.lin1(feats));
+        feats = self.activation(self.lin2(feats));
+        feats = self.lin3(feats);
 
         return feats
 
@@ -31,17 +36,21 @@ class MLP(nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super(MLP, self).__init__()
         # torch.manual_seed(1234567)
-        self.activation = nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         
         self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin3 = torch.nn.Linear(hidden_channels, ch_output)
+        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
 
     def forward(self, g, in_feat):
         
         x = self.activation(self.lin1(in_feat));
         x = self.activation(self.lin2(x));
-        x = self.lin3(x);
+        x = self.activation(self.lin3(x));
+        x = self.activation(self.lin4(x));
+        x = self.lin5(x);
         
         return x
     
@@ -49,13 +58,20 @@ class MLP(nn.Module):
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
+        self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
-        self.conv2 = GraphConv(h_feats, num_classes)
+        self.conv2 = GraphConv(h_feats, h_feats)
+        self.lin1 = torch.nn.Linear(h_feats, h_feats)
+        self.lin2 = torch.nn.Linear(h_feats, h_feats)
+        self.lin3 = torch.nn.Linear(h_feats, num_classes)
     
     def forward(self, g, in_feat):
-        h = self.conv1(g, in_feat)
-        h = F.relu(h)
-        h = self.conv2(g, h)
+        h = self.activation(self.conv1(g, in_feat))
+        h = self.activation(self.conv2(g, h))
+        h = self.activation(self.lin1(h));
+        h = self.activation(self.lin2(h));
+        h = self.lin3(h);
+
         return h
 
     
