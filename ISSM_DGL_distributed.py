@@ -264,6 +264,10 @@ def main():
         init_method='env://'
     )
     
+    if args.cuda:
+        torch.cuda.set_device(args.local_rank)
+        torch.cuda.manual_seed(args.seed)
+    
     model_dir = args.model_dir   
 
     n_epochs = args.epochs
