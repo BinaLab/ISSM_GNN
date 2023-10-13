@@ -348,7 +348,7 @@ def main():
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
             if args.model_type == "egcn":
-                pred = model(bg, feats, coord_feat, edge_feat)
+                pred, _ = model(bg, feats, coord_feat, edge_feat)
             else:
                 pred = model(bg, feats)
 
@@ -374,7 +374,7 @@ def main():
             
             with torch.no_grad():
                 if args.model_type == "egcn":
-                    pred = model(bg, feats, coord_feat, edge_feat)
+                    pred, _ = model(bg, feats, coord_feat, edge_feat)
                 else:
                     pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
@@ -411,7 +411,7 @@ def main():
 
             with torch.no_grad():
                 if args.model_type == "egcn":
-                    pred = model(bg, feats, coord_feat, edge_feat)
+                    pred, _ = model(bg, feats, coord_feat, edge_feat)
                 else:
                     pred = model(bg, feats)  
                 y_pred[k] = pred.to('cpu')
