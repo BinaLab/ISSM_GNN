@@ -390,7 +390,7 @@ def main():
             if epoch == n_epochs-1:
                 print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
                 
-                torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
+                torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                     pickle.dump(history, file)
         
