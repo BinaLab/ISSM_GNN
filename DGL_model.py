@@ -176,7 +176,7 @@ class EGNNConv(nn.Module):
     >>> conv = EGNNConv(10, 10, 10, 2)
     >>> h, x = conv(g, node_feat, coord_feat, edge_feat)
     """
-    def __init__(self, in_size, hidden_size, out_size, edge_feat_size=0):
+    def __init__(self, in_size, out_size, hidden_size, edge_feat_size=0):
         super(EGNNConv, self).__init__()
 
         self.in_size = in_size

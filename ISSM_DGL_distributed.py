@@ -297,10 +297,12 @@ def main():
         model = GIN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "mlp":
         model = MLP(in_channels, out_channels, 128)  # Fully connected network
-    if args.model_type == "gat":
+    elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, 128)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGNNConv(in_channels, 128, out_channels, 1) # Equivariant Graph convolutional network
+        model = EGNNConv(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+    elif args.model_type == "egcn":
+        model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     
     model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
     
