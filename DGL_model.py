@@ -193,6 +193,8 @@ class EGNNConv(nn.Module):
             nn.Linear(hidden_size, hidden_size),
             act_fn,
             nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
             act_fn
         )
 
@@ -211,6 +213,8 @@ class EGNNConv(nn.Module):
 
         # \phi_x
         self.coord_mlp = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
             nn.Linear(hidden_size, hidden_size),
