@@ -122,7 +122,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--model-type',
         type=str,
-        default="egcn",
+        default="gcn",
         help='types of the neural network model (e.g. unet, cnn, fc)',
     )
     
@@ -301,8 +301,10 @@ def main():
         model = GAT(in_channels, out_channels, 128)  # Graph convolutional network 
     elif args.model_type == "egcn":
         model = EGNNConv(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
-    elif args.model_type == "egcn":
+    elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
+    else:
+        model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
     model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
     
@@ -322,7 +324,7 @@ def main():
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"Number of parameters: {total_params}")
+    print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
     
     history = {'loss': [], 'val_loss': [], 'time': []}
     ti = time.time()
