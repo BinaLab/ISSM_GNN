@@ -123,9 +123,7 @@ class SAGE(nn.Module):
     
     def forward(self, g, in_feat):
         h = self.activation(self.conv1(g, in_feat))
-        h = torch.mean(h, dim = 1)
         h = self.activation(self.conv2(g, h))
-        h = torch.mean(h, dim = 1)
         h = self.activation(self.lin1(h));
         h = self.activation(self.lin2(h));
         h = self.activation(self.lin3(h));
