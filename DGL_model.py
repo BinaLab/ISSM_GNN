@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from dgl.nn.pytorch import GINConv, SumPooling    
-from dgl.nn import GraphConv, GATConv
+from dgl.nn import GraphConv, GATConv, SAGEConv
 from dgl import function as fn
 
 ## Graph Isomorphism Network (GIN) ========================
@@ -89,6 +89,32 @@ class GAT(nn.Module):
         self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GATConv(in_feats, h_feats, num_heads=3)
         self.conv2 = GATConv(h_feats, h_feats, num_heads=3)
+        self.lin1 = torch.nn.Linear(h_feats, h_feats)
+        self.lin2 = torch.nn.Linear(h_feats, h_feats)
+        self.lin3 = torch.nn.Linear(h_feats, h_feats)
+        self.lin4 = torch.nn.Linear(h_feats, h_feats)
+        self.lin5 = torch.nn.Linear(h_feats, num_classes)
+    
+    def forward(self, g, in_feat):
+        h = self.activation(self.conv1(g, in_feat))
+        h = torch.mean(h, dim = 1)
+        h = self.activation(self.conv2(g, h))
+        h = torch.mean(h, dim = 1)
+        h = self.activation(self.lin1(h));
+        h = self.activation(self.lin2(h));
+        h = self.activation(self.lin3(h));
+        h = self.activation(self.lin4(h));
+        h = self.lin5(h);
+
+        return h
+    
+## GraphSAGE (SAmple and aggreGatE) =============================
+class SAGE(nn.Module):
+    def __init__(self, in_feats, num_classes, h_feats):
+        super(SAGE, self).__init__()
+        self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.conv1 = SAGEConv(in_feats, h_feats, 'pool')
+        self.conv2 = SAGEConv(h_feats, h_feats, 'pool')
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
         self.lin2 = torch.nn.Linear(h_feats, h_feats)
         self.lin3 = torch.nn.Linear(h_feats, h_feats)
