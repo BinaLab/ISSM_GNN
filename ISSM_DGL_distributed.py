@@ -313,7 +313,8 @@ def main():
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
     criterion = nn.MSELoss() #nn.CrossEntropyLoss()
-    optimizer = Adam(model.parameters(), lr)    
+    optimizer = Adam(model.parameters(), lr)
+    scheduler = ExponentialLR(optimizer, gamma=0.98)
     
     train_set = ISSM_train_dataset()
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
@@ -354,7 +355,8 @@ def main():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            train_count += 1   
+            train_count += 1
+        scheduler.step()
         
         ##### VALIDATION ######################
         val_loss = 0
