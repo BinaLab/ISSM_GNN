@@ -18,7 +18,9 @@ class GIN(nn.Module):
         self.conv2 = GINConv(nn.Linear(hidden_channels, hidden_channels), aggregator_type='sum')
         self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin3 = torch.nn.Linear(hidden_channels, ch_output)
+        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         # self.pool = SumPooling()
 
     def forward(self, g, feats):
@@ -26,7 +28,9 @@ class GIN(nn.Module):
         feats = self.activation(self.conv2(g, feats))
         feats = self.activation(self.lin1(feats));
         feats = self.activation(self.lin2(feats));
-        feats = self.lin3(feats);
+        feats = self.activation(self.lin3(feats));
+        feats = self.activation(self.lin4(feats));
+        feats = self.lin5(feats);
 
         return feats
 
@@ -63,14 +67,18 @@ class GCN(nn.Module):
         self.conv2 = GraphConv(h_feats, h_feats)
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
         self.lin2 = torch.nn.Linear(h_feats, h_feats)
-        self.lin3 = torch.nn.Linear(h_feats, num_classes)
+        self.lin3 = torch.nn.Linear(h_feats, h_feats)
+        self.lin4 = torch.nn.Linear(h_feats, h_feats)
+        self.lin5 = torch.nn.Linear(h_feats, num_classes)
     
     def forward(self, g, in_feat):
         h = self.activation(self.conv1(g, in_feat))
         h = self.activation(self.conv2(g, h))
         h = self.activation(self.lin1(h));
         h = self.activation(self.lin2(h));
-        h = self.lin3(h);
+        h = self.activation(self.lin3(h));
+        h = self.activation(self.lin4(h));
+        h = self.lin5(h);
 
         return h
     
@@ -83,7 +91,9 @@ class GAT(nn.Module):
         self.conv2 = GATConv(h_feats, h_feats, num_heads=3)
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
         self.lin2 = torch.nn.Linear(h_feats, h_feats)
-        self.lin3 = torch.nn.Linear(h_feats, num_classes)
+        self.lin3 = torch.nn.Linear(h_feats, h_feats)
+        self.lin4 = torch.nn.Linear(h_feats, h_feats)
+        self.lin5 = torch.nn.Linear(h_feats, num_classes)
     
     def forward(self, g, in_feat):
         h = self.activation(self.conv1(g, in_feat))
@@ -92,7 +102,9 @@ class GAT(nn.Module):
         h = torch.mean(h, dim = 1)
         h = self.activation(self.lin1(h));
         h = self.activation(self.lin2(h));
-        h = self.lin3(h);
+        h = self.activation(self.lin3(h));
+        h = self.activation(self.lin4(h));
+        h = self.lin5(h);
 
         return h
     
@@ -145,12 +157,16 @@ class EGNNConv(nn.Module):
         self.hidden_size = hidden_size
         self.out_size = out_size
         self.edge_feat_size = edge_feat_size
-        act_fn = nn.SiLU()
+        act_fn = nn.LeakyReLU()
 
         # \phi_e
         self.edge_mlp = nn.Sequential(
             # +1 for the radial feature: ||x_i - x_j||^2
             nn.Linear(in_size * 2 + edge_feat_size + 1, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn
@@ -160,11 +176,21 @@ class EGNNConv(nn.Module):
         self.node_mlp = nn.Sequential(
             nn.Linear(in_size + hidden_size, hidden_size),
             act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
             nn.Linear(hidden_size, out_size)
         )
 
         # \phi_x
         self.coord_mlp = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
             nn.Linear(hidden_size, 1, bias=False)

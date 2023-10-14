@@ -321,6 +321,9 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     print(f"Number of parameters: {total_params}")
     
+    history = {'loss': [], 'val_loss': [], 'time': []}
+    ti = time.time()
+    
     for epoch in range(n_epochs):
         t0 = time.time()
         model.train()
@@ -375,11 +378,21 @@ def main():
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
             val_count += 1
+            
+        history['loss'].append(train_loss/train_count)
+        history['val_loss'].append(val_loss/val_count)
+        history['time'].append(time.time() - ti)
         
         t1 = time.time() - t0
-        if epoch % 5 == 0 or epoch == n_epochs-1:
-            if args.local_rank == 0:
+        if args.local_rank == 0:
+            if epoch % 5 == 0:            
                 print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+            if epoch == n_epochs-1:
+                print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+                
+                torch.save(net.state_dict(), f'{model_dir}/{model_name}.pth')
+                with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
+                    pickle.dump(history, file)
         
     if args.local_rank == 0:
         test_set = ISSM_test_dataset()
@@ -388,11 +401,13 @@ def main():
         years = np.zeros(len(test_set))
 
         if out_channels == 6:
-            scaling = [1, 5000, 5000, 5000, 4000]
+            scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
         elif out_channels == 3:
-            scaling = [5000, 5000, 4000]
+            scaling = np.array([5000, 5000, 4000])
+            
         y_pred = np.zeros([len(test_set), n_nodes, out_channels])
         y_true = np.zeros([len(test_set), n_nodes, out_channels])
+
         x_inputs = np.zeros([len(test_set), n_nodes, in_channels])
 
         for k, bg in enumerate(test_set):
