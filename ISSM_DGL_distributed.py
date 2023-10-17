@@ -164,7 +164,7 @@ class ISSM_train_dataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
     
-class ISSM_train_dataset(DGLDataset):
+class ISSM_val_dataset(DGLDataset):
     def __init__(self):
         super().__init__(name='pig')
         
