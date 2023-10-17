@@ -89,7 +89,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--batch-size',
         type=int,
-        default=8,
+        default=24,
         metavar='N',
         help='input batch size for training (default: 16)',
     )
@@ -164,6 +164,20 @@ class ISSM_train_dataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
     
+class ISSM_train_dataset(DGLDataset):
+    def __init__(self):
+        super().__init__(name='pig')
+        
+    def process(self):
+        glist, _ = load_graphs("../data/DGL_val_dataset.bin")
+        self.graphs = glist
+        
+    def __getitem__(self, i):
+        return self.graphs[i]
+    
+    def __len__(self):
+        return len(self.graphs)
+    
 class ISSM_test_dataset(DGLDataset):
     def __init__(self):
         super().__init__(name='pig')
@@ -197,10 +211,10 @@ def get_dataloaders(dataset, seed, batch_size=32):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
                                                  frac_list=[0.8, 0.15, 0.05],
-                                                 shuffle=True,
+                                                 shuffle=False,
                                                  random_state=seed)
-    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=True)
-    val_loader = GraphDataLoader(val_set, batch_size=batch_size)
+    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
+    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
     # test_loader = GraphDataLoader(test_set, batch_size=batch_size)
 
     return train_loader, val_loader #, test_loader
@@ -321,6 +335,12 @@ def main():
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
     train_set = ISSM_train_dataset()
+    val_set = ISSM_val_dataset()
+    test_set = ISSM_test_dataset()
+    
+    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
+    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
+    
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     
     total_params = sum(p.numel() for p in model.parameters())
@@ -401,7 +421,6 @@ def main():
                     pickle.dump(history, file)
         
     if args.local_rank == 0:
-        test_set = ISSM_test_dataset()
         ##### TEST ########################
         rates = np.zeros(len(test_set))
         years = np.zeros(len(test_set))
