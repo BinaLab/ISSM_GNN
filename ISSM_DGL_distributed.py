@@ -304,12 +304,9 @@ def main():
         device = torch.device('cpu')
     else:
         device = torch.device('cuda')
-        
-    print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     torch.cuda.empty_cache()
     
-    n_nodes = 1112
     in_channels = 4
     out_channels = args.out_ch
     
@@ -350,7 +347,9 @@ def main():
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
+    n_nodes = val_set[0].num_nodes()
     
+    print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     total_params = sum(p.numel() for p in model.parameters())
     print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
     
