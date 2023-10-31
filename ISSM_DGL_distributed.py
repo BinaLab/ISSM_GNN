@@ -155,7 +155,7 @@ class ISSM_train_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_train_dataset_double.bin")
+        glist, _ = load_graphs("../data/DGL_train_dataset_g5000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -169,7 +169,7 @@ class ISSM_val_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_val_dataset_double.bin")
+        glist, _ = load_graphs("../data/DGL_val_dataset_g5000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -183,7 +183,7 @@ class ISSM_test_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_test_dataset_double.bin")
+        glist, _ = load_graphs("../data/DGL_test_dataset_g5000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -320,7 +320,7 @@ def main():
     else:
         model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{args.model_type}_lr{lr}_{phy}_ch{out_channels}"
+    model_name = f"torch_dgl_{args.model_type}_g5000_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
