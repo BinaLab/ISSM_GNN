@@ -324,6 +324,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
+        print(f"## Train: {train_set.len}; Val: {val_set.len}; Test: {test_set.len}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
@@ -341,7 +342,7 @@ def main():
     else:
         model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{args.model_type}_g5000_lr{lr}_{phy}_ch{out_channels}"
+    model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
