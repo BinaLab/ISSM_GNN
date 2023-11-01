@@ -102,7 +102,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--out-ch',
         type=int,
-        default=6,
+        default=5,
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
@@ -307,8 +307,24 @@ def main():
     
     torch.cuda.empty_cache()
     
-    in_channels = 4
-    out_channels = args.out_ch
+    train_set = ISSM_train_dataset()
+    val_set = ISSM_val_dataset()
+    test_set = ISSM_test_dataset()
+    
+    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
+    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
+    
+    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
+    n_nodes = val_set[0].num_nodes()
+    in_channels = val_set[0].ndata['feat'].shape[1]
+    if args.out_ch == 3:
+        out_channels = args.out_ch
+    else:
+        out_channels = val_set[0].ndata['label'].shape[1]
+    
+    if args.local_rank == 0:
+        print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
+        print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, 128)  # Graph convolutional network    
@@ -339,19 +355,9 @@ def main():
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
-    train_set = ISSM_train_dataset()
-    val_set = ISSM_val_dataset()
-    test_set = ISSM_test_dataset()
-    
-    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
-    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
-    
-    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
-    n_nodes = val_set[0].num_nodes()
-    
-    print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
+    if args.local_rank == 0:
+        print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
     
     history = {'loss': [], 'val_loss': [], 'time': []}
     ti = time.time()
@@ -371,7 +377,7 @@ def main():
             feats = bg.ndata['feat']
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels == 6:
+            if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
@@ -397,7 +403,7 @@ def main():
             feats = bg.ndata['feat']
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels == 6:
+            if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
@@ -447,7 +453,7 @@ def main():
             feats = bg.ndata['feat']
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels == 6:
+            if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
                 labels = bg.ndata['label'][:, [1,2,4]]
