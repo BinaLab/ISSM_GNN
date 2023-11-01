@@ -339,6 +339,8 @@ def main():
         model = EGNNConv(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
+    elif args.model_type == "cheb":
+        model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     else:
         model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
