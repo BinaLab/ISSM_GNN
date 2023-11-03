@@ -133,13 +133,16 @@ def parse_args() -> argparse.Namespace:
         help='backend for distribute training (default: nccl)',
     )
     
-    # Set automatically by torch distributed launch
-    parser.add_argument(
-        '--local-rank',
-        type=int,
-        default=0,
-        help='local rank for distributed training',
-    )
+    try:
+        # Set automatically by torch distributed launch
+        parser.add_argument(
+            '--local-rank',
+            type=int,
+            default=0,
+            help='local rank for distributed training',
+        )
+    except:
+        pass
     
     args = parser.parse_args()
     if 'LOCAL_RANK' in os.environ:
