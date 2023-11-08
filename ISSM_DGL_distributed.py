@@ -319,7 +319,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     n_nodes = val_set[0].num_nodes()
-    in_channels = val_set[0].ndata['feat'].shape[1]
+    in_channels = val_set[0].ndata['feat'].shape[1]-1
     if args.out_ch == 3:
         out_channels = args.out_ch
     else:
@@ -380,13 +380,13 @@ def main():
         train_count = 0
         for bg in train_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat']
+            feats = bg.ndata['feat'][:, :-1]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][:, [1,2,4]]
+                labels = bg.ndata['label'][:, [0,1,3]]
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
                 labels = torch.cat([labels, coord_feat], dim=1)
@@ -406,13 +406,13 @@ def main():
         val_count = 0
         for bg in val_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat']
+            feats = bg.ndata['feat'][:, :-1]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][:, [1,2,4]]
+                labels = bg.ndata['label'][:, [0,1,3]]
             
             with torch.no_grad():
                 if args.model_type == "egcn":
@@ -456,13 +456,13 @@ def main():
 
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
-            feats = bg.ndata['feat']
+            feats = bg.ndata['feat'][:, :-1]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels > 3:
                 labels = bg.ndata['label']
             elif out_channels == 3:
-                labels = bg.ndata['label'][:, [1,2,4]]
+                labels = bg.ndata['label'][:, [0,1,3]]
                 
             rates[k] = feats[0, 2]
             years[k] = feats[0, 3] * 20
