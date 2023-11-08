@@ -125,6 +125,12 @@ def parse_args() -> argparse.Namespace:
         default="gcn",
         help='types of the neural network model (e.g. unet, cnn, fc)',
     )
+    parser.add_argument(
+        '--mesh',
+        type=int,
+        default=10000,
+        help='meshsize of the finite element of ISSM model (select 5000, 10000, or 20000)',
+    )
     
     parser.add_argument(
         '--backend',
@@ -162,11 +168,11 @@ import dgl
 from dgl.data import DGLDataset
 
 class ISSM_train_dataset(DGLDataset):
-    def __init__(self):
-        super().__init__(name='pig')
+    def __init__(self, filename):
+        super().__init__(name="pig", url = filename)
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_train_dataset_g20000.bin")
+        glist, _ = load_graphs(self.url)
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -176,11 +182,11 @@ class ISSM_train_dataset(DGLDataset):
         return len(self.graphs)
     
 class ISSM_val_dataset(DGLDataset):
-    def __init__(self):
-        super().__init__(name='pig')
+    def __init__(self, filename):
+        super().__init__(name="pig", url = filename)
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_val_dataset_g20000.bin")
+        glist, _ = load_graphs(self.url)
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -190,11 +196,11 @@ class ISSM_val_dataset(DGLDataset):
         return len(self.graphs)
     
 class ISSM_test_dataset(DGLDataset):
-    def __init__(self):
-        super().__init__(name='pig')
+    def __init__(self, filename):
+        super().__init__(name="pig", url = filename)
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_test_dataset_g20000.bin")
+        glist, _ = load_graphs(self.url)
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -310,9 +316,10 @@ def main():
     
     torch.cuda.empty_cache()
     
-    train_set = ISSM_train_dataset()
-    val_set = ISSM_val_dataset()
-    test_set = ISSM_test_dataset()
+    mesh = args.mesh
+    train_set = ISSM_train_dataset(f"../data/DGL_train_dataset_g{mesh}.bin")
+    val_set = ISSM_val_dataset(f"../data/DGL_val_dataset_g{mesh}.bin")
+    test_set = ISSM_test_dataset(f"../data/DGL_test_dataset_g{mesh}.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
