@@ -166,7 +166,7 @@ class ISSM_train_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_train_dataset_g10000.bin")
+        glist, _ = load_graphs("../data/DGL_train_dataset_g20000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -180,7 +180,7 @@ class ISSM_val_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_val_dataset_g10000.bin")
+        glist, _ = load_graphs("../data/DGL_val_dataset_g20000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
@@ -194,7 +194,7 @@ class ISSM_test_dataset(DGLDataset):
         super().__init__(name='pig')
         
     def process(self):
-        glist, _ = load_graphs("../data/DGL_test_dataset_g10000.bin")
+        glist, _ = load_graphs("../data/DGL_test_dataset_g20000.bin")
         self.graphs = glist
         
     def __getitem__(self, i):
