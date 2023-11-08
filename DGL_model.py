@@ -96,7 +96,7 @@ class MLP(nn.Module):
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
-        self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.activation = nn.Tanh() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
         self.conv2 = GraphConv(h_feats, h_feats)
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
