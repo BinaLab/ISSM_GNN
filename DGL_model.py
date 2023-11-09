@@ -102,6 +102,7 @@ class GCN(nn.Module):
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
         self.conv5 = GraphConv(h_feats, h_feats)
+        self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
@@ -115,6 +116,7 @@ class GCN(nn.Module):
         h = self.activation(self.conv3(g, h))
         h = self.activation(self.conv4(g, h))
         h = self.activation(self.conv5(g, h))
+        h = self.activation(self.conv6(g, h))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
