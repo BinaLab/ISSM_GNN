@@ -97,9 +97,9 @@ class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
-        self.conv1 = DenseGraphConv(in_feats, h_feats)
-        self.conv2 = DenseGraphConv(h_feats, h_feats)
-        self.conv3 = DenseGraphConv(h_feats, h_feats)
+        self.conv1 = GraphConv(in_feats, h_feats)
+        # self.conv2 = GraphConv(h_feats, h_feats)
+        # self.conv3 = GraphConv(h_feats, h_feats)
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
         self.lin2 = torch.nn.Linear(h_feats, h_feats)
         self.lin3 = torch.nn.Linear(h_feats, h_feats)
@@ -109,8 +109,8 @@ class GCN(nn.Module):
     
     def forward(self, g, in_feat):
         h = self.activation(self.conv1(g, in_feat))
-        h = self.activation(self.conv2(g, h))
-        h = self.activation(self.conv3(g, h))
+        # h = self.activation(self.conv2(g, h))
+        # h = self.activation(self.conv3(g, h))
         h = self.activation(self.lin1(h));
         h = self.activation(self.lin2(h));
         h = self.activation(self.lin3(h));
