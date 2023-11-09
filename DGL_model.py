@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from dgl.nn.pytorch import GINConv, SumPooling    
-from dgl.nn import GraphConv, GATConv, SAGEConv, ChebConv
+from dgl.nn import DenseGraphConv, GraphConv, GATConv, SAGEConv, DenseSAGEConv, ChebConv, DenseChebConv
 from dgl import function as fn
 
 class physics_loss(nn.Module):
@@ -96,10 +96,10 @@ class MLP(nn.Module):
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
-        self.activation = nn.ReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
-        self.conv1 = GraphConv(in_feats, h_feats)
-        self.conv2 = GraphConv(h_feats, h_feats)
-        self.conv3 = GraphConv(h_feats, h_feats)
+        self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.conv1 = DenseGraphConv(in_feats, h_feats)
+        self.conv2 = DenseGraphConv(h_feats, h_feats)
+        self.conv3 = DenseGraphConv(h_feats, h_feats)
         self.lin1 = torch.nn.Linear(h_feats, h_feats)
         self.lin2 = torch.nn.Linear(h_feats, h_feats)
         self.lin3 = torch.nn.Linear(h_feats, h_feats)
