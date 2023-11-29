@@ -42,6 +42,56 @@ class physics_loss(nn.Module):
         err2 = torch.mean(err_sic, dim=0)[torch.where(self.landmask == 0)]
         err_sum += torch.mean(err2)*2500
 
+class CNN(nn.Module):
+    def __init__(self, n_inputs, n_outputs, n_nodes, nrow, ncol, n_filters=128, kernel = 5):
+        super().__init__()
+        self.activation = nn.LeakyReLU()
+        self.n_nodes = n_nodes
+        self.n_outputs = n_outputs
+        
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(n_inputs, n_filters, kernel, padding = "same"),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )        
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(n_filters, n_filters, kernel, padding = "same"),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )        
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(n_filters, n_filters, kernel, padding = "same"),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(n_filters, n_filters, kernel, padding = "same"),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(n_filters, n_filters, kernel, padding = "same"),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )     
+        
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(in_features=int(n_filters*(nrow//(2**5))*(ncol//(2**5))), out_features=n_outputs * n_nodes)
+
+
+    def forward(self, x):
+        
+        x = self.activation(self.conv1(x))
+        print(x.shape)
+        x = self.activation(self.conv2(x))
+        print(x.shape)
+        x = self.activation(self.conv3(x))
+        print(x.shape)
+        x = self.activation(self.conv4(x))
+        print(x.shape)
+        x = self.activation(self.conv5(x))
+        print(x.shape)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = x.reshape(-1, self.n_nodes, self.n_outputs)
+        
+        return x
+        
 ## Graph Isomorphism Network (GIN) ========================
 class GIN(nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
