@@ -501,11 +501,11 @@ def main():
 
         for k, (data, target) in enumerate(test_dataset):
             data = data[:, :-1]
-            print(data.shape, target.shape)
+
             if out_channels > 3:
                 target = target.to(device)
             elif out_channels == 3:
-                target = target[:, :, [0,1,3]].to(device)
+                target = target[:, [0,1,3]].to(device)
                 
             rates[k] = feats[0, 2]
             years[k] = feats[0, 3] * 20
@@ -513,7 +513,7 @@ def main():
             with torch.no_grad():
                 pred = model(data)
                 y_pred[k] = pred[:, :out_channels].to('cpu')
-                y_true[k] = labels[:, :out_channels].to('cpu')
+                y_true[k] = target[:, :out_channels].to('cpu')
                 x_inputs[k] = test_graphs[k].ndata['feat'].to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred]
