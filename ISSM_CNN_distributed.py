@@ -406,7 +406,7 @@ def main():
     if args.model_type != "cnn":
         args.moel_type = "cnn"
         
-    model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 128)  # Graph convolutional network
+    model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # Graph convolutional network
 
     model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
