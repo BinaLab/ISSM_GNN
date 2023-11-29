@@ -446,6 +446,8 @@ def main():
                 target = target[:, [0,1,3]]
             
             pred = model(data)
+            
+            print(pred.shape, target.shape)
 
             loss = criterion(pred*100, target*100)
             train_loss += loss.cpu().item()
