@@ -441,9 +441,9 @@ def main():
         for (data, target) in train_loader:
             data = data[:, :-1]            
             if out_channels > 3:
-                pass
+                target = target.to(device)
             elif out_channels == 3:
-                target = target[:, :, [0,1,3]]
+                target = target[:, :, [0,1,3]].to(device)
             
             pred = model(data)
             
@@ -463,9 +463,9 @@ def main():
         for (data, target) in val_loader:
             data = data[:, :-1]            
             if out_channels > 3:
-                pass
+                target = target.to(device)
             elif out_channels == 3:
-                target = target[:, :, [0,1,3]]      
+                target = target[:, :, [0,1,3]].to(device)
             pred = model(data)
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
@@ -504,9 +504,9 @@ def main():
         for k, (data, target) in enumerate(test_dataset):
             data = data[:, :-1]            
             if out_channels > 3:
-                pass
+                target = target.to(device)
             elif out_channels == 3:
-                target = target[:, :, [0,1,3]]
+                target = target[:, :, [0,1,3]].to(device)
                 
             rates[k] = feats[0, 2]
             years[k] = feats[0, 3] * 20
