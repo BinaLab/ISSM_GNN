@@ -509,7 +509,7 @@ def main():
                 
             rates[k] = test_graphs[k].ndata['feat'][0, 2]
             years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
-
+            print(data.shape)
             with torch.no_grad():
                 pred = model(data)
                 y_pred[k] = pred[:, :out_channels].to('cpu')

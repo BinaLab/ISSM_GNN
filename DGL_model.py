@@ -43,7 +43,7 @@ class physics_loss(nn.Module):
         err_sum += torch.mean(err2)*2500
 
 class CNN(nn.Module):
-    def __init__(self, n_inputs, n_outputs, n_nodes, nrow, ncol, n_filters=128, kernel = 5):
+    def __init__(self, n_inputs, n_outputs, n_nodes, nrow, ncol, n_filters=128, kernel = 3):
         super().__init__()
         self.activation = nn.LeakyReLU()
         self.n_nodes = n_nodes
