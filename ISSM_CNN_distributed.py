@@ -373,10 +373,10 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
-    train_graphs = load_graphs(f"../data/DGL_train_dataset_g{mesh}.bin")
-    val_graphs = load_graphs(f"../data/DGL_val_dataset_g{mesh}.bin")
-    test_graphs = load_graphs(f"../data/DGL_test_dataset_g{mesh}.bin")
-    
+    train_graphs = load_graphs(f"../data/DGL_train_dataset_g{mesh}.bin")[0]
+    val_graphs = load_graphs(f"../data/DGL_val_dataset_g{mesh}.bin")[0]
+    test_graphs = load_graphs(f"../data/DGL_test_dataset_g{mesh}.bin")[0]
+
     with open(f'../data/CNN_dataset_g{mesh}.pkl', 'rb') as file:
         [grid_input, _, train_index] = pickle.load(file)
     
