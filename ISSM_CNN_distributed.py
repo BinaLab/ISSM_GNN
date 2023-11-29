@@ -373,9 +373,6 @@ def main():
     
     torch.cuda.empty_cache()
     
-    data_ver = data_file[-6:-4]
-    data_type = data_file[6:9]
-    
     mesh = args.mesh
     train_graphs = load_graphs(f"../data/DGL_train_dataset_g{mesh}.bin")
     val_graphs = load_graphs(f"../data/DGL_val_dataset_g{mesh}.bin")
