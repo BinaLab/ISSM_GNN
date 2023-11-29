@@ -443,7 +443,7 @@ def main():
             if out_channels > 3:
                 pass
             elif out_channels == 3:
-                target = target[:, [0,1,3]]
+                target = target[:, :, [0,1,3]]
             
             pred = model(data)
             
@@ -465,7 +465,7 @@ def main():
             if out_channels > 3:
                 pass
             elif out_channels == 3:
-                target = target[:, [0,1,3]]            
+                target = target[:, :, [0,1,3]]      
             pred = model(data)
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
@@ -506,7 +506,7 @@ def main():
             if out_channels > 3:
                 pass
             elif out_channels == 3:
-                target = target[:, [0,1,3]]
+                target = target[:, :, [0,1,3]]
                 
             rates[k] = feats[0, 2]
             years[k] = feats[0, 3] * 20
