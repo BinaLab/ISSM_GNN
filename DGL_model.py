@@ -352,7 +352,7 @@ class EGCN(nn.Module):
     >>> h, x = conv(g, node_feat, coord_feat, edge_feat)
     """
     def __init__(self, in_size, out_size, hidden_size, edge_feat_size=0):
-        super(EGNNConv, self).__init__()
+        super(EGCN, self).__init__()
 
         self.in_size = in_size
         self.hidden_size = hidden_size
