@@ -284,7 +284,7 @@ class EGCN2(nn.Module):
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
         # self.lin4 = torch.nn.Linear(h_feats, h_feats)
         self.linh = torch.nn.Linear(h_feats, num_classes)
-        self.linx = torch.nn.Linear(h_feats, num_classes)
+        # self.linx = torch.nn.Linear(h_feats, num_classes)
         # self.device = device
     
     def forward(self, g, in_feat, coord_feat, edge_feat=None):
