@@ -434,7 +434,6 @@ def main():
         model.train()
         # The line below ensures all processes use a different
         # random ordering in data loading for each epoch.
-        train_loader.set_epoch(epoch)
         
         ##### TRAIN ###########################
         train_loss = 0
