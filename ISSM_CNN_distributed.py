@@ -499,21 +499,21 @@ def main():
 
         x_inputs = np.zeros([len(test_dataset), n_nodes, in_channels])
 
-        for k, (data, target) in enumerate(test_dataset):
-            data = data[:-1]
+        for k, (data, target) in enumerate(DataLoader(test_dataset, batch_size = 1)):
+            data = data[:, :-1]
 
             if out_channels > 3:
                 target = target.to(device)
             elif out_channels == 3:
-                target = target[:, [0,1,3]].to(device)
+                target = target[:, :, [0,1,3]].to(device)
                 
             rates[k] = test_graphs[k].ndata['feat'][0, 2]
             years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
             print(data.shape)
             with torch.no_grad():
                 pred = model(data)
-                y_pred[k] = pred[:, :out_channels].to('cpu')
-                y_true[k] = target[:, :out_channels].to('cpu')
+                y_pred[k] = pred[0, :, :out_channels].to('cpu')
+                y_true[k] = target[0, :, :out_channels].to('cpu')
                 x_inputs[k] = test_graphs[k].ndata['feat'].to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred]
