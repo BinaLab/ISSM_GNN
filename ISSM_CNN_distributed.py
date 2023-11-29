@@ -500,7 +500,8 @@ def main():
         x_inputs = np.zeros([len(test_dataset), n_nodes, in_channels])
 
         for k, (data, target) in enumerate(test_dataset):
-            data = data[:, :-1]            
+            data = data[:, :-1]
+            print(data.shape, target.shape)
             if out_channels > 3:
                 target = target.to(device)
             elif out_channels == 3:
