@@ -222,9 +222,6 @@ class CNN_Dataset(Dataset):
         # return the number of total samples contained in the dataset
         return len(self.output)
     def __getitem__(self, n):
-        
-        _, var_ip, row, col = self.input.shape
-        _, var_op, _, _ = self.output.shape
 
         cnn_input = torch.tensor(self.input[n], dtype=torch.float32)
         cnn_input[torch.isnan(cnn_input)] = 0
