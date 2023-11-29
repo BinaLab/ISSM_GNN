@@ -306,7 +306,7 @@ class EGCN2(nn.Module):
         h = self.linh(h)
         # x = self.linx(x)
         out = torch.cat([h, x], dim=1)
-        print(h.shape, x.shape, out.shape)
+
         return out
     
 class EGCN(nn.Module):
