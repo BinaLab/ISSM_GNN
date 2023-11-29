@@ -400,6 +400,8 @@ def main():
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
                 labels = torch.cat([labels, coord_feat], dim=1)
+            elif args.model_type == "egcn2":
+                pred = model(bg, feats, coord_feat, edge_feat)
             else:
                 pred = model(bg, feats)
 
@@ -428,6 +430,8 @@ def main():
                 if args.model_type == "egcn":
                     pred = model(bg, feats, coord_feat, edge_feat)
                     labels = torch.cat([labels, coord_feat], dim=1)
+                elif args.model_type == "egcn2":
+                    pred = model(bg, feats, coord_feat, edge_feat)
                 else:
                     pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
@@ -481,6 +485,8 @@ def main():
                 if args.model_type == "egcn":
                     pred = model(bg, feats, coord_feat, edge_feat)
                     labels = torch.cat([labels, coord_feat], dim=1)
+                elif args.model_type == "egcn2":
+                    pred = model(bg, feats, coord_feat, edge_feat)
                 else:
                     pred = model(bg, feats)
                 y_pred[k] = pred[:, :out_channels].to('cpu')
