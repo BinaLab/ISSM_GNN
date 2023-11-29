@@ -304,10 +304,10 @@ class EGCN2(nn.Module):
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
         h = self.linh(h)
-        # x = self.linx(x)
-        # out = torch.cat([h, x], dim=1)
-
-        return h
+        x = self.linx(x)
+        out = torch.cat([h, x], dim=1)
+        print(h.shape, x.shape, out.shape)
+        return out
     
 class EGCN(nn.Module):
     r"""Equivariant Graph Convolutional Layer from `E(n) Equivariant Graph
