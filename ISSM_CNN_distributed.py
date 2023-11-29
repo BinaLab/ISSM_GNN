@@ -390,8 +390,8 @@ def main():
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
 
-    n_nodes = val_grid[0].num_nodes()
-    in_channels = val_grid[0].ndata['feat'].shape[1]-1
+    n_nodes = val_graphs[0].num_nodes()
+    in_channels = val_graphs[0].ndata['feat'].shape[1]-1
     
     if args.out_ch == 3:
         out_channels = args.out_ch
