@@ -221,7 +221,7 @@ class CNN_Dataset(Dataset):
         
     def __len__(self):
         # return the number of total samples contained in the dataset
-        return len(self.valid)
+        return len(self.output)
     def __getitem__(self, n):
         
         _, var_ip, row, col = self.input.shape
