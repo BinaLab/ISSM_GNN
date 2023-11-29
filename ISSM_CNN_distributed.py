@@ -217,7 +217,6 @@ class CNN_Dataset(Dataset):
         # transforms
         self.input = input_grid
         self.output = output_graph
-        self.length = len(self.valid)
         
     def __len__(self):
         # return the number of total samples contained in the dataset
