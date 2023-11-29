@@ -261,6 +261,7 @@ def make_sampler_and_loader(args, train_dataset, shuffle = True):
             sampler=train_sampler,
             **kwargs,
         )
+    return train_sampler, train_loader
 
 ###############################################################################
 # Data Loader Preparation
