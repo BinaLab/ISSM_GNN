@@ -348,13 +348,14 @@ def main():
     elif args.model_type == "egcn":
         model = EGCN(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
-        model = EGNN2(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN2(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     else:
-        model = GCN(in_channels, out_channels, 128)  # Fully connected network
+        print("Please put valid model name!!"
+        # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
     model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
