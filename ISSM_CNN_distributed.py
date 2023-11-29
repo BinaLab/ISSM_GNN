@@ -507,8 +507,8 @@ def main():
             elif out_channels == 3:
                 target = target[:, [0,1,3]].to(device)
                 
-            rates[k] = feats[0, 2]
-            years[k] = feats[0, 3] * 20
+            rates[k] = test_graphs[k].ndata['feat'][0, 2]
+            years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
 
             with torch.no_grad():
                 pred = model(data)
