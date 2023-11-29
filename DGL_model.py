@@ -271,7 +271,7 @@ class ChebGCN(nn.Module):
 ## Equivariant Graph convolutional network =============================
 class EGCN2(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats, edge_feat_size=0):
-        super(GCN, self).__init__()
+        super(EGCN2, self).__init__()
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = EGNNConv(in_feats, h_feats, h_feats, edge_feat_size)
         self.conv2 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
