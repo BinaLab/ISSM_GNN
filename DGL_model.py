@@ -385,7 +385,7 @@ class EGCN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
-            nn.Linear(hidden_size, out_size)
+            nn.Linear(hidden_size, hidden_size)
         )
 
         # \phi_x
@@ -400,6 +400,8 @@ class EGCN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, 1, bias=False)
         )
+        
+        self.linh = torch.nn.Linear(hidden_size, out_size)
 
     def message(self, edges):
         """message function for EGNN"""
@@ -469,6 +471,7 @@ class EGCN(nn.Module):
             h = self.node_mlp(
                 torch.cat([node_feat, h_neigh], dim=-1)
             )
+            h = self.linh(h)
             x = coord_feat + x_neigh
             out = torch.cat([h, x], dim=1)
 
