@@ -283,7 +283,8 @@ class EGCN2(nn.Module):
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
         # self.lin4 = torch.nn.Linear(h_feats, h_feats)
-        self.lin5 = torch.nn.Linear(h_feats, num_classes)
+        self.linh = torch.nn.Linear(h_feats, num_classes)
+        self.linx = torch.nn.Linear(h_feats, num_classes)
         # self.device = device
     
     def forward(self, g, in_feat, coord_feat, edge_feat=None):
@@ -302,9 +303,11 @@ class EGCN2(nn.Module):
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
-        out = torch.cat([h, x], dim=1)
+        h = self.linh(h)
+        # x = self.linx(x)
+        # out = torch.cat([h, x], dim=1)
 
-        return out
+        return h
     
 class EGCN(nn.Module):
     r"""Equivariant Graph Convolutional Layer from `E(n) Equivariant Graph
