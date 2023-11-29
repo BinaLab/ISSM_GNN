@@ -346,8 +346,9 @@ def main():
     elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, 128)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        # model = EGNNConv(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
-        model = EGNNConv(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+    elif args.model_type == "egcn2":
+        model = EGNN2(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
@@ -397,7 +398,7 @@ def main():
                 labels = bg.ndata['label'][:, [0,1,3]]
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
-                # labels = torch.cat([labels, coord_feat], dim=1)
+                labels = torch.cat([labels, coord_feat], dim=1)
             else:
                 pred = model(bg, feats)
 
@@ -425,7 +426,7 @@ def main():
             with torch.no_grad():
                 if args.model_type == "egcn":
                     pred = model(bg, feats, coord_feat, edge_feat)
-                    # labels = torch.cat([labels, coord_feat], dim=1)
+                    labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
@@ -478,7 +479,7 @@ def main():
             with torch.no_grad():
                 if args.model_type == "egcn":
                     pred = model(bg, feats, coord_feat, edge_feat)
-                    # labels = torch.cat([labels, coord_feat], dim=1)
+                    labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)
                 y_pred[k] = pred[:, :out_channels].to('cpu')
