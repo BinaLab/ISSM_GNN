@@ -514,7 +514,7 @@ def main():
                 pred = model(data)
                 y_pred[k] = pred[0, :, :out_channels].to('cpu')
                 y_true[k] = target[0, :, :out_channels].to('cpu')
-                x_inputs[k] = test_graphs[k].ndata['feat'].to('cpu')
+                x_inputs[k] = test_graphs[k].ndata['feat'][:, :-1].to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred]
 
