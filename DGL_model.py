@@ -287,11 +287,16 @@ class EGCN2(nn.Module):
         # self.device = device
     
     def forward(self, g, in_feat, coord_feat, edge_feat=None):
-        h, x = self.activation(self.conv1(g, in_feat, coord_feat, edge_feat))
-        h, x = self.activation(self.conv2(g, h, x, edge_feat))
-        h, x = self.activation(self.conv3(g, h, x, edge_feat))
-        h, x = self.activation(self.conv4(g, h, x, edge_feat))
-        h, x = self.activation(self.conv5(g, h, x, edge_feat))
+        h, x = self.conv1(g, in_feat, coord_feat, edge_feat)
+        h = self.activation(h); x = self.activation(x);
+        h, x = self.conv2(g, h, x, edge_feat)
+        h = self.activation(h); x = self.activation(x);
+        h, x = self.conv3(g, h, x, edge_feat)
+        h = self.activation(h); x = self.activation(x);
+        h, x = self.conv4(g, h, x, edge_feat)
+        h = self.activation(h); x = self.activation(x);
+        h, x = self.conv5(g, h, x, edge_feat)
+        h = self.activation(h); x = self.activation(x);
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
