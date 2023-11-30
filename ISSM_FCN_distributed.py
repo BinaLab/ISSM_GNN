@@ -226,6 +226,7 @@ class FCN_Dataset(Dataset):
         cnn_input = torch.tensor(self.input[n], dtype=torch.float32)
         cnn_input[torch.isnan(cnn_input)] = 0        
         cnn_output = torch.tensor(self.output[n], dtype=torch.float32)
+        cnn_output[torch.isnan(cnn_output)] = 0        
         # cnn_output = torch.transpose(cnn_output, 0, 1)
                         
         return (cnn_input, cnn_output)
@@ -408,7 +409,7 @@ def main():
     
     # Sampling index for FCN (Convert grid into points) ======================================================
     xy = train_graphs[0].ndata['feat'][:, 0:2]
-    sampling_idx = torch.zeros(xy.shape, dtype=torch.int)
+    sampling = torch.zeros(xy.shape, dtype=torch.int)
     xy_grid = torch.tensor(train_grid_input[0, 0:2], dtype=torch.float32)
     xy_grid[torch.isnan(xy_grid)] = -1
 
