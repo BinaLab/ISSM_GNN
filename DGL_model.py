@@ -127,7 +127,7 @@ class FCN(nn.Module):
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
-        x = self.activation(self.conv5(x))
+        x = self.conv5(x)
         
         # out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
         # for i in range(0, n_nodes):
