@@ -416,8 +416,8 @@ def main():
     for i in range(0, xy.shape[0]):
         distance = (xy_grid[0]-xy[i,0])**2 + (xy_grid[1]-xy[i,1])**2
         k = torch.where(distance == torch.min(distance))
-        sampling_idx[i, 0] = k[0].item()
-        sampling_idx[i, 1] = k[1].item()
+        sampling[i, 0] = k[0].item()
+        sampling[i, 1] = k[1].item()
     # ==============================================================================
     
     if args.model_type == "cnn":
@@ -462,7 +462,7 @@ def main():
             elif out_channels == 3:
                 target = target[:, [0,1,3], :, :].to(device)
             
-            pred = model(data, sampling_idx)
+            pred = model(data, sampling)
 
             loss = criterion(pred*100, target*100)
             train_loss += loss.cpu().item()
@@ -481,7 +481,7 @@ def main():
                 target = target.to(device)
             elif out_channels == 3:
                 target = target[:, [0,1,3], :, :].to(device)
-            pred = model(data, sampling_idx)
+            pred = model(data, sampling)
             loss = criterion(pred*100, target*100)
             val_loss += loss.cpu().item()
             val_count += 1
@@ -528,7 +528,7 @@ def main():
             years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
 
             with torch.no_grad():
-                pred = model(data, sampling_idx)
+                pred = model(data, sampling)
                 for n in range(0, n_nodes):
                     y_pred[k] = pred[:, :out_channels, sampling[n][0], sampling[n][1]]
                 # y_pred[k] = pred[0, :, :out_channels].to('cpu')
