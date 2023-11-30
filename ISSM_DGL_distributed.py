@@ -434,6 +434,7 @@ def main():
                 elif args.model_type == "egcn2":
                     pred = model(bg, feats, coord_feat, edge_feat)
                     labels = torch.cat([labels, coord_feat], dim=1)
+                    
                 else:
                     pred = model(bg, feats)
             loss = criterion(pred*100, labels*100)
