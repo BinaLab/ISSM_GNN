@@ -8,6 +8,20 @@ from dgl.nn.pytorch import GINConv, SumPooling
 from dgl.nn import DenseGraphConv, GraphConv, GATConv, SAGEConv, DenseSAGEConv, ChebConv, DenseChebConv, EGNNConv
 from dgl import function as fn
 
+class single_loss(nn.Module):
+    def __init__(self, landmask):
+        super(single_loss, self).__init__();
+        self.landmask = landmask
+
+    def forward(self, obs, prd):
+        n_outputs = obs.size()[1]
+        err_sum = 0
+        for i in range(0, n_outputs):
+            err = torch.square(obs[:, i, :, :] - prd[:, i, :, :])
+            err = torch.mean(err, dim=0)[self.landmask == 0]
+            err_sum += torch.mean(err)
+        return err_sum
+
 class physics_loss(nn.Module):
     def __init__(self, landmask):
         super(physics_loss, self).__init__();

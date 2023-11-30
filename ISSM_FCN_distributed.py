@@ -384,6 +384,7 @@ def main():
     val_grid_output = grid_output[train_index == 1]
     test_grid_input = grid_input[train_index == 2]
     test_grid_output = grid_output[train_index == 2]
+    mask = torch.isnan(torch.tensor(train_grid_input[0, 0]))
     
     train_dataset = FCN_Dataset(train_grid_input, train_grid_output)
     val_dataset = FCN_Dataset(val_grid_input, val_grid_output)
@@ -408,7 +409,7 @@ def main():
     # Sampling index for FCN (Convert grid into points) ======================================================
     xy = train_graphs[0].ndata['feat'][:, 0:2]
     sampling_idx = torch.zeros(xy.shape, dtype=torch.int)
-    xy_grid = torch.tensor(train_grid[0, 0:2], dtype=torch.float32)
+    xy_grid = torch.tensor(train_grid_input[0, 0:2], dtype=torch.float32)
     xy_grid[torch.isnan(xy_grid)] = -1
 
     for i in range(0, xy.shape[0]):
@@ -433,7 +434,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = single_loss(mask) #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
