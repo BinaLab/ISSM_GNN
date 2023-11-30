@@ -532,7 +532,7 @@ def main():
                 for n in range(0, n_nodes):
                     y_pred[k] = pred[:, :out_channels, sampling[n][0], sampling[n][1]].cpu()
                 # y_pred[k] = pred[0, :, :out_channels].to('cpu')
-                y_true[k] = target[0, :, :out_channels].to('cpu')
+                y_true[k] = test_graphs[k].ndata['label'][:, :out_channels].to('cpu')
                 x_inputs[k] = test_graphs[k].ndata['feat'][:, :-1].to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred]
