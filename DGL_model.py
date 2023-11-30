@@ -116,7 +116,7 @@ class FCN(nn.Module):
         x = self.activation(self.conv5(x))
         
         for i in range(0, n_nodes):
-            out[:, i, :] = x[:, :, sampling[i][1], sampling[i][1]]
+            out[:, i, :] = x[:, :, sampling[i][0], sampling[i][1]]
         
         return out
         
