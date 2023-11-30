@@ -122,17 +122,18 @@ class FCN(nn.Module):
     def forward(self, x, sampling):
         n_nodes = sampling.shape[0]
         n_samples = x.shape[0]
-        out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
+        
         x = self.activation(self.conv1(x))
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
         x = self.activation(self.conv5(x))
         
-#         for i in range(0, n_nodes):
-#             out[:, i, :] = x[:, :, sampling[i][0], sampling[i][1]]
+        # out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
+        # for i in range(0, n_nodes):
+        #     out[:, i, :] = x[:, :, sampling[i][0], sampling[i][1]]
         
-        return out
+        return x
         
 ## Graph Isomorphism Network (GIN) ========================
 class GIN(nn.Module):
