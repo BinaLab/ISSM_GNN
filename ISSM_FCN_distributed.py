@@ -385,9 +385,9 @@ def main():
     test_grid_input = grid_input[train_index == 2]
     test_grid_output = grid_output[train_index == 2]
     
-    train_dataset = CNN_Dataset(train_grid_input, train_grid_output)
-    val_dataset = CNN_Dataset(val_grid_input, val_grid_output)
-    test_dataset = CNN_Dataset(test_grid_input, test_grid_output)
+    train_dataset = FCN_Dataset(train_grid_input, train_grid_output)
+    val_dataset = FCN_Dataset(val_grid_input, val_grid_output)
+    test_dataset = FCN_Dataset(test_grid_input, test_grid_output)
     
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
