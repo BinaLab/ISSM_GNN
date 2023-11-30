@@ -74,7 +74,7 @@ class CNN(nn.Module):
         self.fc1 = nn.Linear(in_features=int(n_filters*(nrow//(2**5))*(ncol//(2**5))), out_features=n_outputs * n_nodes)
 
 
-    def forward(self, x):
+    def forward(self, x, sampling):
         
         x = self.activation(self.conv1(x))
         # print(x.shape)
@@ -91,6 +91,34 @@ class CNN(nn.Module):
         x = x.reshape(-1, self.n_nodes, self.n_outputs)
         
         return x
+    
+class FCN(nn.Module):
+    def __init__(self, n_inputs, n_outputs, n_filters=128, kernel = 3):
+        super().__init__()
+        self.activation = nn.Tanh()
+        self.n_outputs = n_outputs
+        
+        self.conv1 = nn.Conv2d(n_inputs, n_filters, kernel, padding = "same")
+        self.conv2 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")       
+        self.conv3 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
+        self.conv4 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
+        self.conv5 = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
+        
+        
+    def forward(self, x, sampling):
+        n_nodes = sampling.shape[0]
+        n_samples = x.shape[0]
+        out = torch.zeros([n_samples, n_nodes, self.n_outputs])
+        x = self.activation(self.conv1(x))
+        x = self.activation(self.conv2(x))
+        x = self.activation(self.conv3(x))
+        x = self.activation(self.conv4(x))
+        x = self.activation(self.conv5(x))
+        
+        for i in range(0, n_nodes):
+            out[:, i, :] = x[:, :, sampling_idx[i][1], sampling_idx[i][1]]
+        
+        return out
         
 ## Graph Isomorphism Network (GIN) ========================
 class GIN(nn.Module):

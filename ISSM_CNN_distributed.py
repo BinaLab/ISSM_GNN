@@ -403,10 +403,23 @@ def main():
         print(f"## Train: {len(train_dataset)}; Val: {len(val_dataset)}; Test: {len(test_dataset)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
-    if args.model_type != "cnn":
-        args.moel_type = "cnn"
-        
-    model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # Graph convolutional network
+    # Sampling index for FCN (Convert grid into points) ======================================================
+    xy = train_graphs[0].ndata['feat'][:, 0:2]
+    sampling_idx = torch.zeros(xy.shape, dtype=torch.int)
+    xy_grid = torch.tensor(train_grid[0, 0:2], dtype=torch.float32)
+    xy_grid[torch.isnan(xy_grid)] = -1
+
+    for i in range(0, xy.shape[0]):
+        distance = (xy_grid[0]-xy[i,0])**2 + (xy_grid[1]-xy[i,1])**2
+        k = torch.where(distance == torch.min(distance))
+        sampling_idx[i, 0] = k[0].item()
+        sampling_idx[i, 1] = k[1].item()
+    # ==============================================================================
+    
+    if args.model_type == "cnn":
+        model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # convolutional network
+    elif args.model_type == "fcn":
+        model = FCN(in_channels, out_channels, 128)
 
     model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
@@ -445,7 +458,7 @@ def main():
             elif out_channels == 3:
                 target = target[:, :, [0,1,3]].to(device)
             
-            pred = model(data)
+            pred = model(data, sampling_idx)
 
             loss = criterion(pred*100, target*100)
             train_loss += loss.cpu().item()
@@ -464,7 +477,7 @@ def main():
                 target = target.to(device)
             elif out_channels == 3:
                 target = target[:, :, [0,1,3]].to(device)
-            pred = model(data)
+            pred = model(data, sampling_idx)
             loss = criterion(pred*100, target*100)
             val_loss += loss.cpu().item()
             val_count += 1
@@ -511,7 +524,7 @@ def main():
             years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
 
             with torch.no_grad():
-                pred = model(data)
+                pred = model(data, sampling_idx)
                 y_pred[k] = pred[0, :, :out_channels].to('cpu')
                 y_true[k] = target[0, :, :out_channels].to('cpu')
                 x_inputs[k] = test_graphs[k].ndata['feat'][:, :-1].to('cpu')
