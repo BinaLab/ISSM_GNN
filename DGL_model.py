@@ -108,7 +108,7 @@ class FCN(nn.Module):
     def forward(self, x, sampling):
         n_nodes = sampling.shape[0]
         n_samples = x.shape[0]
-        out = torch.zeros([n_samples, n_nodes, self.n_outputs])
+        out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
         x = self.activation(self.conv1(x))
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
@@ -116,7 +116,7 @@ class FCN(nn.Module):
         x = self.activation(self.conv5(x))
         
         for i in range(0, n_nodes):
-            out[:, i, :] = x[:, :, sampling_idx[i][1], sampling_idx[i][1]]
+            out[:, i, :] = x[:, :, sampling[i][1], sampling[i][1]]
         
         return out
         
