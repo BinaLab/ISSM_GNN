@@ -462,6 +462,7 @@ def main():
                 target = target[:, [0,1,3], :, :].to(device)
             
             pred = model(data, sampling_idx)
+            print(target.shape, pred.shape)
 
             loss = criterion(pred*100, target*100)
             train_loss += loss.cpu().item()
