@@ -531,9 +531,8 @@ def main():
             with torch.no_grad():
                 pred = model(data, sampling)
                 for n in range(0, n_nodes):
-                    y_pred[k] = pred[:, :out_channels, sampling[n][0], sampling[n][1]].cpu()
+                    y_pred[k, n, :] = pred[:, :out_channels, sampling[n][0], sampling[n][1]].cpu()
                 # y_pred[k] = pred[0, :, :out_channels].to('cpu')
-                print(np.nanmean(y_pred[k][0]), np.nanmean(y_pred[k][1]), np.nanmean(y_pred[k][2]))
                 y_true[k] = test_graphs[k].ndata['label'][:, :out_channels].to('cpu')
                 x_inputs[k] = test_graphs[k].ndata['feat'][:, :-1].to('cpu')
 
