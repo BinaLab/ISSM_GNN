@@ -503,6 +503,7 @@ def main():
         
     if args.local_rank == 0:
         ##### TEST ########################
+        print(sampling)
         rates = np.zeros(len(test_dataset))
         years = np.zeros(len(test_dataset))
 
