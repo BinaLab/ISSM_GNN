@@ -437,7 +437,7 @@ def main():
     
     criterion = single_loss(mask) #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
-    scheduler = ExponentialLR(optimizer, gamma=0.99)
+    scheduler = ExponentialLR(optimizer, gamma=0.98)
     
     total_params = sum(p.numel() for p in model.parameters())
     if args.local_rank == 0:
