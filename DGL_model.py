@@ -107,7 +107,7 @@ class CNN(nn.Module):
         return x
     
 class FCN(nn.Module):
-    def __init__(self, n_inputs, n_outputs, n_filters=128, kernel = 5):
+    def __init__(self, n_inputs, n_outputs, n_filters=128, kernel = 3):
         super().__init__()
         self.activation = nn.Tanh()
         self.n_outputs = n_outputs
