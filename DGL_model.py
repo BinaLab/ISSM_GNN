@@ -109,14 +109,15 @@ class CNN(nn.Module):
 class FCN(nn.Module):
     def __init__(self, n_inputs, n_outputs, n_filters=128, kernel = 3):
         super().__init__()
-        self.activation = nn.Tanh()
+        self.activation = nn.LeakyReLU()
         self.n_outputs = n_outputs
         
         self.conv1 = nn.Conv2d(n_inputs, n_filters, kernel, padding = "same")
         self.conv2 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")       
         self.conv3 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
         self.conv4 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
-        self.conv5 = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
+        self.conv5 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
+        self.outconv = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
         
         
     def forward(self, x, sampling):
@@ -127,7 +128,8 @@ class FCN(nn.Module):
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
-        x = self.conv5(x)
+        x = self.activation(self.conv5(x))
+        x = self.outconv(x)
         
         # out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
         # for i in range(0, n_nodes):
