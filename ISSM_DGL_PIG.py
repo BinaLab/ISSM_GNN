@@ -334,7 +334,7 @@ def main():
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     n_nodes = val_set[0].num_nodes()
     in_channels = val_set[0].ndata['feat'].shape[1] #-1
-    if args.out_ch == 3:
+    if args.out_ch > 0:
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
