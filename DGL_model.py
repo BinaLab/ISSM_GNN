@@ -320,9 +320,9 @@ class EGCN2(nn.Module):
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = EGNNConv(in_feats, h_feats, h_feats, edge_feat_size)
         self.conv2 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv3 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv4 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv5 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv3 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv4 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv5 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
         # self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
@@ -337,12 +337,12 @@ class EGCN2(nn.Module):
         h = self.activation(h); x = self.activation(x);
         h, x = self.conv2(g, h, x, edge_feat)
         h = self.activation(h); x = self.activation(x);
-        h, x = self.conv3(g, h, x, edge_feat)
-        h = self.activation(h); x = self.activation(x);
-        h, x = self.conv4(g, h, x, edge_feat)
-        h = self.activation(h); x = self.activation(x);
-        h, x = self.conv5(g, h, x, edge_feat)
-        h = self.activation(h); x = self.activation(x);
+        # h, x = self.conv3(g, h, x, edge_feat)
+        # h = self.activation(h); x = self.activation(x);
+        # h, x = self.conv4(g, h, x, edge_feat)
+        # h = self.activation(h); x = self.activation(x);
+        # h, x = self.conv5(g, h, x, edge_feat)
+        # h = self.activation(h); x = self.activation(x);
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
