@@ -401,7 +401,7 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                if version == "v3:
+                if version == "v3":
                     labels = bg.ndata['label'][:, [0,1,4]] # version 3
                 else:
                     labels = bg.ndata['label'][:, [0,1,3]] # version 2
@@ -435,7 +435,7 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                if version == "v3:
+                if version == "v3":
                     labels = bg.ndata['label'][:, [0,1,4]] # version 3
                 else:
                     labels = bg.ndata['label'][:, [0,1,3]] # version 2
@@ -496,7 +496,7 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                if version == "v3:
+                if version == "v3":
                     labels = bg.ndata['label'][:, [0,1,4]] # version 3
                 else:
                     labels = bg.ndata['label'][:, [0,1,3]] # version 2
