@@ -527,6 +527,10 @@ def main():
             pickle.dump(test_save, file)
             
         print("##### Validation done! #####")
+        
+    del train_set, val_set, test_set, train_loader, val_loader, model, test_save, pred, labels, x_inputs, y_true, y_pred, feats, history
+    
+    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     dist.destroy_process_group()
 
 ###############################################################################
