@@ -106,12 +106,6 @@ def parse_args() -> argparse.Namespace:
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
-        '--version',
-        type=str,
-        default="v3",
-        help='Version of the PIG dataset (devault: 3)',
-    )
-    parser.add_argument(
         '--epochs',
         type=int,
         default=100,
@@ -308,7 +302,6 @@ def main():
     #     torch.distributed.barrier()
     
     model_dir = args.model_dir
-    version = args.version
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
@@ -324,9 +317,9 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
-    train_set = ISSM_train_dataset(f"../data/DGL_train_dataset_{version}_m{mesh:05d}.bin")
-    val_set = ISSM_val_dataset(f"../data/DGL_val_dataset_{version}_m{mesh:05d}.bin")
-    test_set = ISSM_test_dataset(f"../data/DGL_test_dataset_{version}_m{mesh:05d}.bin")
+    train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
+    val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
+    test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
@@ -364,7 +357,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{version}_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
+    model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
