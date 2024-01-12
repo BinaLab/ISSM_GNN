@@ -106,6 +106,12 @@ def parse_args() -> argparse.Namespace:
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
+        '--version',
+        type=str,
+        default="v3",
+        help='Version of the PIG dataset (devault: 3)',
+    )
+    parser.add_argument(
         '--epochs',
         type=int,
         default=100,
@@ -301,7 +307,8 @@ def main():
     #         )
     #     torch.distributed.barrier()
     
-    model_dir = args.model_dir   
+    model_dir = args.model_dir
+    version = args.version
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
@@ -317,16 +324,16 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
-    train_set = ISSM_train_dataset(f"../data/DGL_train_dataset_g{mesh}.bin")
-    val_set = ISSM_val_dataset(f"../data/DGL_val_dataset_g{mesh}.bin")
-    test_set = ISSM_test_dataset(f"../data/DGL_test_dataset_g{mesh}.bin")
+    train_set = ISSM_train_dataset(f"../data/DGL_train_dataset_{version}_m{mesh:05d}.bin")
+    val_set = ISSM_val_dataset(f"../data/DGL_val_dataset_{version}_m{mesh:05d}.bin")
+    test_set = ISSM_test_dataset(f"../data/DGL_test_dataset_{version}_m{mesh:05d}.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     n_nodes = val_set[0].num_nodes()
-    in_channels = val_set[0].ndata['feat'].shape[1]-1
+    in_channels = val_set[0].ndata['feat'].shape[1] #-1
     if args.out_ch == 3:
         out_channels = args.out_ch
     else:
@@ -357,7 +364,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
+    model_name = f"torch_dgl_{version}_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
@@ -390,12 +397,14 @@ def main():
         train_count = 0
         for bg in train_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :-1]
+            feats = bg.ndata['feat'][:, :]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels > 3:
-                labels = bg.ndata['label']
-            elif out_channels == 3:
+            if out_channels == 3:
+                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+            elif out_channels == 5:
+                labels = bg.ndata['label'][:, [0,1,3,4,5]]
+            else:
                 labels = bg.ndata['label'][:, [0,1,3]]
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
@@ -419,12 +428,14 @@ def main():
         val_count = 0
         for bg in val_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :-1]
+            feats = bg.ndata['feat'][:, :]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels > 3:
-                labels = bg.ndata['label']
-            elif out_channels == 3:
+            if out_channels == 3:
+                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+            elif out_channels == 5:
+                labels = bg.ndata['label'][:, [0,1,3,4,5]]
+            else:
                 labels = bg.ndata['label'][:, [0,1,3]]
             
             with torch.no_grad():
@@ -463,6 +474,8 @@ def main():
 
         if out_channels == 6:
             scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
+        if out_channels == 5:
+            scaling = np.array([5000, 5000, 4000, 4000, 100])
         elif out_channels == 3:
             scaling = np.array([5000, 5000, 4000])
             
@@ -473,12 +486,14 @@ def main():
 
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :-1]
+            feats = bg.ndata['feat'][:, :]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels > 3:
-                labels = bg.ndata['label']
-            elif out_channels == 3:
+            if out_channels == 3:
+                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+            elif out_channels == 5:
+                labels = bg.ndata['label'][:, [0,1,3,4,5]]
+            else:
                 labels = bg.ndata['label'][:, [0,1,3]]
                 
             rates[k] = feats[0, 2]
