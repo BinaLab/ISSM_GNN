@@ -319,7 +319,7 @@ def main():
     mesh = args.mesh
     train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
     val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
-    test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
+    # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
@@ -327,7 +327,7 @@ def main():
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
     n_nodes = val_set[0].num_nodes()
     in_channels = val_set[0].ndata['feat'].shape[1] #-1
-    if args.out_ch == 3:
+    if args.out_ch > 0:
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
@@ -357,7 +357,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_{args.model_type}_{n_nodes}_lr{lr}_{phy}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
@@ -462,8 +462,8 @@ def main():
         
     if args.local_rank == 0:
         ##### TEST ########################
-        rates = np.zeros(len(test_set))
-        years = np.zeros(len(test_set))
+        rates = np.zeros(len(val_set))
+        years = np.zeros(len(val_set))
 
         if out_channels == 6:
             scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
@@ -472,12 +472,12 @@ def main():
         elif out_channels == 3:
             scaling = np.array([5000, 5000, 4000])
             
-        y_pred = np.zeros([len(test_set), n_nodes, out_channels])
-        y_true = np.zeros([len(test_set), n_nodes, out_channels])
+        y_pred = np.zeros([len(val_set), n_nodes, out_channels])
+        y_true = np.zeros([len(val_set), n_nodes, out_channels])
 
-        x_inputs = np.zeros([len(test_set), n_nodes, in_channels])
+        x_inputs = np.zeros([len(val_set), n_nodes, in_channels])
 
-        for k, bg in enumerate(test_set):
+        for k, bg in enumerate(val_set):
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, :]
             coord_feat = bg.ndata['feat'][:, :2]
