@@ -334,7 +334,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
-        print(f"## Train: {len(train_set)}; Val: {len(val_set)}; Test: {len(test_set)}")
+        print(f"## Train: {len(train_set)}; Val: {len(val_set)}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
