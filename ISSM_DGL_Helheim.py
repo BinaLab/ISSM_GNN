@@ -398,7 +398,7 @@ def main():
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
-                labels = bg.ndata['label'][:, [0,1,3]]
+                labels = bg.ndata['label'][:, :]
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
                 labels = torch.cat([labels, coord_feat], dim=1)
@@ -429,7 +429,7 @@ def main():
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
-                labels = bg.ndata['label'][:, [0,1,3]]
+                labels = bg.ndata['label'][:, :]
             
             with torch.no_grad():
                 if args.model_type == "egcn":
@@ -487,7 +487,7 @@ def main():
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
-                labels = bg.ndata['label'][:, [0,1,3]]
+                labels = bg.ndata['label'][:, :]
                 
             rates[k] = feats[0, 2]
             years[k] = feats[0, 3] * 20
