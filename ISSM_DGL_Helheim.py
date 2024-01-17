@@ -278,6 +278,10 @@ from torch.optim import Adam
 
 def main():
     
+    now = datetime.now()
+
+    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    print("Current Time =", current_time)
     
     world_size = int(os.environ['WORLD_SIZE'])
     args = parse_args()
