@@ -101,6 +101,12 @@ def parse_args() -> argparse.Namespace:
         help='filename of dataset',
     )
     parser.add_argument(
+        '--data',
+        type=str,
+        default='pkl',
+        help='type of dataset (pkl or mat)',
+    )
+    parser.add_argument(
         '--out-ch',
         type=int,
         default=5,
@@ -322,14 +328,16 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
-    train_files, val_files, test_files = generate_list()
-    train_set = GNN_Helheim_Dataset(train_files)
-    val_set = GNN_Helheim_Dataset(val_files)
-    # test_set = GNN_Helheim_Dataset(test_files)
     
-    # train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train_030.bin")
-    # val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val_030.bin")
-    # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
+    if args.data == "mat":
+        train_files, val_files, test_files = generate_list()
+        train_set = GNN_Helheim_Dataset(train_files)
+        val_set = GNN_Helheim_Dataset(val_files)
+        # test_set = GNN_Helheim_Dataset(test_files)
+    elif args.data == "pkl":
+        train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
+        val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
+        # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
