@@ -11,7 +11,8 @@ import dgl
 from dgl.data import DGLDataset
 from dgl import save_graphs, load_graphs
 import torch
-import glob, os, tqdm
+from tqdm import tqdm
+import glob, os
 
 ## Dataset for train ===================================
 class GNN_Helheim_Dataset(DGLDataset):
@@ -125,7 +126,7 @@ def generate_list():
     val_files = []
     test_files = []
 
-    for f in glob.glob(f'../data/Helheim_r*_030.mat'):
+    for f in sorted(glob.glob(f'../data/Helheim_r*_030.mat')):
         if f[-11:-8] == "075" or f[-11:-8] == "095" or f[-11:-8] == "115":
             val_files.append(f)
         elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
