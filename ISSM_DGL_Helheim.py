@@ -480,9 +480,9 @@ def main():
         years = np.zeros(len(val_set))
 
         if out_channels == 6:
-            scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
+            scaling = np.array([5000, 5000, 5000, 4000, 4000, 1])
         elif out_channels == 5:
-            scaling = np.array([5000, 5000, 4000, 4000, 100])
+            scaling = np.array([5000, 5000, 4000, 4000, 1])
         elif out_channels == 3:
             scaling = np.array([5000, 5000, 4000])
         elif out_channels == 2:
