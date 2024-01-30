@@ -324,7 +324,7 @@ def main():
     mesh = args.mesh
     train_files, val_files, test_files = generate_list()
     train_set = GNN_Helheim_Dataset(train_files)
-    val_set = GNN_Helheim_Dataset(train_files)
+    val_set = GNN_Helheim_Dataset(val_files)
     # test_set = GNN_Helheim_Dataset(test_files)
     
     # train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train_030.bin")

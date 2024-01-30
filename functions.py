@@ -24,7 +24,7 @@ class GNN_Helheim_Dataset(DGLDataset):
         files = self.url
         
         first = True
-
+        "READING GRAPH DATA..."
         for filename in tqdm(files[:]):
             rate = int(filename[-11:-8])*10
             test = sio.loadmat(filename)
@@ -133,9 +133,5 @@ def generate_list():
             test_files.append(f)
         else:
             train_files.append(f)
-
-    print(train_files)
-    print(val_files)
-    print(test_files)
     
     return train_files, val_files, test_files
