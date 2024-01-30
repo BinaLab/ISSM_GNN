@@ -56,22 +56,6 @@ def parse_args() -> argparse.Namespace:
         help='Model directory',
     )
     parser.add_argument(
-        '--log-dir',
-        default='./logs/torch_unet',
-        help='TensorBoard/checkpoint directory',
-    )
-    parser.add_argument(
-        '--checkpoint-format',
-        default='checkpoint_unet_{epoch}.pth.tar',
-        help='checkpoint file format',
-    )
-    parser.add_argument(
-        '--checkpoint-freq',
-        type=int,
-        default=10,
-        help='epochs between checkpoints',
-    )
-    parser.add_argument(
         '--no-cuda',
         # action='store_true',
         default=False,
@@ -136,8 +120,7 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=10000,
         help='meshsize of the finite element of ISSM model (select 5000, 10000, or 20000)',
-    )
-    
+    )    
     parser.add_argument(
         '--backend',
         type=str,

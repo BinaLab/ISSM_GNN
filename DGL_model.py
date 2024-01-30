@@ -164,8 +164,7 @@ class GIN(nn.Module):
         return feats
 
 ## Multi-layer perceptron ===============================
-class MLP(nn.Module):
-    
+class MLP(nn.Module):    
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super(MLP, self).__init__()
         # torch.manual_seed(1234567)
@@ -175,8 +174,9 @@ class MLP(nn.Module):
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin6 = torch.nn.Linear(hidden_channels, ch_output)
+        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
+        # self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
+        # self.lin6 = torch.nn.Linear(hidden_channels, ch_output)
 
     def forward(self, g, in_feat):
         
@@ -184,8 +184,8 @@ class MLP(nn.Module):
         x = self.activation(self.lin2(x));
         x = self.activation(self.lin3(x));
         x = self.activation(self.lin4(x));
-        x = self.activation(self.lin5(x));
-        x = self.lin6(x);
+        x = self.lin5(x);
+        # x = self.lin6(x);
         
         return x
     
@@ -199,7 +199,7 @@ class GCN(nn.Module):
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
         self.conv5 = GraphConv(h_feats, h_feats)
-        # self.conv6 = GraphConv(h_feats, h_feats)
+        self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
@@ -213,7 +213,7 @@ class GCN(nn.Module):
         h = self.activation(self.conv3(g, h))
         h = self.activation(self.conv4(g, h))
         h = self.activation(self.conv5(g, h))
-        # h = self.activation(self.conv6(g, h))
+        h = self.activation(self.conv6(g, h))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
@@ -430,7 +430,7 @@ class EGCN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
-            nn.Linear(hidden_size, hidden_size)
+            nn.Linear(hidden_size, out_size)
         )
 
         # \phi_x
@@ -446,7 +446,7 @@ class EGCN(nn.Module):
             nn.Linear(hidden_size, 1, bias=False)
         )
         
-        self.linh = torch.nn.Linear(hidden_size, out_size)
+        # self.linh = torch.nn.Linear(hidden_size, out_size)
 
     def message(self, edges):
         """message function for EGNN"""
@@ -516,7 +516,7 @@ class EGCN(nn.Module):
             h = self.node_mlp(
                 torch.cat([node_feat, h_neigh], dim=-1)
             )
-            h = self.linh(h)
+            # h = self.linh(h)
             x = coord_feat + x_neigh
             out = torch.cat([h, x], dim=1)
 

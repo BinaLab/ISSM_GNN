@@ -27,6 +27,7 @@ from torch.utils.data.distributed import DistributedSampler
 # from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
+from functions import *
 
 import argparse
 import os    
@@ -321,8 +322,13 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
-    train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
-    val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
+    train_files, val_files, test_files = generate_list()
+    train_set = GNN_Helheim_Dataset(train_files)
+    val_set = GNN_Helheim_Dataset(train_files)
+    # test_set = GNN_Helheim_Dataset(test_files)
+    
+    # train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train_030.bin")
+    # val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val_030.bin")
     # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
@@ -475,10 +481,12 @@ def main():
 
         if out_channels == 6:
             scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
-        if out_channels == 5:
+        elif out_channels == 5:
             scaling = np.array([5000, 5000, 4000, 4000, 100])
         elif out_channels == 3:
             scaling = np.array([5000, 5000, 4000])
+        elif out_channels == 2:
+            scaling = np.array([5000, 4000])
             
         y_pred = np.zeros([len(val_set), n_nodes, out_channels])
         y_true = np.zeros([len(val_set), n_nodes, out_channels])
