@@ -11,7 +11,7 @@ import dgl
 from dgl.data import DGLDataset
 from dgl import save_graphs, load_graphs
 import torch
-import os
+import glob, os
 
 ## Dataset for train ===================================
 class GNN_Helheim_Dataset(DGLDataset):
