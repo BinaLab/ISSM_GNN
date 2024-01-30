@@ -103,7 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--data',
         type=str,
-        default='pkl',
+        default='bin',
         help='type of dataset (pkl or mat)',
     )
     parser.add_argument(
@@ -334,7 +334,7 @@ def main():
         train_set = GNN_Helheim_Dataset(train_files)
         val_set = GNN_Helheim_Dataset(val_files)
         # test_set = GNN_Helheim_Dataset(test_files)
-    elif args.data == "pkl":
+    elif args.data == "bin":
         train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
         val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
         # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
