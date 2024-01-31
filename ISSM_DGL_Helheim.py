@@ -338,11 +338,6 @@ def main():
         train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
         val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
         # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
-        
-    # Region filtering ============================================
-    test = sio.loadmat(train_files[0])
-    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
-    # =============================================================
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
@@ -354,6 +349,16 @@ def main():
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
+        
+    # Region filtering ============================================
+    test = sio.loadmat(train_files[0])
+    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
+    for i in range(0, batch_size):
+        if i == 0:
+            mask_batch = mask
+        else:
+            mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
+    # =============================================================
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
@@ -435,8 +440,8 @@ def main():
                 pred = model(bg, feats)
             
             # regional mask ----------------------------
-            pred = pred[:, mask, :]
-            labels = labels[:, mask, :]
+            pred = pred[mask_batch, :]
+            labels = labels[mask_batch, :]
             ## -----------------------------------------
             
             loss = criterion(pred*100, labels*100)
@@ -475,8 +480,8 @@ def main():
                     pred = model(bg, feats)
                     
             # regional mask ----------------------------
-            pred = pred[:, mask, :]
-            labels = labels[:, mask, :]
+            pred = pred[mask_batch, :]
+            labels = labels[mask_batch, :]
             ## -----------------------------------------
 
             loss = criterion(pred*100, labels*100)
