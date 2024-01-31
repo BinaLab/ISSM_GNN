@@ -141,8 +141,6 @@ def generate_list():
                 test_files.append(f)
             # elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
             #     test_files.append(f)
-            else:
-                train_files.append(f)
     
     return train_files, val_files, test_files
 
