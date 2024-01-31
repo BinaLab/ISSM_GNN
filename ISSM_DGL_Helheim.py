@@ -234,7 +234,7 @@ from dgl.dataloading import GraphDataLoader
 def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[0.5, 0.5, 0.0],
+                                                 frac_list=[0.6, 0.39, 0.01],
                                                  shuffle=True,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
@@ -362,7 +362,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
-        print(f"## Train: {len(train_loader)}; Val: {len(val_loader)}; Test: {len(val_set)}")
+        print(f"## Train: {len(train_loader)*batch_size}; Val: {len(val_loader)*batch_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
@@ -395,7 +395,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = regional_loss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.99)
     
@@ -511,10 +511,10 @@ def main():
         elif out_channels == 2:
             scaling = np.array([5000, 4000])
             
-        y_pred = np.zeros([len(val_set), len(mask), out_channels])
-        y_true = np.zeros([len(val_set), len(mask), out_channels])
+        y_pred = np.zeros([len(val_set), n_nodes, out_channels])
+        y_true = np.zeros([len(val_set), n_nodes, out_channels])
 
-        x_inputs = np.zeros([len(val_set), len(mask), in_channels])
+        x_inputs = np.zeros([len(val_set), n_nodes, in_channels])
 
         for k, bg in enumerate(val_set):
             bg = bg.to(device)
