@@ -356,7 +356,7 @@ def main():
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
-        model = GCN(in_channels, out_channels, 128)  # Graph convolutional network    
+        model = GCN(in_channels, out_channels, 256)  # Graph convolutional network    
     elif args.model_type == "gin":
         model = GIN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "mlp":

@@ -91,7 +91,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
                 inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
                 inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
-                # inputs[:, 11] = torch.tensor(f[0, :]/3000) # Initial floating part
+                # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                 inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
 
                 ## OUTPUTS ===============================================
@@ -100,7 +100,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Initial surface elevation
                 outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Initial base elevation
                 outputs[:, 4] = torch.tensor(H[t, :]/5000) # Initial ice thickness
-                # outputs[:, 5] = torch.tensor(f[t, :]/3000) # Initial floating part 
+                # outputs[:, 5] = torch.tensor(f[t, :]/5000) # Initial floating part 
                 outputs[:, 5] = torch.tensor(ice[t, :]) # Initial floating part 
 
                 # for i in range(0, n_sample):        
@@ -129,11 +129,12 @@ def generate_list():
     test_files = []
 
     for f in sorted(glob.glob(f'../data/Helheim_r*_030.mat')):
-        if int(f[-11:-8]) <= 100:
+        if int(f[-11:-8]) <= 100 and f[-11:-8] != "080":
             if f[-11:-8] == "075" or f[-11:-8] == "095" or f[-11:-8] == "115":
                 val_files.append(f)
-            elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
                 test_files.append(f)
+            # elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
+            #     test_files.append(f)
             else:
                 train_files.append(f)
     
