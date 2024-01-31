@@ -429,7 +429,7 @@ def main():
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
                 labels = bg.ndata['label'][:, :]
-            print(labels.shape)
+
             if args.model_type == "egcn":
                 pred = model(bg, feats, coord_feat, edge_feat)
                 labels = torch.cat([labels, coord_feat], dim=1)
