@@ -362,7 +362,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
-        print(f"## Train: {len(train_set)}; Val: {len(val_set)}; Test: {len(val_set)}")
+        print(f"## Train: {len(train_loader)}; Val: {len(val_loader)}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
@@ -395,7 +395,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = regional_loss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.99)
     
