@@ -26,7 +26,7 @@ class GNN_Helheim_Dataset(DGLDataset):
         first = True
         # "READING GRAPH DATA..."
         for filename in tqdm(files[:]):
-            rate = int(filename[-11:-8])*10
+            rate = int(filename[-11:-8])
             test = sio.loadmat(filename)
 
             xc = test['S'][0][0][0]
@@ -81,7 +81,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 ## INPUTS ================================================
                 inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                 inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
-                inputs[:, 2] = torch.tensor(rate*0.001) # Melting rate
+                inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Melting rate (50-150)
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
                 inputs[:, 4] = torch.tensor(smb[t, :]/5) # Surface mass balance
                 inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
