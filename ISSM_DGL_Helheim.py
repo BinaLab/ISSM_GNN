@@ -507,10 +507,10 @@ def main():
         elif out_channels == 2:
             scaling = np.array([5000, 4000])
             
-        y_pred = np.zeros([len(val_set), n_nodes, out_channels])
-        y_true = np.zeros([len(val_set), n_nodes, out_channels])
+        y_pred = np.zeros([len(val_set), len(mask), out_channels])
+        y_true = np.zeros([len(val_set), len(mask), out_channels])
 
-        x_inputs = np.zeros([len(val_set), n_nodes, in_channels])
+        x_inputs = np.zeros([len(val_set), len(mask), in_channels])
 
         for k, bg in enumerate(val_set):
             bg = bg.to(device)
@@ -540,6 +540,7 @@ def main():
                     pred = model(bg, feats)
                     
                 # regional mask ----------------------------
+                feats = feats[mask, :]
                 pred = pred[mask, :]
                 labels = labels[mask, :]
                 ## -----------------------------------------
