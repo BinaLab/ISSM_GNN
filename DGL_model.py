@@ -35,6 +35,7 @@ class regional_loss(nn.Module):
             err = torch.square(obs[mask, :] - prd[mask, :])
             # err = torch.mean(err, dim=0)[self.landmask == 0]
             err_sum += torch.mean(err)
+            
         return err_sum
 
 class physics_loss(nn.Module):
@@ -208,7 +209,7 @@ class MLP(nn.Module):
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
-        self.activation = nn.Tanh() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
         self.conv2 = GraphConv(h_feats, h_feats)
         self.conv3 = GraphConv(h_feats, h_feats)

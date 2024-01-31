@@ -422,9 +422,11 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+                labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
+            elif out_channels == 4:
+                labels = bg.ndata['label'][:, [0,1,4,5]]
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
@@ -456,9 +458,11 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+                labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
+            elif out_channels == 4:
+                labels = bg.ndata['label'][:, [0,1,4,5]]
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
@@ -518,9 +522,11 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                labels = bg.ndata['label'][:, [0,1,3]] # version 2
+                labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
+            elif out_channels == 4:
+                labels = bg.ndata['label'][:, [0,1,4,5]]
             elif out_channels == 5:
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
