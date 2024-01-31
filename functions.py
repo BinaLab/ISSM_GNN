@@ -41,8 +41,8 @@ class GNN_Helheim_Dataset(DGLDataset):
             H = test['S'][0][0][9]
             f = test['S'][0][0][10]
             mask = test['S'][0][0][11]
-            ice = np.ones(mask.shape)
-            ice[mask > 0] = 0 # ice = 1; no-ice = 0
+            ice = np.zeros(mask.shape)
+            ice[mask > 0] = 1 # ice = 0; no-ice = 1
 
             n_year, n_sample = H.shape
 
@@ -83,15 +83,15 @@ class GNN_Helheim_Dataset(DGLDataset):
                 inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                 inputs[:, 2] = torch.tensor(rate*0.001) # Melting rate
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
-                inputs[:, 4] = torch.tensor(smb[t, :]) # Surface mass balance
+                inputs[:, 4] = torch.tensor(smb[t, :]/5) # Surface mass balance
                 inputs[:, 5] = torch.tensor(vx[0, :]/5000) # Initial Vx
                 inputs[:, 6] = torch.tensor(vy[0, :]/5000) # Initial Vx
                 inputs[:, 7] = torch.tensor(vel[0, :]/5000) # Initial Vx
                 inputs[:, 8] = torch.tensor(surface[0, :]/4000) # Initial surface elevation
                 inputs[:, 9] = torch.tensor(base[0, :]/4000) # Initial base elevation
                 inputs[:, 10] = torch.tensor(H[0, :]/4000) # Initial ice thickness
-                inputs[:, 11] = torch.tensor(f[0, :]/3000) # Initial floating part
-                # inputs[:, 11] = torch.tensor(mask[0, :]/150) # Initial ice mask
+                # inputs[:, 11] = torch.tensor(f[0, :]/3000) # Initial floating part
+                inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
 
                 ## OUTPUTS ===============================================
                 outputs[:, 0] = torch.tensor(vx[t, :]/5000) # Initial Vx
@@ -99,8 +99,8 @@ class GNN_Helheim_Dataset(DGLDataset):
                 outputs[:, 2] = torch.tensor(vel[t, :]/5000) # Initial surface elevation
                 outputs[:, 3] = torch.tensor(surface[t, :]/4000) # Initial base elevation
                 outputs[:, 4] = torch.tensor(H[t, :]/4000) # Initial ice thickness
-                outputs[:, 5] = torch.tensor(f[t, :]/3000) # Initial floating part 
-                # outputs[:, 5] = torch.tensor(mask[t, :]/150) # Initial floating part 
+                # outputs[:, 5] = torch.tensor(f[t, :]/3000) # Initial floating part 
+                outputs[:, 5] = torch.tensor(ice[t, :]) # Initial floating part 
 
                 # for i in range(0, n_sample):        
                 #     inputs[i, :] = torch.tensor([(xc[i, 0]-xc.min())/(xc.max()-xc.min()), (yc[i, 0]-yc.min())/(yc.max()-yc.min()), rate*0.001, t/n_year, smb[t,i],

@@ -462,8 +462,7 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)                    
                 else:
                     pred = model(bg, feats)
-                pred[pred[:,-1]<0, :] = 0
-                labels[labels[:,-1]<0, :] = 0
+
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
             val_count += 1
