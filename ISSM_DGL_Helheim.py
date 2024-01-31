@@ -238,7 +238,7 @@ def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
                                                  shuffle=True,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
-    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=shuffle)
+    val_loader = GraphDataLoader(val_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
     # test_loader = GraphDataLoader(test_set, batch_size=batch_size)
 
     return train_loader, val_loader #, test_loader
@@ -362,7 +362,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
-        print(f"## Train: {len(train_loader)*batch_size}; Val: {len(val_loader)*batch_size}; Test: {len(val_set)}")
+        print(f"## Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
