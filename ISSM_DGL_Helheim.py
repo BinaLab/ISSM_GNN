@@ -332,6 +332,7 @@ def main():
     
     if args.data == "mat":
         train_files, val_files, test_files = generate_list()
+        print(train_files)
         train_set = GNN_Helheim_Dataset(train_files)
         val_set = GNN_Helheim_Dataset(val_files)
         # test_set = GNN_Helheim_Dataset(test_files)
