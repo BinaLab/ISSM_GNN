@@ -29,10 +29,14 @@ class regional_loss(nn.Module):
 
     def forward(self, prd, obs):
         n_outputs = obs.size()[1]
-        mask = torch.where(obs[:, -1] > -0.1)[0]
+        region = torch.where(obs[:, -1] > -0.1)[0] # Regional filtering
+        ice_mask = torch.where((obs[:, -1] > -0.1) & (obs[:, -1] < 0))[0] # Ice mask (Negative: ice; Positive: no-ice)
         err_sum = 0
         for i in range(0, n_outputs):
-            err = torch.square(obs[mask, :] - prd[mask, :])
+            if i != n_outputs-1:
+                err = torch.square(obs[ice_mask, :] - prd[ice_mask, :])
+            elif i == n_outputs-1:
+                err = torch.square(obs[region, :] - prd[region, :])
             # err = torch.mean(err, dim=0)[self.landmask == 0]
             err_sum += torch.mean(err)
             
