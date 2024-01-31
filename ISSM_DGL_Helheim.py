@@ -286,12 +286,13 @@ from torch.optim import Adam
 def main():
     
     now = datetime.now()
+    args = parse_args()
 
     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
     print(f"Current Time = {current_time} (GPU {args.local_rank})")
     
     world_size = int(os.environ['WORLD_SIZE'])
-    args = parse_args()
+    
     seed = args.seed
     
     torch.distributed.init_process_group(
