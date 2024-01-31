@@ -540,8 +540,8 @@ def main():
                     pred = model(bg, feats)
                     
                 # regional mask ----------------------------
-                pred = pred[region, :]
-                labels = labels[region, :]
+                pred = pred[mask, :]
+                labels = labels[mask, :]
                 ## -----------------------------------------
                 
                 y_pred[k] = pred[:, :out_channels].to('cpu')
