@@ -352,12 +352,12 @@ def main():
         
     # Region filtering ============================================
     test = sio.loadmat(train_files[0])
-    region = np.where(test['S'][0][0][11][0] > -100000)[0]
+    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
     for i in range(0, batch_size):
         if i == 0:
-            region_batch = region
+            mask_batch = mask
         else:
-            region_batch = np.append(region_batch, region+i*region.shape[0])
+            mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
     # =============================================================
     
     if args.local_rank == 0:
@@ -395,7 +395,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = regional_loss(mask_batch) #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
@@ -439,11 +439,6 @@ def main():
             else:
                 pred = model(bg, feats)
             
-            # regional mask ----------------------------
-            pred = pred[region_batch, :]
-            labels = labels[region_batch, :]
-            ## -----------------------------------------
-            
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
@@ -478,11 +473,6 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)                    
                 else:
                     pred = model(bg, feats)
-                    
-            # regional mask ----------------------------
-            pred = pred[region_batch, :]
-            labels = labels[region_batch, :]
-            ## -----------------------------------------
 
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
