@@ -231,14 +231,14 @@ class ISSM_test_dataset(DGLDataset):
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
 
-def get_dataloaders(dataset, seed, batch_size=32):
+def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[0.8, 0.15, 0.05],
-                                                 shuffle=False,
+                                                 frac_list=[0.5, 0.5, 0.0],
+                                                 shuffle=True,
                                                  random_state=seed)
-    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
-    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
+    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
+    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=shuffle)
     # test_loader = GraphDataLoader(test_set, batch_size=batch_size)
 
     return train_loader, val_loader #, test_loader
@@ -339,10 +339,10 @@ def main():
         val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
         # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
-    train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
-    val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
+    # train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
+    # val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
     
-    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size)
+    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
     in_channels = val_set[0].ndata['feat'].shape[1] #-1
     if args.out_ch > 0:
@@ -395,7 +395,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.99)
     
@@ -546,9 +546,9 @@ def main():
                     pred = model(bg, feats)
                     
                 # regional mask ----------------------------
-                feats = feats[mask, :]
-                pred = pred[mask, :]
-                labels = labels[mask, :]
+                # feats = feats[mask, :]
+                # pred = pred[mask, :]
+                # labels = labels[mask, :]
                 ## -----------------------------------------
                 
                 y_pred[k] = pred[:, :out_channels].to('cpu')
