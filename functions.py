@@ -42,7 +42,7 @@ class GNN_Helheim_Dataset(DGLDataset):
             f = test['S'][0][0][10]
             mask = test['S'][0][0][11]
             ice = np.zeros(mask.shape)
-            ice[mask > 0] = 1 # ice = 0; no-ice = 1
+            ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
 
             n_year, n_sample = H.shape
 
