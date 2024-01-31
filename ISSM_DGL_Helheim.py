@@ -352,12 +352,12 @@ def main():
         
     # Region filtering ============================================
     test = sio.loadmat(train_files[0])
-    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
+    region = np.where(test['S'][0][0][11][0] > -100000)[0]
     for i in range(0, batch_size):
         if i == 0:
-            mask_batch = mask
+            region_batch = region
         else:
-            mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
+            region_batch = np.append(region_batch, region+i*region.shape[0])
     # =============================================================
     
     if args.local_rank == 0:
@@ -440,8 +440,8 @@ def main():
                 pred = model(bg, feats)
             
             # regional mask ----------------------------
-            pred = pred[mask_batch, :]
-            labels = labels[mask_batch, :]
+            pred = pred[region_batch, :]
+            labels = labels[region_batch, :]
             ## -----------------------------------------
             
             loss = criterion(pred*100, labels*100)
@@ -480,8 +480,8 @@ def main():
                     pred = model(bg, feats)
                     
             # regional mask ----------------------------
-            pred = pred[mask_batch, :]
-            labels = labels[mask_batch, :]
+            pred = pred[region_batch, :]
+            labels = labels[region_batch, :]
             ## -----------------------------------------
 
             loss = criterion(pred*100, labels*100)
@@ -550,8 +550,8 @@ def main():
                     pred = model(bg, feats)
                     
                 # regional mask ----------------------------
-                pred = pred[mask, :]
-                labels = labels[mask, :]
+                pred = pred[region, :]
+                labels = labels[region, :]
                 ## -----------------------------------------
                 
                 y_pred[k] = pred[:, :out_channels].to('cpu')
