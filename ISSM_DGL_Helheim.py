@@ -234,7 +234,7 @@ from dgl.dataloading import GraphDataLoader
 def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[0.6, 0.39, 0.01],
+                                                 frac_list=[0.7, 0.3, 0.0],
                                                  shuffle=True,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
