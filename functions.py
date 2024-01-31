@@ -128,11 +128,12 @@ def generate_list():
     test_files = []
 
     for f in sorted(glob.glob(f'../data/Helheim_r*_030.mat')):
-        if f[-11:-8] == "075" or f[-11:-8] == "095" or f[-11:-8] == "115":
-            val_files.append(f)
-        elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
-            test_files.append(f)
-        else:
-            train_files.append(f)
+        if int(f[-11:-8]) <= 100:
+            if f[-11:-8] == "075" or f[-11:-8] == "095" or f[-11:-8] == "115":
+                val_files.append(f)
+            elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
+                test_files.append(f)
+            else:
+                train_files.append(f)
     
     return train_files, val_files, test_files
