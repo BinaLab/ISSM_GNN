@@ -127,7 +127,7 @@ def generate_list():
     val_files = []
     test_files = []
 
-    for f in sorted(glob.glob(f'../data/Helheim_r*_030.mat')):
+    for f in sorted(glob.glob(f'../data/Helheim_r*_050.mat')):
         if int(f[-11:-8]) <= 100:
             if f[-11:-8] == "075" or f[-11:-8] == "095" or f[-11:-8] == "115":
                 val_files.append(f)
