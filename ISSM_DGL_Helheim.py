@@ -288,7 +288,7 @@ def main():
     now = datetime.now()
 
     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-    print("Current Time =", current_time)
+    print(f"Current Time = {current_time} (GPU {args.local_rank})")
     
     world_size = int(os.environ['WORLD_SIZE'])
     args = parse_args()
@@ -362,7 +362,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
-        print(f"## Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
+        print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     if args.model_type == "gcn":
