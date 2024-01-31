@@ -395,7 +395,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = regional_loss(mask_batch) #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
