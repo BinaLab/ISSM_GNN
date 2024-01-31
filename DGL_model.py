@@ -27,7 +27,7 @@ class regional_loss(nn.Module):
         super(regional_loss, self).__init__();
         # self.mask = mask
 
-    def forward(self, obs, prd):
+    def forward(self, prd, obs):
         n_outputs = obs.size()[1]
         mask = torch.where(obs[:, -1] > -0.1)[0]
         err_sum = 0
