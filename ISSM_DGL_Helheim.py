@@ -338,6 +338,11 @@ def main():
         train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
         val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
         # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
+        
+    # Region filtering ============================================
+    test = sio.loadmat(train_files[0])
+    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
+    # =============================================================
     
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
@@ -427,7 +432,12 @@ def main():
                 labels = torch.cat([labels, coord_feat], dim=1)
             else:
                 pred = model(bg, feats)
-
+            
+            # regional mask ----------------------------
+            pred = pred[:, mask, :]
+            labels = labels[:, mask, :]
+            ## -----------------------------------------
+            
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
@@ -462,6 +472,11 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)                    
                 else:
                     pred = model(bg, feats)
+                    
+            # regional mask ----------------------------
+            pred = pred[:, mask, :]
+            labels = labels[:, mask, :]
+            ## -----------------------------------------
 
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
@@ -527,11 +542,17 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)
                 else:
                     pred = model(bg, feats)
+                    
+                # regional mask ----------------------------
+                pred = pred[mask, :]
+                labels = labels[mask, :]
+                ## -----------------------------------------
+                
                 y_pred[k] = pred[:, :out_channels].to('cpu')
                 y_true[k] = labels[:, :out_channels].to('cpu')
                 x_inputs[k] = feats.to('cpu')
 
-        test_save = [rates, years, x_inputs, y_true, y_pred]
+        test_save = [rates, years, x_inputs, y_true, y_pred, mask]
 
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)

@@ -23,6 +23,11 @@ class GNN_Helheim_Dataset(DGLDataset):
         self.graphs = []
         files = self.url
         
+        # # Region filtering
+        # filename = f'D:\\ISSM\\Helheim\\Helheim_r100_030.mat'
+        # test = sio.loadmat(filename)
+        # mask = test['S'][0][0][11][0]
+
         first = True
         # "READING GRAPH DATA..."
         for filename in tqdm(files[:]):
@@ -139,3 +144,38 @@ def generate_list():
                 train_files.append(f)
     
     return train_files, val_files, test_files
+
+def MAE(prd, obs):
+    return np.nanmean(abs(obs-prd))
+
+def MAE_grid(prd, obs):
+    err = abs(obs-prd)
+    return np.nanmean(err, axis=0)
+
+def RMSE(prd, obs):
+    err = np.square(obs-prd)
+    return np.nanmean(err)**0.5
+
+def RMSE_grid(prd, obs):
+    err = np.square(obs-prd)
+    return np.nanmean(err, axis=0)**0.5
+
+def corr_grid(prd, obs):
+    r1 = np.nansum((prd-np.nanmean(prd))*(obs-np.nanmean(obs)),axis=0)
+    r2 = np.nansum(np.square(prd-np.nanmean(prd)), axis=0)*np.nansum(np.square(obs-np.nanmean(obs)),axis=0)
+    r = r1/r2**0.5
+    return r
+
+def skill(prd, obs):
+    err = np.nanmean(np.square(prd-obs))**0.5/np.nanmean(np.square(obs-np.nanmean(obs)))**0.5
+    return 1-err
+
+def MBE(prd, obs):
+    return np.nanmean(prd-obs)
+
+def corr(prd, obs):
+    prd = prd.flatten()
+    obs = obs.flatten()
+    
+    r = np.ma.corrcoef(np.ma.masked_invalid(prd), np.ma.masked_invalid(obs))[0, 1]
+    return r
