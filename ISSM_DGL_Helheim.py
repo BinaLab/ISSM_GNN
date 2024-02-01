@@ -373,7 +373,7 @@ def main():
     elif args.model_type == "mlp":
         model = MLP(in_channels, out_channels, 128)  # Fully connected network
     elif args.model_type == "gat":
-        model = GAT(in_channels, out_channels, 128)  # Graph convolutional network 
+        model = GAT(in_channels, out_channels, 256)  # Graph convolutional network 
     elif args.model_type == "egcn":
         model = EGCN(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
