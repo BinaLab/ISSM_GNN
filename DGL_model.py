@@ -253,7 +253,7 @@ class GAT(nn.Module):
         self.conv3 = GATConv(h_feats, h_feats, num_heads=3)
         self.conv4 = GATConv(h_feats, h_feats, num_heads=3)
         self.conv5 = GATConv(h_feats, h_feats, num_heads=3)
-        self.conv6 = GATConv(h_feats, h_feats, num_heads=3)
+        # self.conv6 = GATConv(h_feats, h_feats, num_heads=3)
         
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
@@ -272,8 +272,8 @@ class GAT(nn.Module):
         h = torch.mean(h, dim = 1)
         h = self.activation(self.conv5(g, h))
         h = torch.mean(h, dim = 1)
-        h = self.activation(self.conv6(g, h))
-        h = torch.mean(h, dim = 1)
+        # h = self.activation(self.conv6(g, h))
+        # h = torch.mean(h, dim = 1)
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
