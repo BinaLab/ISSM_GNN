@@ -560,7 +560,6 @@ def unsorted_segment_sum(data, segment_ids, num_segments):
     result.scatter_add_(0, segment_ids, data)
     return result
 
-
 def unsorted_segment_mean(data, segment_ids, num_segments):
     result_shape = (num_segments, data.size(1))
     segment_ids = segment_ids.unsqueeze(-1).expand(-1, data.size(1))
@@ -569,6 +568,24 @@ def unsorted_segment_mean(data, segment_ids, num_segments):
     result.scatter_add_(0, segment_ids, data)
     count.scatter_add_(0, segment_ids, torch.ones_like(data))
     return result / count.clamp(min=1)
+
+def reset(value: Any):
+    if hasattr(value, 'reset_parameters'):
+        value.reset_parameters()
+    else:
+        for child in value.children() if hasattr(value, 'children') else []:
+            reset(child)
+            
+def uniform(size: int, value: Any):
+    if isinstance(value, Tensor):
+        bound = 1.0 / math.sqrt(size)
+        value.data.uniform_(-bound, bound)
+    else:
+        for v in value.parameters() if hasattr(value, 'parameters') else []:
+            uniform(size, v)
+        for v in value.buffers() if hasattr(value, 'buffers') else []:
+            uniform(size, v)
+
 
 class DenseNet(torch.nn.Module):
     def __init__(self, layers, nonlinearity, out_nonlinearity=None, normalize=False):
@@ -599,7 +616,7 @@ class DenseNet(torch.nn.Module):
         return x
 
 class EGKN(torch.nn.Module):
-    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=nn.LeakyReLU()):
+    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=nn.Tanh()):
         super().__init__()
         self.depth = depth
 
@@ -665,12 +682,12 @@ class E_GCL_GKN(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        pass
-        # reset(self.kernel)
-        # reset(self.coord_mlp)
-        # size = self.in_channels
-        # uniform(size, self.root)
-        # uniform(size, self.bias)
+        # pass
+        reset(self.kernel)
+        reset(self.coord_mlp)
+        size = self.in_channels
+        uniform(size, self.root)
+        uniform(size, self.bias)
 
     def edge_conv(self, source, edge_attr, edge_index):
         row, col = edge_index
