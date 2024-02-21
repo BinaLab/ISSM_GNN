@@ -546,22 +546,22 @@ class EGCN(nn.Module):
             return out
         
 ## Neural Operator =============================================
-class EGKN(torch.nn.Module):
-    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.ReLU()):
-        super().__init__()
-        self.depth = depth
+# class EGKN(torch.nn.Module):
+#     def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.ReLU()):
+#         super().__init__()
+#         self.depth = depth
 
-        self.fc1 = torch.nn.Linear(in_width, width)
-        kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.ReLU)
-        self.egkn_conv = E_GCL_GKN(width, width, width, kernel, depth, act_fn=act_fn)
-        self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
+#         self.fc1 = torch.nn.Linear(in_width, width)
+#         kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.ReLU)
+#         self.egkn_conv = E_GCL_GKN(width, width, width, kernel, depth, act_fn=act_fn)
+#         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
-    def forward(self, data):
-        h, edge_index, edge_attr, coords_curr = data.x, data.edge_index, data.edge_attr, \
-                                                data.coords_init.detach().clone()
-        h = self.fc1(h)
-        for k in range(self.depth):
-            h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
-        h = self.fc2(h)
-        return h, coords_curr
+#     def forward(self, data):
+#         h, edge_index, edge_attr, coords_curr = data.x, data.edge_index, data.edge_attr, \
+#                                                 data.coords_init.detach().clone()
+#         h = self.fc1(h)
+#         for k in range(self.depth):
+#             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
+#         h = self.fc2(h)
+#         return h, coords_curr
     
