@@ -377,7 +377,7 @@ class EGCN2(nn.Module):
         # x = self.linx(x)
         out = torch.cat([h, x], dim=1)
 
-        return out
+        return h
     
 class EGCN(nn.Module):
     r"""Equivariant Graph Convolutional Layer from `E(n) Equivariant Graph
@@ -547,7 +547,7 @@ class EGCN(nn.Module):
             x = coord_feat + x_neigh
             out = torch.cat([h, x], dim=1)
 
-            return out
+            return h
         
 #########################################
 ############ Neural Operator ############
