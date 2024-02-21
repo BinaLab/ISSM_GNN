@@ -656,7 +656,7 @@ class E_GCL_GKN(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        reset(self.kernel)
+        # reset(self.kernel)
         # reset(self.coord_mlp)
         size = self.in_channels
         uniform(size, self.root)
