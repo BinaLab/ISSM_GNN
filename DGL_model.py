@@ -612,7 +612,7 @@ class EGKN(torch.nn.Module):
         h = in_feat
         edge_index = torch.cat([g.edges()[0][:, None], g.edges()[1][:, None]], axis = 1)
         corrds_curr = g.ndata['feat'][:, :2].detach().clone()
-        edge_attr = torch.cat(g.edata['weight'][0][:, None], g.edata['slope'][0][:, None], axis = 1)
+        edge_attr = torch.cat([g.edata['weight'][0][:, None], g.edata['slope'][0][:, None]], axis = 1)
 
         h = self.fc1(h)
         for k in range(self.depth):
