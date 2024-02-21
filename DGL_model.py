@@ -615,7 +615,7 @@ class EGKN(torch.nn.Module):
         edge_index[1] = g.edges()[1]
 
         in_feat = g.ndata['feat'][:, :]
-        corrds_curr = g.ndata['feat'][:, :2].detach().clone()
+        coords_curr = g.ndata['feat'][:, :2].detach().clone()
 
         edge_attr = torch.zeros(len(g.edges()[0]), 2)
         edge_attr[0] = g.edata['weight'][0]
