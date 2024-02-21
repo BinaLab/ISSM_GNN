@@ -373,7 +373,7 @@ class EGCN2(nn.Module):
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
-        h = self.linh(h)
+        h = self.linh(h) + x*0
         # x = self.linx(x)
         out = torch.cat([h, x], dim=1)
 
@@ -545,6 +545,7 @@ class EGCN(nn.Module):
             )
             # h = self.linh(h)
             x = coord_feat + x_neigh
+            h = h + x*0
             out = torch.cat([h, x], dim=1)
 
             return h
