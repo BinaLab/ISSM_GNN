@@ -432,15 +432,17 @@ def main():
                 labels = bg.ndata['label'][:, [0,1,3,4,5]]
             else:
                 labels = bg.ndata['label'][:, :]
+                
+            pred = model(bg, feats)
 
-            if args.model_type == "egcn":
-                pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
-            elif args.model_type == "egcn2":
-                pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
-            else:
-                pred = model(bg, feats)
+            # if args.model_type == "egcn":
+            #     pred = model(bg, feats, coord_feat, edge_feat)
+            #     labels = torch.cat([labels, coord_feat], dim=1)
+            # elif args.model_type == "egcn2":
+            #     pred = model(bg, feats, coord_feat, edge_feat)
+            #     labels = torch.cat([labels, coord_feat], dim=1)
+            # else:
+            #     pred = model(bg, feats)
             
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
@@ -470,14 +472,17 @@ def main():
                 labels = bg.ndata['label'][:, :]
             
             with torch.no_grad():
-                if args.model_type == "egcn":
-                    pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)                    
-                else:
-                    pred = model(bg, feats)
+                
+                pred = model(bg, feats)
+                
+                # if args.model_type == "egcn":
+                #     pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
+                # elif args.model_type == "egcn2":
+                #     pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)                    
+                # else:
+                #     pred = model(bg, feats)
 
             loss = criterion(pred*100, labels*100)
             val_loss += loss.cpu().item()
@@ -537,14 +542,17 @@ def main():
             years[k] = feats[0, 3] * 20
 
             with torch.no_grad():
-                if args.model_type == "egcn":
-                    pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                else:
-                    pred = model(bg, feats)
+                
+                pred = model(bg, feats)
+                
+                # if args.model_type == "egcn":
+                #     pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
+                # elif args.model_type == "egcn2":
+                #     pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
+                # else:
+                #     pred = model(bg, feats)
                     
                 # regional mask ----------------------------
                 # feats = feats[mask, :]
