@@ -444,7 +444,7 @@ def main():
             # else:
                 # pred = model(bg, feats)
             
-            loss = criterion(pred*100, labels*100)
+            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -483,7 +483,7 @@ def main():
                     labels = torch.cat([labels, coord_feat], dim=1)                    
 
 
-            loss = criterion(pred*100, labels*100)
+            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
             val_count += 1
             
