@@ -382,7 +382,7 @@ def main():
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
-    elif args.model_type == "INO":
+    elif args.model_type == "ino":
         width = 64
         ker_width = 1024
         edge_features = 2
