@@ -599,7 +599,7 @@ class DenseNet(torch.nn.Module):
         return x
 
 class EGKN(torch.nn.Module):
-    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.ReLU()):
+    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.tanh()):
         super().__init__()
         self.depth = depth
 
