@@ -592,14 +592,28 @@ class EGKN(torch.nn.Module):
         self.egkn_conv = E_GCL_GKN(width, width, width, kernel, depth, act_fn=act_fn)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
-    def forward(self, g, data):
-        h, edge_index, edge_attr, coords_curr = data.x, data.edge_index, data.edge_attr, \
-                                                data.coords_init.detach().clone()
+    def forward(self, g, in_feat):
+        h = in_feat
+        edge_index = torch.zeros(2, len(g.edges()[0]))
+        edge_index[0] = g.edges()[0]
+        edge_index[1] = g.edges()[1]
+
+        in_feat = g.ndata['feat'][:, :]
+        corrds_curr = g.ndata['feat'][:, :2].detach().clone()
+
+        edge_attr = torch.zeros(len(g.edges()[0]), 2)
+        edge_attr[0] = g.edata['weight'][0]
+        edge_attr[1] = g.edata['slope'][0]
+
         h = self.fc1(h)
         for k in range(self.depth):
             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
         h = self.fc2(h)
-        return h, coords_curr
+        
+        # out = torch.cat([h, coords_curr], dim=1)
+        out = h + torch.sum(coords_curr)*0
+        
+        return out
     
 class E_GCL_GKN(nn.Module):
     """
