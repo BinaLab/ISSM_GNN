@@ -593,17 +593,9 @@ def main():
                 labels = bg.ndata['label'][:, :]
                 
             pred = model(bg, feats)
-
-            if args.model_type == "egcn":
-                # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
-            elif args.model_type == "egcn2":
-                # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
-            # else:
-                # pred = model(bg, feats)
+            labels = torch.cat([labels, coord_feat], dim=1)
             
-            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -633,13 +625,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                
-                if args.model_type == "egcn":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)                    
+                labels = torch.cat([labels, coord_feat], dim=1)                 
 
 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
@@ -702,15 +688,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                
-                if args.model_type == "egcn":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                # else:
-                #     pred = model(bg, feats)
+                labels = torch.cat([labels, coord_feat], dim=1)
                     
                 # regional mask ----------------------------
                 # feats = feats[mask, :]
