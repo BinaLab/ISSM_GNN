@@ -610,7 +610,7 @@ class EGKN(torch.nn.Module):
 
     def forward(self, g, in_feat):
         h = in_feat
-        edge_index = torch.zeros(2, len(g.edges()[0]))
+        edge_index = torch.zeros(2, len(g.edges()[0])).type(torch.int64)
         edge_index[0] = g.edges()[0]
         edge_index[1] = g.edges()[1]
 

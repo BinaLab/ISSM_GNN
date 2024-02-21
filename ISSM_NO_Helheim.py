@@ -383,8 +383,8 @@ def main():
     elif args.model_type == "cheb":
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "ino":
-        width = 64
-        ker_width = 1024
+        width = 128
+        ker_width = 128
         edge_features = 2
         n_layer = 3 * 2
         model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels).to(device)
