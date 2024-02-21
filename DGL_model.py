@@ -594,7 +594,7 @@ class DenseNet(torch.nn.Module):
 
     def forward(self, x):
         for _, l in enumerate(self.layers):
-            x = l(x).cuda()
+            x = l(x)
 
         return x
 
@@ -610,16 +610,9 @@ class EGKN(torch.nn.Module):
 
     def forward(self, g, in_feat):
         h = in_feat
-        edge_index = torch.zeros(2, len(g.edges()[0])).type(torch.int64)
-        edge_index[0] = g.edges()[0]
-        edge_index[1] = g.edges()[1]
-
-        in_feat = g.ndata['feat'][:, :]
-        coords_curr = g.ndata['feat'][:, :2].detach().clone()
-
-        edge_attr = torch.zeros(len(g.edges()[0]), 2)
-        edge_attr[0] = g.edata['weight'][0]
-        edge_attr[1] = g.edata['slope'][0]
+        edge_index = torch.cat([g.edges()[0][:, None], g.edges()[1][:, None]], axis = 1)
+        corrds_curr = g.ndata['feat'][:, :2].detach().clone()
+        edge_attr = torch.cat(g.edata['weight'][0][:, None], g.edata['slope'][0][:, None], axis = 1)
 
         h = self.fc1(h)
         for k in range(self.depth):
