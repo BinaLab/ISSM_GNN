@@ -103,7 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--data',
         type=str,
-        default='bin',
+        default='mat',
         help='type of dataset (pkl or mat)',
     )
     parser.add_argument(
