@@ -345,7 +345,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
-    in_channels = val_set[0].ndata['feat'].shape[1] #-1
+    in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
     if args.out_ch > 0:
         out_channels = args.out_ch
     else:
@@ -384,7 +384,7 @@ def main():
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "ino":
         width = 64
-        ker_width = 128
+        ker_width = 256
         edge_features = 2
         n_layer = 2 * 2
         model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels).to(device)
@@ -392,7 +392,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}{n_layer}_{n_nodes}_lr{lr}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
@@ -578,7 +578,7 @@ def main():
         train_count = 0
         for bg in train_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :]
+            feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
@@ -608,7 +608,7 @@ def main():
         val_count = 0
         for bg in val_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :]
+            feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
@@ -668,7 +668,7 @@ def main():
 
         for k, bg in enumerate(val_set):
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, :]
+            feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
