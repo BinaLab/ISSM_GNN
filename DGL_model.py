@@ -228,12 +228,12 @@ class GCN(nn.Module):
         # self.device = device
     
     def forward(self, g, in_feat):
-        h = self.activation(self.conv1(g, in_feat))
-        h = self.activation(self.conv2(g, h))
-        h = self.activation(self.conv3(g, h))
-        h = self.activation(self.conv4(g, h))
-        h = self.activation(self.conv5(g, h))
-        h = self.activation(self.conv6(g, h))
+        h = self.activation(self.conv1(g, in_feat, edge_weight=g.edata['weight']))
+        h = self.activation(self.conv2(g, h, edge_weight=g.edata['weight']))
+        h = self.activation(self.conv3(g, h, edge_weight=g.edata['weight']))
+        h = self.activation(self.conv4(g, h, edge_weight=g.edata['weight']))
+        h = self.activation(self.conv5(g, h, edge_weight=g.edata['weight']))
+        h = self.activation(self.conv6(g, h, edge_weight=g.edata['weight']))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
@@ -355,7 +355,9 @@ class EGCN2(nn.Module):
         # self.linx = torch.nn.Linear(h_feats, num_classes)
         # self.device = device
     
-    def forward(self, g, in_feat, coord_feat, edge_feat=None):
+    def forward(self, g, in_feat):
+        coord_feat = g.ndata['feat'][:, :2]
+        edge_feat = g.edata['weight'].float()
         h, x = self.conv1(g, in_feat, coord_feat, edge_feat)
         h = self.activation(h); x = self.activation(x);
         # h, x = self.conv2(g, h, x, edge_feat)
@@ -487,7 +489,7 @@ class EGCN(nn.Module):
 
         return {'msg_x': msg_x, 'msg_h': msg_h}
     
-    def forward(self, graph, node_feat, coord_feat, edge_feat=None):
+    def forward(self, graph, node_feat):
         r"""
         Description
         -----------
@@ -517,6 +519,8 @@ class EGCN(nn.Module):
             is the same as the input coordinate feature dimension.
         """
         with graph.local_scope():
+            coord_feat = graph.ndata['feat'][:, :2]
+            edge_feat = graph.edata['weight'].float()
             # node feature
             graph.ndata['h'] = node_feat
             # coordinate feature
@@ -545,23 +549,154 @@ class EGCN(nn.Module):
 
             return out
         
-## Neural Operator =============================================
-# class EGKN(torch.nn.Module):
-#     def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.ReLU()):
-#         super().__init__()
-#         self.depth = depth
+#########################################
+############ Neural Operator ############
+#########################################
 
-#         self.fc1 = torch.nn.Linear(in_width, width)
-#         kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.ReLU)
-#         self.egkn_conv = E_GCL_GKN(width, width, width, kernel, depth, act_fn=act_fn)
-#         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
+class DenseNet(torch.nn.Module):
+    def __init__(self, layers, nonlinearity, out_nonlinearity=None, normalize=False):
+        super().__init__()
 
-#     def forward(self, data):
-#         h, edge_index, edge_attr, coords_curr = data.x, data.edge_index, data.edge_attr, \
-#                                                 data.coords_init.detach().clone()
-#         h = self.fc1(h)
-#         for k in range(self.depth):
-#             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
-#         h = self.fc2(h)
-#         return h, coords_curr
+        self.n_layers = len(layers) - 1
+
+        assert self.n_layers >= 1
+
+        self.layers = nn.ModuleList()
+
+        for j in range(self.n_layers):
+            self.layers.append(nn.Linear(layers[j], layers[j + 1]))
+
+            if j != self.n_layers - 1:
+                if normalize:
+                    self.layers.append(nn.BatchNorm1d(layers[j + 1]))
+
+                self.layers.append(nonlinearity())
+
+        if out_nonlinearity is not None:
+            self.layers.append(out_nonlinearity())
+
+    def forward(self, x):
+        for _, l in enumerate(self.layers):
+            x = l(x)
+
+        return x
+
+class EGKN(torch.nn.Module):
+    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=torch.nn.ReLU()):
+        super().__init__()
+        self.depth = depth
+
+        self.fc1 = torch.nn.Linear(in_width, width)
+        kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.ReLU)
+        self.egkn_conv = E_GCL_GKN(width, width, width, kernel, depth, act_fn=act_fn)
+        self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
+
+    def forward(self, data):
+        h, edge_index, edge_attr, coords_curr = data.x, data.edge_index, data.edge_attr, \
+                                                data.coords_init.detach().clone()
+        h = self.fc1(h)
+        for k in range(self.depth):
+            h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
+        h = self.fc2(h)
+        return h, coords_curr
+    
+class E_GCL_GKN(nn.Module):
+    """
+    E(n) Equivariant Convolutional Layer
+    """
+
+    def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=False,
+                 coords_agg='mean',
+                 root_weight=True, residual=True, bias=True):
+        super().__init__()
+        self.in_channels = input_nf
+        self.out_channels = output_nf
+        self.act_fn = act_fn
+        self.kernel = kernel
+        self.normalize = normalize
+        self.coords_agg = coords_agg
+        self.epsilon = 1e-8
+        self.depth = depth
+        self.residual = residual
+
+        if root_weight:
+            self.root = nn.Parameter(torch.Tensor(input_nf, output_nf))
+        else:
+            self.register_parameter('root', None)
+
+        if bias:
+            self.bias = nn.Parameter(torch.Tensor(output_nf))
+        else:
+            self.register_parameter('bias', None)
+
+        layer = nn.Linear(2 * hidden_nf, 1, bias=False)
+        torch.nn.init.xavier_uniform_(layer.weight, gain=0.001)
+
+        coord_mlp = []
+        coord_mlp.append(nn.Linear(hidden_nf, 2 * hidden_nf))
+        coord_mlp.append(act_fn)
+        coord_mlp.append(layer)
+        self.coord_mlp = nn.Sequential(*coord_mlp)
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        reset(self.kernel)
+        # reset(self.coord_mlp)
+        size = self.in_channels
+        uniform(size, self.root)
+        uniform(size, self.bias)
+
+    def edge_conv(self, source, edge_attr, edge_index):
+        row, col = edge_index
+        out = edge_attr.unsqueeze(-1) if edge_attr.dim() == 1 else edge_attr
+        # out = torch.cat([coord[row], coord[col], out], dim=1)
+        weight = self.kernel(out).view(-1, self.in_channels, self.out_channels)
+        return torch.matmul(source.unsqueeze(1), weight).squeeze(1)
+
+    def node_conv(self, x, edge_index, edge_attr, node_attr):
+        row, col = edge_index
+        # agg = unsorted_segment_sum(edge_attr, row, num_segments=x.size(0))
+        agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
+
+        if self.root is not None:
+            agg = agg + torch.mm(x, self.root)
+        if self.bias is not None:
+            agg = agg + self.bias
+        out = self.act_fn(agg) / self.depth
+        if self.residual:
+            out = x + out
+        return out
+
+    def coord_conv(self, coord, edge_index, coord_diff, edge_feat):
+        row, col = edge_index
+        trans = coord_diff * self.coord_mlp(edge_feat)
+        if self.coords_agg == 'sum':
+            agg = unsorted_segment_sum(trans, row, num_segments=coord.size(0))
+        elif self.coords_agg == 'mean':
+            agg = unsorted_segment_mean(trans, row, num_segments=coord.size(0))
+        else:
+            raise Exception('Wrong coords_agg parameter' % self.coords_agg)
+        coord = agg / self.depth + coord
+        return coord
+
+    def coord2radial(self, edge_index, coord):
+        row, col = edge_index
+        coord_diff = coord[row] - coord[col]
+        radial = torch.sum(coord_diff ** 2, 1).unsqueeze(1)
+
+        if self.normalize:
+            norm = torch.sqrt(radial).detach() + self.epsilon
+            coord_diff = coord_diff / norm
+
+        return coord_diff
+
+    def forward(self, h, edge_index, coord_curr, edge_attr, node_attr=None):
+        row, col = edge_index
+        coord_diff = self.coord2radial(edge_index, coord_curr)
+        edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
+        coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
+        h = self.node_conv(h, edge_index, edge_feat, node_attr)
+
+        return h, coord_curr
     
