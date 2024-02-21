@@ -580,7 +580,7 @@ def reset(value: Any):
             reset(child)
             
 def uniform(size: int, value: Any):
-    if isinstance(value, Tensor):
+    if isinstance(value, torch.Tensor):
         bound = 1.0 / math.sqrt(size)
         value.data.uniform_(-bound, bound)
     else:
