@@ -619,8 +619,8 @@ class EGKN(torch.nn.Module):
             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
         h = self.fc2(h)
         
-        # out = torch.cat([h, coords_curr], dim=1)
-        out = h + torch.sum(coords_curr)*0
+        out = torch.cat([h, coords_curr], dim=1)
+        # out = h + torch.sum(coords_curr)*0
         
         return out
     
