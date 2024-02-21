@@ -594,7 +594,7 @@ class DenseNet(torch.nn.Module):
 
     def forward(self, x):
         for _, l in enumerate(self.layers):
-            x = l(x)
+            x = l(x).cuda()
 
         return x
 
