@@ -553,6 +553,22 @@ class EGCN(nn.Module):
 #########################################
 ############ Neural Operator ############
 #########################################
+def unsorted_segment_sum(data, segment_ids, num_segments):
+    result_shape = (num_segments, data.size(1))
+    result = data.new_full(result_shape, 0)  # Init empty result tensor.
+    segment_ids = segment_ids.unsqueeze(-1).expand(-1, data.size(1))
+    result.scatter_add_(0, segment_ids, data)
+    return result
+
+
+def unsorted_segment_mean(data, segment_ids, num_segments):
+    result_shape = (num_segments, data.size(1))
+    segment_ids = segment_ids.unsqueeze(-1).expand(-1, data.size(1))
+    result = data.new_full(result_shape, 0)  # Init empty result tensor.
+    count = data.new_full(result_shape, 0)
+    result.scatter_add_(0, segment_ids, data)
+    count.scatter_add_(0, segment_ids, torch.ones_like(data))
+    return result / count.clamp(min=1)
 
 class DenseNet(torch.nn.Module):
     def __init__(self, layers, nonlinearity, out_nonlinearity=None, normalize=False):
@@ -656,11 +672,12 @@ class E_GCL_GKN(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        pass
         # reset(self.kernel)
         # reset(self.coord_mlp)
-        size = self.in_channels
-        uniform(size, self.root)
-        uniform(size, self.bias)
+        # size = self.in_channels
+        # uniform(size, self.root)
+        # uniform(size, self.bias)
 
     def edge_conv(self, source, edge_attr, edge_index):
         row, col = edge_index
