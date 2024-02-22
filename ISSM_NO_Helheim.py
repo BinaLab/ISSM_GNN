@@ -591,7 +591,8 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            # edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            edge_attr = bg.edata['slope'][:, :, 0].type(torch.float32) #torch.cat([g.edata['weight'][0][:, None], g.edata['slope'][0][:, None]], axis = 1).type(torch.float32)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
@@ -603,7 +604,7 @@ def main():
             else:
                 labels = bg.ndata['label'][:, :]
                 
-            pred = model(bg, feats)
+            pred = model(bg, feats, edge_attr)
             labels = torch.cat([labels, coord_feat], dim=1)
             
             loss = criterion(pred*100, labels*100)

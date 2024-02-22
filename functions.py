@@ -69,7 +69,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                                 connect.append(k)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
                                 weight.append(np.exp(-(dist/1000)))
-                                slope.append([np.exp(-(dist/1000)), abs(H[0,i]-H[0,k])/dist, abs(base[0,i]-base[0,k])/dist, abs(surface[0,i]-surface[0,k])/dist]) 
+                                slope.append([np.exp(-(dist/1000)), abs(base[0,i]-base[0,k])/dist, abs(surface[0,i]-surface[0,k])/dist]) 
                                 src.append(int(i))
                                 dst.append(int(k))
 
