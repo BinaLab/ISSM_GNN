@@ -374,8 +374,8 @@ def main():
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
-    width = 64
-    ker_width = 32
+    width = 32
+    ker_width = 64
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
     
@@ -605,7 +605,7 @@ def main():
             else:
                 labels = bg.ndata['label'][:, :]
                 
-            pred = model(bg, feats, edge_attr)
+            pred = model(bg, feats)
             labels = torch.cat([labels, coord_feat], dim=1)
             
             loss = criterion(pred*100, labels*100)
@@ -638,7 +638,7 @@ def main():
             
             with torch.no_grad():
                 
-                pred = model(bg, feats, edge_attr)
+                pred = model(bg, feats)
                 labels = torch.cat([labels, coord_feat], dim=1)
                 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
@@ -701,7 +701,7 @@ def main():
 
             with torch.no_grad():
                 
-                pred = model(bg, feats, edge_attr)
+                pred = model(bg, feats)
                 labels = torch.cat([labels, coord_feat], dim=1)
                     
                 # regional mask ----------------------------

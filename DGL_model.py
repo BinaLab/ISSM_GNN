@@ -629,10 +629,12 @@ class EGKN(torch.nn.Module):
         self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
-    def forward(self, g, in_feat, edge_attr):
+    def forward(self, g, in_feat):
         h = in_feat
         edge_index = torch.cat([g.edges()[0][None, :], g.edges()[1][None, :]], axis = 0).type(torch.int64)
         coords_curr = g.ndata['feat'][:, :2].detach().clone()
+        edge_attr = g.edata['slope'][:, :, 0].type(torch.float32)
+        #torch.cat([g.edata['weight'][0][:, None], g.edata['slope'][0][:, None]], axis = 1).type(torch.float32)
 
         h = self.fc1(h)
         for k in range(self.depth):
