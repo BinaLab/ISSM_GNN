@@ -351,6 +351,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
+    n_edges = val_set[0].num_edges()
     in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -368,13 +369,13 @@ def main():
     # =============================================================
     
     if args.local_rank == 0:
-        print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}")
+        print(f"## NODE: {n_nodes}; EDGE: {n_edges}; IN: {in_channels}; OUT: {out_channels}")
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
     width = 64
-    ker_width = 128
+    ker_width = 32
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
     
@@ -622,7 +623,8 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            # edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            edge_attr = bg.edata['slope'][:, :, 0].type(torch.float32) #torch.cat([g.edata['weight'][0][:, None], g.edata['slope'][0][:, None]], axis = 1).type(torch.float32)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
@@ -636,7 +638,7 @@ def main():
             
             with torch.no_grad():
                 
-                pred = model(bg, feats)
+                pred = model(bg, feats, edge_attr)
                 labels = torch.cat([labels, coord_feat], dim=1)
                 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
@@ -681,7 +683,8 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            # edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+            edge_attr = bg.edata['slope'][:, :, 0].type(torch.float32) #torch.cat([g.edata['weight'][0][:, None], g.edata['slope'][0][:, None]], axis = 1).type(torch.float32)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
@@ -698,7 +701,7 @@ def main():
 
             with torch.no_grad():
                 
-                pred = model(bg, feats)
+                pred = model(bg, feats, edge_attr)
                 labels = torch.cat([labels, coord_feat], dim=1)
                     
                 # regional mask ----------------------------
