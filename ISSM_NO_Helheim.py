@@ -374,7 +374,7 @@ def main():
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
     width = 64
-    ker_width = 64
+    ker_width = 128
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
     
