@@ -392,7 +392,10 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}{n_layer}_{n_nodes}_lr{lr}_ch{out_channels}"
+    if args.model_type == "ino":
+        model_name = f"torch_dgl_Helheim_{args.model_type}{n_layer}_{n_nodes}_lr{lr}_ch{out_channels}"
+    else:
+        model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
@@ -625,9 +628,8 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                labels = torch.cat([labels, coord_feat], dim=1)                 
-
-
+                labels = torch.cat([labels, coord_feat], dim=1)
+                
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
             val_count += 1
