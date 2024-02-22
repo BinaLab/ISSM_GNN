@@ -66,17 +66,17 @@ class GNN_Helheim_Dataset(DGLDataset):
                     for p in p1:
                         for k in elements[p]:
                             if (k != i) and (k not in connect):
-                                # connect.append(k)
+                                connect.append(k)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
                                 weight.append(np.exp(-(dist/1000)))
-                                slope.append(abs(H[0,i]-H[0,k])/dist) 
+                                slope.append([np.exp(-(dist/1000)), abs(H[0,i]-H[0,k])/dist, abs(base[0,i]-base[0,k])/dist, abs(surface[0,i]-surface[0,k])/dist]) 
                                 src.append(int(i))
                                 dst.append(int(k))
 
                 src = torch.tensor(src)
                 dst = torch.tensor(dst)
                 weight = torch.tensor(weight)
-                slope = torch.tensor(slope)
+                slope = torch.arctan(torch.tensor(slope))
                 first = False
             else:
                 pass                    
@@ -121,7 +121,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 g.ndata['feat'] = inputs
                 g.ndata['label'] = outputs
                 g.edata['weight'] = weight
-                g.edata['slope'] = weight
+                g.edata['slope'] = slope
 
                 self.graphs.append(g)
         

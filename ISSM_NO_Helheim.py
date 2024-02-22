@@ -113,6 +113,12 @@ def parse_args() -> argparse.Namespace:
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
+        '--layer',
+        type=int,
+        default=6,
+        help='Number of iterative layers of neural operator',
+    )
+    parser.add_argument(
         '--epochs',
         type=int,
         default=100,
@@ -366,6 +372,12 @@ def main():
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
+    ### PARAMETERS FOR NEURAL OPERATORS ###
+    width = 64
+    ker_width = 128
+    edge_features = val_set[0].edata['slope'].shape[1]
+    n_layer = args.layer
+    
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, 256)  # Graph convolutional network    
     elif args.model_type == "gin":
@@ -383,10 +395,6 @@ def main():
     elif args.model_type == "cheb":
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "ino":
-        width = 64
-        ker_width = 128
-        edge_features = 2
-        n_layer = 2 * 2
         model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels).to(device)
     else:
         print("Please put valid model name!!")
@@ -684,8 +692,8 @@ def main():
             else:
                 labels = bg.ndata['label'][:, :]
                 
-            rates[k] = feats[0, 2]
-            years[k] = feats[0, 3] * 20
+            rates[k] = feats[0, 0]
+            years[k] = feats[0, 1] * 20
 
             with torch.no_grad():
                 
