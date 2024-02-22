@@ -231,12 +231,13 @@ class GCN(nn.Module):
         # self.device = device
     
     def forward(self, g, in_feat):
-        h = self.activation(self.conv1(g, in_feat, edge_weight=g.edata['weight']))
-        h = self.activation(self.conv2(g, h, edge_weight=g.edata['weight']))
-        h = self.activation(self.conv3(g, h, edge_weight=g.edata['weight']))
-        h = self.activation(self.conv4(g, h, edge_weight=g.edata['weight']))
-        h = self.activation(self.conv5(g, h, edge_weight=g.edata['weight']))
-        h = self.activation(self.conv6(g, h, edge_weight=g.edata['weight']))
+        edge_weight = g.edata['weight'].type(torch.float32)
+        h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
+        h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
