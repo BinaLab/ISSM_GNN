@@ -374,7 +374,7 @@ def main():
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
-    width = 64
+    width = 32
     ker_width = 32
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
