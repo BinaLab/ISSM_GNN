@@ -375,7 +375,7 @@ def main():
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
     width = 64
-    ker_width = 64
+    ker_width = 128
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
     
@@ -397,7 +397,6 @@ def main():
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "ino":
         model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels).to(device)
-                     width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=nn.Tanh()
     else:
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
