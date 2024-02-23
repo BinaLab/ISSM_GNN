@@ -703,16 +703,18 @@ class E_GCL_GKN(nn.Module):
 
     def node_conv(self, x, edge_index, edge_attr, node_attr):
         row, col = edge_index
+        out = x
+        
         # agg = unsorted_segment_sum(edge_attr, row, num_segments=x.size(0))
-        agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
+#         agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
 
-        if self.root is not None:
-            agg = agg + torch.mm(x, self.root)
-        if self.bias is not None:
-            agg = agg + self.bias
-        out = self.act_fn(agg) / self.depth
-        if self.residual:
-            out = x + out
+#         if self.root is not None:
+#             agg = agg + torch.mm(x, self.root)
+#         if self.bias is not None:
+#             agg = agg + self.bias
+#         out = self.act_fn(agg) / self.depth
+#         if self.residual:
+#             out = x + out
         return out
 
     def coord_conv(self, coord, edge_index, coord_diff, edge_feat):
