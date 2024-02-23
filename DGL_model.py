@@ -747,7 +747,7 @@ class E_GCL_GKN(nn.Module):
         # coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
         # h = self.node_conv(h, edge_index, edge_feat, node_attr)
         h = self.coord_conv(h, edge_index, h_diff, edge_feat)
-        coord_curr = coord_curr + self.node_conv(coord_curr, edge_index, edge_feat, node_attr)*0
+        h = self.node_conv(h, edge_index, edge_feat, node_attr)
         
         # h_diff = self.coord2radial(edge_index, h)
         # edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
