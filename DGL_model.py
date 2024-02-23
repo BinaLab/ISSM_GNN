@@ -626,7 +626,7 @@ class EGKN(torch.nn.Module):
 
         self.fc1 = torch.nn.Linear(in_width, width)
         self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.LeakyReLU)
-        self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn)
+        self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn, root_weight = False, bias = False)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
     def forward(self, g, in_feat):
@@ -653,7 +653,7 @@ class E_GCL_GKN(nn.Module):
 
     def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=False,
                  coords_agg='mean',
-                 root_weight=False, residual=True, bias=False):
+                 root_weight=True, residual=True, bias=True):
         super().__init__()
         self.in_channels = input_nf
         self.out_channels = output_nf
@@ -747,7 +747,7 @@ class E_GCL_GKN(nn.Module):
         # coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
         # h = self.node_conv(h, edge_index, edge_feat, node_attr)
         h = self.coord_conv(h, edge_index, h_diff, edge_feat)
-        coord_curr = self.node_conv(coord_curr, edge_index, coord_diff, edge_feat)
+        coord_curr = coord_curr + self.node_conv(h, edge_index, edge_feat, node_attr)*0
         
         # h_diff = self.coord2radial(edge_index, h)
         # edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
