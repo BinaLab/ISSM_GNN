@@ -653,7 +653,7 @@ class E_GCL_GKN(nn.Module):
 
     def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=False,
                  coords_agg='mean',
-                 root_weight=False, residual=True, bias=True):
+                 root_weight=False, residual=True, bias=False):
         super().__init__()
         self.in_channels = input_nf
         self.out_channels = output_nf
