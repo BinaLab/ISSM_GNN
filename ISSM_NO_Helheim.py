@@ -696,8 +696,8 @@ def main():
             else:
                 labels = bg.ndata['label'][:, :]
                 
-            rates[k] = feats[0, 0]
-            years[k] = feats[0, 1] * 20
+            rates[k] = feats[0, 1]
+            years[k] = feats[0, 2] * 20
 
             with torch.no_grad():
                 
