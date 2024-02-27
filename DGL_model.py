@@ -682,8 +682,7 @@ class E_GCL_GKN(nn.Module):
         coord_mlp.append(nn.Linear(hidden_nf, 2 * hidden_nf))
         coord_mlp.append(act_fn)
         coord_mlp.append(layer)
-        self.coord_mlp = nn.Sequential(*c
-                                       oord_mlp)
+        self.coord_mlp = nn.Sequential(*coord_mlp)
 
         self.reset_parameters()
 
