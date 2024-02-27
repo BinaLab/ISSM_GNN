@@ -606,7 +606,7 @@ def main():
                 labels = bg.ndata['label'][:, :]
                 
             pred = model(bg, feats)
-            labels = torch.cat([labels[:, :2] + coord_feat, labels[:, 2:]], dim=1)
+            labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
             # labels = torch.cat([labels, coord_feat], dim=1)
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
@@ -639,7 +639,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                labels = torch.cat([labels[:, :2] + coord_feat, labels[:, 2:]], dim=1)
+                labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
                 # labels = torch.cat([labels, coord_feat], dim=1)
                 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
@@ -703,7 +703,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                pred[:, :2] = pred[:, :2] - coord_feat
+                # pred[:, :2] = pred[:, :2] - coord_feat
                 # labels = torch.cat([labels, coord_feat], dim=1)
                     
                 # regional mask ----------------------------
