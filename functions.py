@@ -88,8 +88,8 @@ class GNN_Helheim_Dataset(DGLDataset):
                 outputs = torch.zeros([n_sample, 6])
 
                 ## INPUTS ================================================
-                inputs[:, 0] = torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
-                inputs[:, 1] = torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
+                inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
+                inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                 inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Melting rate (50-150)
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
                 inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
