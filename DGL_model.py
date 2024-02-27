@@ -557,6 +557,8 @@ class EGCN(nn.Module):
 #########################################
 ############ Neural Operator ############
 #########################################
+from torch_geometric.nn.inits import reset, uniform
+
 def unsorted_segment_sum(data, segment_ids, num_segments):
     result_shape = (num_segments, data.size(1))
     result = data.new_full(result_shape, 0)  # Init empty result tensor.
@@ -625,7 +627,7 @@ class EGKN(torch.nn.Module):
         self.depth = depth
 
         self.fc1 = torch.nn.Linear(in_width, width)
-        self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.LeakyReLU)
+        self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], nn.Tanh)
         self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
@@ -651,7 +653,7 @@ class E_GCL_GKN(nn.Module):
     E(n) Equivariant Convolutional Layer
     """
 
-    def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=False,
+    def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=True,
                  coords_agg='mean',
                  root_weight=True, residual=True, bias=True):
         super().__init__()
@@ -691,8 +693,8 @@ class E_GCL_GKN(nn.Module):
         # reset(self.coord_mlp)
         # size = self.in_channels
         # torch.nn.init.uniform_(tensor, a=0.0, b=1.0, generator=None)
-        # uniform(size, self.root)
-        # uniform(size, self.bias)
+        uniform(size, self.root)
+        uniform(size, self.bias)
 
     def edge_conv(self, source, edge_attr, edge_index):
         row, col = edge_index
