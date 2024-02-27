@@ -222,7 +222,7 @@ class GCN(nn.Module):
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
         self.conv5 = GraphConv(h_feats, h_feats)
-        self.conv6 = GraphConv(h_feats, h_feats)
+        # self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
@@ -237,7 +237,7 @@ class GCN(nn.Module):
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
-        h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
+        # h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
@@ -363,7 +363,7 @@ class EGCN2(nn.Module):
         coord_feat = g.ndata['feat'][:, :2]
         edge_feat = g.edata['slope'][:, :, 0].type(torch.float32) #g.edata['weight'].float()
         h, x = self.conv1(g, in_feat, coord_feat, edge_feat)
-        # h = self.activation(h); x = self.activation(x);
+        h = self.activation(h); # x = self.activation(x);
         # h, x = self.conv2(g, h, x, edge_feat)
         # h = self.activation(h); x = self.activation(x);
         # h, x = self.conv3(g, h, x, edge_feat)
@@ -432,7 +432,7 @@ class EGCN(nn.Module):
         self.hidden_size = hidden_size
         self.out_size = out_size
         self.edge_feat_size = edge_feat_size
-        act_fn = nn.LeakyReLU()
+        act_fn = nn.Tanh()
 
         # \phi_e
         self.edge_mlp = nn.Sequential(
