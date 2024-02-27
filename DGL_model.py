@@ -432,7 +432,7 @@ class EGCN(nn.Module):
         self.hidden_size = hidden_size
         self.out_size = out_size
         self.edge_feat_size = edge_feat_size
-        act_fn = nn.Tanh()
+        act_fn = nn.LeakyReLU()
 
         # \phi_e
         self.edge_mlp = nn.Sequential(
@@ -471,7 +471,7 @@ class EGCN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
-            nn.Linear(hidden_size, 2, bias=False)
+            nn.Linear(hidden_size, 1, bias=False)
         )
         
         # self.linh = torch.nn.Linear(hidden_size, out_size)
