@@ -438,7 +438,7 @@ def main():
 
             if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
+                labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
             # elif args.model_type == "egcn2":
             #     # pred = model(bg, feats, coord_feat, edge_feat)
             #     labels = torch.cat([labels, coord_feat], dim=1)
@@ -478,7 +478,7 @@ def main():
                 
                 if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
+                    labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
                 # if args.model_type == "egcn":
                 #     # pred = model(bg, feats, coord_feat, edge_feat)
                 #     labels = torch.cat([labels, coord_feat], dim=1)
@@ -549,7 +549,7 @@ def main():
                 pred = model(bg, feats)
                 
                 if args.model_type[:4] == "egcn":
-                    pred[:, :2] = pred[:, :2] # - coord_feat
+                    pred[:, :2] = pred[:, :2] - coord_feat
                     # labels = torch.cat([coord_feat + labels[:2], labels[2:]], dim=1)
                 
                 # if args.model_type == "egcn":
