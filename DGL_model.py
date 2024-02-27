@@ -471,7 +471,7 @@ class EGCN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
-            nn.Linear(hidden_size, 1, bias=False)
+            nn.Linear(hidden_size, 2, bias=False)
         )
         
         # self.linh = torch.nn.Linear(hidden_size, out_size)
