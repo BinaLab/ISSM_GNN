@@ -346,6 +346,7 @@ def main():
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
     in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
+    edge_feat_size = val_set[0].edata['weight'].shape[1]
     if args.out_ch > 0:
         out_channels = args.out_ch
     else:
@@ -375,9 +376,9 @@ def main():
     elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, 256)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels-2, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels-2, 128, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
-        model = EGCN2(in_channels, out_channels-2, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN2(in_channels, out_channels-2, 128, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
