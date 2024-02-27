@@ -367,22 +367,23 @@ def main():
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
+    hidden_channels = 256
     if args.model_type == "gcn":
-        model = GCN(in_channels, out_channels, 256)  # Graph convolutional network    
+        model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
     elif args.model_type == "gin":
-        model = GIN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
+        model = GIN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
     elif args.model_type == "mlp":
-        model = MLP(in_channels, out_channels, 128)  # Fully connected network
+        model = MLP(in_channels, out_channels, hidden_channels)  # Fully connected network
     elif args.model_type == "gat":
-        model = GAT(in_channels, out_channels, 256)  # Graph convolutional network 
+        model = GAT(in_channels, out_channels, hidden_channels)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels-2, 256, edge_feat_size) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
-        model = EGCN2(in_channels, out_channels-2, 256, edge_feat_size) # Equivariant Graph convolutional network
+        model = EGCN2(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
-        model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
+        model = SAGE(in_channels, out_channels, hidden_channels) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
-        model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
+        model = ChebGCN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
     else:
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
@@ -438,7 +439,7 @@ def main():
 
             if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
+                labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
             # elif args.model_type == "egcn2":
             #     # pred = model(bg, feats, coord_feat, edge_feat)
             #     labels = torch.cat([labels, coord_feat], dim=1)
@@ -478,7 +479,7 @@ def main():
                 
                 if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
+                    labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
                 # if args.model_type == "egcn":
                 #     # pred = model(bg, feats, coord_feat, edge_feat)
                 #     labels = torch.cat([labels, coord_feat], dim=1)
@@ -549,7 +550,7 @@ def main():
                 pred = model(bg, feats)
                 
                 if args.model_type[:4] == "egcn":
-                    pred[:, :2] = pred[:, :2] - coord_feat
+                    pred[:, :2] = pred[:, :2] # - coord_feat
                     # labels = torch.cat([coord_feat + labels[:2], labels[2:]], dim=1)
                 
                 # if args.model_type == "egcn":

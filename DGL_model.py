@@ -346,10 +346,10 @@ class EGCN2(nn.Module):
         super(EGCN2, self).__init__()
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = EGNNConv(in_feats, h_feats, h_feats, edge_feat_size)
-        self.conv2 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv3 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv4 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
-        self.conv5 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv2 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv3 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv4 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
+        # self.conv5 = EGNNConv(h_feats, h_feats, h_feats, edge_feat_size)
         # self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
@@ -364,13 +364,13 @@ class EGCN2(nn.Module):
         edge_feat = g.edata['slope'][:, :, 0].type(torch.float32) #g.edata['weight'].float()
         h, x = self.conv1(g, in_feat, coord_feat, edge_feat)
         # h = self.activation(h); x = self.activation(x);
-        h, x = self.conv2(g, h, x, edge_feat)
+        # h, x = self.conv2(g, h, x, edge_feat)
         # h = self.activation(h); x = self.activation(x);
-        h, x = self.conv3(g, h, x, edge_feat)
+        # h, x = self.conv3(g, h, x, edge_feat)
         # h = self.activation(h); x = self.activation(x);
-        h, x = self.conv4(g, h, x, edge_feat)
+        # h, x = self.conv4(g, h, x, edge_feat)
         # h = self.activation(h); x = self.activation(x);
-        h, x = self.conv5(g, h, x, edge_feat)
+        # h, x = self.conv5(g, h, x, edge_feat)
         # h = self.activation(h); x = self.activation(x);
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
@@ -548,7 +548,7 @@ class EGCN(nn.Module):
                 torch.cat([node_feat, h_neigh], dim=-1)
             )
             # h = self.linh(h)
-            x = coord_feat + x_neigh # coord_feat + 
+            x = x_neigh # coord_feat + 
             # h = h + torch.sum(x)*0
             out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
