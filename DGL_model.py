@@ -525,7 +525,7 @@ class EGCN(nn.Module):
         with graph.local_scope():
             coord_feat = graph.ndata['feat'][:, :2]
             edge_feat = graph.edata['slope'][:, :, 0].type(torch.float32) #graph.edata['weight'].float()
-            print(edge_feat.shape, coord_feat.shape, node_feat.shape)
+            # print(edge_feat.shape, coord_feat.shape, node_feat.shape)
             # node feature
             graph.ndata['h'] = node_feat
             # coordinate feature
