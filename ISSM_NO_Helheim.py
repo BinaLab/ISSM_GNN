@@ -354,7 +354,7 @@ def main():
     n_edges = val_set[0].num_edges()
     in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
     if args.out_ch > 0:
-        out_channels = args.out_ch - 2
+        out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
         
@@ -374,7 +374,7 @@ def main():
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")
     
     ### PARAMETERS FOR NEURAL OPERATORS ###
-    width = 32
+    width = 64
     ker_width = 32
     edge_features = val_set[0].edata['slope'].shape[1]
     n_layer = args.layer
@@ -396,7 +396,7 @@ def main():
     elif args.model_type == "cheb":
         model = ChebGCN(in_channels, out_channels, 128)  # Equivariant Graph convolutional network
     elif args.model_type == "ino":
-        model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels).to(device)
+        model = EGKN(width, ker_width, n_layer, edge_features, in_channels, out_channels-2).to(device)
     else:
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
