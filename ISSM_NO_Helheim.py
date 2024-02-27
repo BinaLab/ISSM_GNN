@@ -607,7 +607,7 @@ def main():
                 
             pred = model(bg, feats)
             # labels = torch.cat([labels, coord_feat], dim=1)
-            
+            print(pred.shape, labels.shape)
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
