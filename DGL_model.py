@@ -718,7 +718,7 @@ class E_GCL_GKN(nn.Module):
 
     def coord_conv(self, coord, edge_index, coord_diff, edge_feat):
         row, col = edge_index
-        trans = coo rd_diff * self.coord_mlp(edge_feat)
+        trans = coord_diff * self.coord_mlp(edge_feat)
         if self.coords_agg == 'sum':
             agg = unsorted_segment_sum(trans, row, num_segments=coord.size(0))
         elif self.coords_agg == 'mean':
