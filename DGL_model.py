@@ -626,7 +626,7 @@ class EGKN(torch.nn.Module):
 
         self.fc1 = torch.nn.Linear(in_width, width)
         self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], torch.nn.LeakyReLU)
-        self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn, root_weight = False, bias = False)
+        self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
     def forward(self, g, in_feat):
@@ -641,7 +641,7 @@ class EGKN(torch.nn.Module):
             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
         h = self.fc2(h)
         
-        out = torch.cat([h, coords_curr], dim=1)
+        out = torch.cat([coords_curr, h], dim=1)
         # out = h + torch.sum(coords_curr)*0
         
         return out
@@ -687,11 +687,10 @@ class E_GCL_GKN(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        # pass
         reset(self.kernel)
-        reset(self.coord_mlp)
+        # reset(self.coord_mlp)
         size = self.in_channels
-        uniform(size, self.root)
+        torch.nn.init.uniform_(tensor, a=0.0, b=1.0, generator=None) uniform(size, self.root)
         uniform(size, self.bias)
 
     def edge_conv(self, source, edge_attr, edge_index):
@@ -703,7 +702,6 @@ class E_GCL_GKN(nn.Module):
 
     def node_conv(self, x, edge_index, edge_attr, node_attr):
         row, col = edge_index
-        
         # agg = unsorted_segment_sum(edge_attr, row, num_segments=x.size(0))
         agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
 
@@ -725,7 +723,7 @@ class E_GCL_GKN(nn.Module):
             agg = unsorted_segment_mean(trans, row, num_segments=coord.size(0))
         else:
             raise Exception('Wrong coords_agg parameter' % self.coords_agg)
-        coord = agg / self.depth + coord
+        coord = agg / self.depth # + coord
         return coord
 
     def coord2radial(self, edge_index, coord):
@@ -742,17 +740,9 @@ class E_GCL_GKN(nn.Module):
     def forward(self, h, edge_index, coord_curr, edge_attr, node_attr=None):
         row, col = edge_index
         coord_diff = self.coord2radial(edge_index, coord_curr)
-        # h_diff = self.coord2radial(edge_index, h)
-        # edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
-        # coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
-        # # h = self.node_conv(h, edge_index, edge_feat, node_attr)
-        # # h = self.coord_conv(h, edge_index, h_diff, edge_feat)
-        # # h = self.node_conv(h, edge_index, edge_feat, node_attr)
-        
-        h_diff = self.coord2radial(edge_index, h)
         edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
-        coord_curr = self.coord_conv(coord_curr, edge_index, edge_feat, node_attr) 
-        h = self.node_conv(h, edge_index, h_diff, edge_feat)
+        coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
+        h = self.node_conv(h, edge_index, edge_feat, node_attr)
 
         return h, coord_curr
     

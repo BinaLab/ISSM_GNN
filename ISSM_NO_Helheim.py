@@ -354,7 +354,7 @@ def main():
     n_edges = val_set[0].num_edges()
     in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
     if args.out_ch > 0:
-        out_channels = args.out_ch
+        out_channels = args.out_ch - 2
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
         
@@ -606,7 +606,7 @@ def main():
                 labels = bg.ndata['label'][:, :]
                 
             pred = model(bg, feats)
-            labels = torch.cat([labels, coord_feat], dim=1)
+            # labels = torch.cat([labels, coord_feat], dim=1)
             
             loss = criterion(pred*100, labels*100)
             train_loss += loss.cpu().item()
@@ -639,7 +639,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                labels = torch.cat([labels, coord_feat], dim=1)
+                # labels = torch.cat([labels, coord_feat], dim=1)
                 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
@@ -702,7 +702,7 @@ def main():
             with torch.no_grad():
                 
                 pred = model(bg, feats)
-                labels = torch.cat([labels, coord_feat], dim=1)
+                # labels = torch.cat([labels, coord_feat], dim=1)
                     
                 # regional mask ----------------------------
                 # feats = feats[mask, :]
