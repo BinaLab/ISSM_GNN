@@ -549,7 +549,7 @@ class EGCN(nn.Module):
                 torch.cat([node_feat, h_neigh], dim=-1)
             )
             # h = self.linh(h)
-            x = coord_feat + x_neigh
+            x = x_neigh
             # h = h + torch.sum(x)*0
             out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
