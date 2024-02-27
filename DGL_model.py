@@ -361,7 +361,7 @@ class EGCN2(nn.Module):
     
     def forward(self, g, in_feat):
         coord_feat = g.ndata['feat'][:, :2]
-        edge_feat = g.edata['weight'].float()
+        edge_feat = g.edata['slope'][:, :, 0].type(torch.float32) #g.edata['weight'].float()
         h, x = self.conv1(g, in_feat, coord_feat, edge_feat)
         h = self.activation(h); x = self.activation(x);
         # h, x = self.conv2(g, h, x, edge_feat)
@@ -524,7 +524,7 @@ class EGCN(nn.Module):
         """
         with graph.local_scope():
             coord_feat = graph.ndata['feat'][:, :2]
-            edge_feat = graph.edata['weight'].float()
+            edge_feat = graph.edata['slope'][:, :, 0].type(torch.float32) #graph.edata['weight'].float()
             # node feature
             graph.ndata['h'] = node_feat
             # coordinate feature
@@ -550,8 +550,8 @@ class EGCN(nn.Module):
             # h = self.linh(h)
             x = coord_feat + x_neigh
             # h = h + torch.sum(x)*0
-            # out = torch.cat([h, x], dim=1)
-            out = h + torch.sum(x)*0
+            out = torch.cat([x, h], dim=1)
+            # out = h + torch.sum(x)*0
             return out
         
 #########################################
@@ -682,7 +682,8 @@ class E_GCL_GKN(nn.Module):
         coord_mlp.append(nn.Linear(hidden_nf, 2 * hidden_nf))
         coord_mlp.append(act_fn)
         coord_mlp.append(layer)
-        self.coord_mlp = nn.Sequential(*coord_mlp)
+        self.coord_mlp = nn.Sequential(*c
+                                       oord_mlp)
 
         self.reset_parameters()
 
@@ -718,7 +719,7 @@ class E_GCL_GKN(nn.Module):
 
     def coord_conv(self, coord, edge_index, coord_diff, edge_feat):
         row, col = edge_index
-        trans = coord_diff * self.coord_mlp(edge_feat)
+        trans = coo rd_diff * self.coord_mlp(edge_feat)
         if self.coords_agg == 'sum':
             agg = unsorted_segment_sum(trans, row, num_segments=coord.size(0))
         elif self.coords_agg == 'mean':
@@ -742,17 +743,17 @@ class E_GCL_GKN(nn.Module):
     def forward(self, h, edge_index, coord_curr, edge_attr, node_attr=None):
         row, col = edge_index
         coord_diff = self.coord2radial(edge_index, coord_curr)
-        h_diff = self.coord2radial(edge_index, h)
-        edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
-        # coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
-        # h = self.node_conv(h, edge_index, edge_feat, node_attr)
-        h = self.coord_conv(h, edge_index, h_diff, edge_feat)
-        h = self.node_conv(h, edge_index, edge_feat, node_attr)
-        
         # h_diff = self.coord2radial(edge_index, h)
         # edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
-        # coord_curr = self.coord_conv(coord_curr, edge_index, edge_feat, node_attr) 
-        # h = self.node_conv(h, edge_index, h_diff, edge_feat)
+        # coord_curr = self.coord_conv(coord_curr, edge_index, coord_diff, edge_feat)
+        # # h = self.node_conv(h, edge_index, edge_feat, node_attr)
+        # # h = self.coord_conv(h, edge_index, h_diff, edge_feat)
+        # # h = self.node_conv(h, edge_index, edge_feat, node_attr)
+        
+        h_diff = self.coord2radial(edge_index, h)
+        edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
+        coord_curr = self.coord_conv(coord_curr, edge_index, edge_feat, node_attr) 
+        h = self.node_conv(h, edge_index, h_diff, edge_feat)
 
         return h, coord_curr
     

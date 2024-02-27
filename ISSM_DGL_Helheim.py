@@ -375,9 +375,9 @@ def main():
     elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, 256)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels-2, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
-        model = EGCN2(in_channels, out_channels, 128, 1) # Equivariant Graph convolutional network
+        model = EGCN2(in_channels, out_channels-2, 128, 1) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
         model = SAGE(in_channels, out_channels, 128) # Equivariant Graph convolutional network
     elif args.model_type == "cheb":
@@ -435,12 +435,12 @@ def main():
                 
             pred = model(bg, feats)
 
-            if args.model_type == "egcn":
+            if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
-            elif args.model_type == "egcn2":
-                # pred = model(bg, feats, coord_feat, edge_feat)
-                labels = torch.cat([labels, coord_feat], dim=1)
+                labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
+            # elif args.model_type == "egcn2":
+            #     # pred = model(bg, feats, coord_feat, edge_feat)
+            #     labels = torch.cat([labels, coord_feat], dim=1)
             # else:
                 # pred = model(bg, feats)
             
@@ -475,12 +475,15 @@ def main():
                 
                 pred = model(bg, feats)
                 
-                if args.model_type == "egcn":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)                    
+                if args.model_type[:4] == "egcn":
+                # pred = model(bg, feats, coord_feat, edge_feat)
+                    labels = torch.cat([coord_feat + labels[:, :2], labels[:, 2:]], dim=1)
+                # if args.model_type == "egcn":
+                #     # pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
+                # elif args.model_type == "egcn2":
+                #     # pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)                    
 
 
             loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
@@ -544,12 +547,16 @@ def main():
                 
                 pred = model(bg, feats)
                 
-                if args.model_type == "egcn":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
-                elif args.model_type == "egcn2":
-                    # pred = model(bg, feats, coord_feat, edge_feat)
-                    labels = torch.cat([labels, coord_feat], dim=1)
+                if args.model_type[:4] == "egcn":
+                    pred[:, :2] = pred[:, :2] - coord_feat
+                    # labels = torch.cat([coord_feat + labels[:2], labels[2:]], dim=1)
+                
+                # if args.model_type == "egcn":
+                #     # pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
+                # elif args.model_type == "egcn2":
+                #     # pred = model(bg, feats, coord_feat, edge_feat)
+                #     labels = torch.cat([labels, coord_feat], dim=1)
                 # else:
                 #     pred = model(bg, feats)
                     
