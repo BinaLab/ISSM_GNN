@@ -724,7 +724,7 @@ class E_GCL_GKN(nn.Module):
             agg = unsorted_segment_mean(trans, row, num_segments=coord.size(0))
         else:
             raise Exception('Wrong coords_agg parameter' % self.coords_agg)
-        coord = agg / self.depth # + coord
+        coord = agg / self.depth + coord
         return coord
 
     def coord2radial(self, edge_index, coord):
