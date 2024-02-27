@@ -691,7 +691,7 @@ class E_GCL_GKN(nn.Module):
     def reset_parameters(self):
         reset(self.kernel)
         # reset(self.coord_mlp)
-        # size = self.in_channels
+        size = self.in_channels
         # torch.nn.init.uniform_(tensor, a=0.0, b=1.0, generator=None)
         uniform(size, self.root)
         uniform(size, self.bias)
