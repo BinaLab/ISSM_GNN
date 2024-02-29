@@ -523,12 +523,14 @@ def main():
                 
                 y_pred.append(pred[:, :out_channels].to('cpu')) #y_pred[k] = pred[:, :out_channels].to('cpu')
                 y_true.append(labels[:, :out_channels].to('cpu')) #y_true[k] = labels[:, :out_channels].to('cpu')
-                x_inputs[k].append(feats.to('cpu')) #x_inputs[k] = feats.to('cpu')
+                x_inputs.append(feats.to('cpu')) #x_inputs[k] = feats.to('cpu')
 
-        test_save = [rates, years, x_inputs, y_true, y_pred, mask]
+        test_save = [rates, years, x_inputs, y_true, y_pred]     
 
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)
+            
+        del train_set, val_set, test_set, train_loader, val_loader, model, test_save, pred, labels, x_inputs, y_true, y_pred, feats
             
         print("##### Test done! #####")
     dist.destroy_process_group()
