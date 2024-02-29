@@ -313,7 +313,9 @@ def main():
     # train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     # val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
     
-    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
+    train_loader, _ = get_dataloaders(train_set, seed, batch_size, True, frac_list = [0.7, 0.3, 0.0])
+    val_loader, _ = get_dataloaders(val_set, seed, batch_size, True, frac_list = [1.0, 0.0, 0.0])
+    
     n_nodes = val_set[0].num_nodes()
     in_channels = val_set[0].ndata['feat'].shape[1] - 2 #-1
     edge_feat_size = val_set[0].edata['slope'].shape[1]
@@ -472,10 +474,10 @@ def main():
         rates = np.zeros(len(test_set))
         years = np.zeros(len(test_set))
             
-        y_pred = np.zeros([len(test_set), n_nodes, out_channels])
-        y_true = np.zeros([len(test_set), n_nodes, out_channels])
+        y_pred = [] #np.zeros([len(test_set), n_nodes, out_channels])
+        y_true = [] #np.zeros([len(test_set), n_nodes, out_channels])
 
-        x_inputs = np.zeros([len(test_set), n_nodes, in_channels])
+        x_inputs = [] #np.zeros([len(test_set), n_nodes, in_channels])
 
         for k, bg in enumerate(test_set):
             bg = bg.to(device)
@@ -519,9 +521,9 @@ def main():
                 # labels = labels[mask, :]
                 ## -----------------------------------------
                 
-                y_pred[k] = pred[:, :out_channels].to('cpu')
-                y_true[k] = labels[:, :out_channels].to('cpu')
-                x_inputs[k] = feats.to('cpu')
+                y_pred.append(pred[:, :out_channels].to('cpu')) #y_pred[k] = pred[:, :out_channels].to('cpu')
+                y_true.append(abels[:, :out_channels].to('cpu')) #y_true[k] = labels[:, :out_channels].to('cpu')
+                x_inputs[k].append(feats.to('cpu')) #x_inputs[k] = feats.to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred, mask]
 
