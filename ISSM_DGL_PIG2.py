@@ -329,7 +329,7 @@ def main():
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(test_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
-    hidden_channels = 256
+    hidden_channels = 128
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
     elif args.model_type == "gin":
