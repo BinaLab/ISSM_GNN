@@ -301,14 +301,14 @@ def main():
     mesh = args.mesh
     
     if args.data == "mat":
-        train_files, val_files, test_files = generate_list()
-        train_set = GNN_Helheim_Dataset(train_files)
-        val_set = GNN_Helheim_Dataset(val_files)
-        # test_set = GNN_Helheim_Dataset(test_files)
+        train_files, val_files, test_files = generate_list(region = "PIG")
+        train_set = GNN_PIG_Dataset(train_files)
+        val_set = GNN_PIG_Dataset(val_files)
+        test_set = GNN_PIG_Dataset(test_files)
     elif args.data == "bin":
-        train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
-        val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
-        # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
+        train_set = ISSM_train_dataset(f"../data/DGL_train_dataset_{version}_m{mesh:05d}.bin")
+        val_set = ISSM_val_dataset(f"../data/DGL_val_dataset_{version}_m{mesh:05d}.bin")
+        test_set = ISSM_test_dataset(f"../data/DGL_test_dataset_{version}_m{mesh:05d}.bin")
     
     # train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     # val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
@@ -321,16 +321,6 @@ def main():
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
-        
-    # Region filtering ============================================
-    test = sio.loadmat(train_files[0])
-    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
-    for i in range(0, batch_size):
-        if i == 0:
-            mask_batch = mask
-        else:
-            mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
-    # =============================================================
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
@@ -358,7 +348,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    model_name = f"torch_dgl_PIG_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
