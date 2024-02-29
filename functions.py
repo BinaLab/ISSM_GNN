@@ -234,7 +234,6 @@ class GNN_PIG_Dataset(DGLDataset):
 
                 src = torch.tensor(src)
                 dst = torch.tensor(dst)
-                print(filename, len(src))
                 weight = torch.tensor(weight)
                 slope = torch.arctan(torch.tensor(slope))
                 first = False

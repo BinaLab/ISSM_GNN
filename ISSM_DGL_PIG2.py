@@ -231,10 +231,10 @@ class ISSM_test_dataset(DGLDataset):
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
 
-def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
+def get_dataloaders(dataset, seed, batch_size=32, shuffle = False, frac_list = [0.7, 0.3, 0.0]):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[0.7, 0.3, 0.0],
+                                                 frac_list=frac_list,
                                                  shuffle=True,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
@@ -324,7 +324,7 @@ def main():
     
     if args.local_rank == 0:
         print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
-        print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
+        print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(test_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
     hidden_channels = 256
@@ -469,24 +469,15 @@ def main():
         
     if args.local_rank == 0:
         ##### TEST ########################
-        rates = np.zeros(len(val_set))
-        years = np.zeros(len(val_set))
-
-        if out_channels == 6:
-            scaling = np.array([5000, 5000, 5000, 4000, 4000, 150])
-        elif out_channels == 5:
-            scaling = np.array([5000, 5000, 4000, 4000, 150])
-        elif out_channels == 3:
-            scaling = np.array([5000, 5000, 4000])
-        elif out_channels == 2:
-            scaling = np.array([5000, 4000])
+        rates = np.zeros(len(test_set))
+        years = np.zeros(len(test_set))
             
-        y_pred = np.zeros([len(val_set), n_nodes, out_channels])
-        y_true = np.zeros([len(val_set), n_nodes, out_channels])
+        y_pred = np.zeros([len(test_set), n_nodes, out_channels])
+        y_true = np.zeros([len(test_set), n_nodes, out_channels])
 
-        x_inputs = np.zeros([len(val_set), n_nodes, in_channels])
+        x_inputs = np.zeros([len(test_set), n_nodes, in_channels])
 
-        for k, bg in enumerate(val_set):
+        for k, bg in enumerate(test_set):
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]
             coord_feat = bg.ndata['feat'][:, :2]
@@ -537,7 +528,7 @@ def main():
         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
             pickle.dump(test_save, file)
             
-        print("##### Validation done! #####")
+        print("##### Test done! #####")
     dist.destroy_process_group()
 
 ###############################################################################
