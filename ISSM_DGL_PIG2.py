@@ -522,7 +522,7 @@ def main():
                 ## -----------------------------------------
                 
                 y_pred.append(pred[:, :out_channels].to('cpu')) #y_pred[k] = pred[:, :out_channels].to('cpu')
-                y_true.append(abels[:, :out_channels].to('cpu')) #y_true[k] = labels[:, :out_channels].to('cpu')
+                y_true.append(labels[:, :out_channels].to('cpu')) #y_true[k] = labels[:, :out_channels].to('cpu')
                 x_inputs[k].append(feats.to('cpu')) #x_inputs[k] = feats.to('cpu')
 
         test_save = [rates, years, x_inputs, y_true, y_pred, mask]
