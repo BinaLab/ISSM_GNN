@@ -667,7 +667,7 @@ class E_GCL_GKN(nn.Module):
     E(n) Equivariant Convolutional Layer
     """
 
-    def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.ReLU(), normalize=True,
+    def __init__(self, input_nf, output_nf, hidden_nf, kernel, depth, act_fn=nn.Tanh(), normalize=True,
                  coords_agg='mean',
                  root_weight=True, residual=True, bias=True):
         super().__init__()
@@ -697,8 +697,24 @@ class E_GCL_GKN(nn.Module):
         coord_mlp = []
         coord_mlp.append(nn.Linear(hidden_nf, 2 * hidden_nf))
         coord_mlp.append(act_fn)
+        coord_mlp.append(nn.Linear(2 * hidden_nf, 2 * hidden_nf))
+        coord_mlp.append(act_fn)
+        coord_mlp.append(nn.Linear(2 * hidden_nf, 2 * hidden_nf))
+        coord_mlp.append(act_fn)
         coord_mlp.append(layer)
         self.coord_mlp = nn.Sequential(*coord_mlp)
+        
+        self.node_mlp = nn.Sequential(
+            nn.Linear(hidden_nf, hidden_nf),
+            act_fn,
+            nn.Linear(hidden_nf, hidden_nf),
+            act_fn,
+            nn.Linear(hidden_nf, hidden_nf),
+            act_fn,
+            nn.Linear(hidden_nf, hidden_nf),
+            act_fn,
+            nn.Linear(hidden_nf, hidden_nf)
+        )
 
         self.reset_parameters()
 
@@ -722,11 +738,12 @@ class E_GCL_GKN(nn.Module):
         # agg = unsorted_segment_sum(edge_attr, row, num_segments=x.size(0))
         agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
 
-        if self.root is not None:
-            agg = agg + torch.mm(x, self.root)
-        if self.bias is not None:
-            agg = agg + self.bias
-        out = self.act_fn(agg) / self.depth
+        # if self.root is not None:
+        #     agg = agg + torch.mm(x, self.root)
+        # if self.bias is not None:
+        #     agg = agg + self.bias
+        # agg = self.node_mlp(x)
+        out = self.node_mlp(agg) / self.depth
         if self.residual:
             out = x + out
         return out
