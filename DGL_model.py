@@ -475,7 +475,7 @@ class EGCN(nn.Module):
         )
         
         self.vel_mlp = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size),
+            nn.Linear(in_size, hidden_size),
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
@@ -555,6 +555,7 @@ class EGCN(nn.Module):
             graph.update_all(fn.copy_e('msg_h', 'm'), fn.sum('m', 'h_neigh'))
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
+            # print(self.vel_mlp(node_feat).shape, node_feat[:, [3, 4]].shape)
             x_neigh = x_neigh + self.vel_mlp(node_feat) * node_feat[:, [3, 4]]
 
             h = self.node_mlp(
