@@ -654,7 +654,7 @@ class EGKN(torch.nn.Module):
 
         h = self.fc1(h)
         for k in range(self.depth):
-            h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr, vi)
+            h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
         h = self.fc2(h)
         
         out = torch.cat([coords_curr - g.ndata['feat'][:, :2].detach().clone(), h], dim=1)
@@ -771,7 +771,7 @@ class E_GCL_GKN(nn.Module):
 
         return coord_diff
 
-    def forward(self, h, edge_index, coord_curr, edge_attr, vi, node_attr=None):
+    def forward(self, h, edge_index, coord_curr, edge_attr, node_attr=None):
         row, col = edge_index
         coord_diff = self.coord2radial(edge_index, coord_curr)
         edge_feat = self.edge_conv(h[col], edge_attr, edge_index)
