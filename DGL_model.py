@@ -738,10 +738,10 @@ class E_GCL_GKN(nn.Module):
         # agg = unsorted_segment_sum(edge_attr, row, num_segments=x.size(0))
         agg = unsorted_segment_mean(edge_attr, row, num_segments=x.size(0))
 
-        # if self.root is not None:
-        #     agg = agg + torch.mm(x, self.root)
-        # if self.bias is not None:
-        #     agg = agg + self.bias
+        if self.root is not None:
+            agg = agg + torch.mm(x, self.root)
+        if self.bias is not None:
+            agg = agg + self.bias
         # agg = self.node_mlp(x)
         out = self.node_mlp(agg) / self.depth
         if self.residual:
