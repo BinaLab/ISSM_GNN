@@ -474,6 +474,18 @@ class EGCN(nn.Module):
             nn.Linear(hidden_size, 1, bias=False)
         )
         
+        self.vel_mlp = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, hidden_size),
+            act_fn,
+            nn.Linear(hidden_size, 1, bias = False)
+        )
+        
         self.linh = torch.nn.Linear(hidden_size, out_size)
 
     def message(self, edges):
@@ -488,7 +500,7 @@ class EGCN(nn.Module):
             f = torch.cat([edges.src['h'], edges.dst['h'], edges.data['radial']], dim=-1)
 
         msg_h = self.edge_mlp(f)
-        msg_x = self.coord_mlp(msg_h) * edges.data['x_diff']
+        msg_x = self.coord_mlp(msg_h) * edges.data['x_diff'] 
 
         return {'msg_x': msg_x, 'msg_h': msg_h}
     
@@ -543,6 +555,7 @@ class EGCN(nn.Module):
             graph.update_all(fn.copy_e('msg_h', 'm'), fn.sum('m', 'h_neigh'))
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
+            x_neigh = x_neigh + self.vel_mlp(node_feat) * node_feat[:, [3, 4]]
 
             h = self.node_mlp(
                 torch.cat([node_feat, h_neigh], dim=-1)
@@ -643,7 +656,7 @@ class EGKN(torch.nn.Module):
             h, coords_curr = self.egkn_conv(h, edge_index, coords_curr, edge_attr)
         h = self.fc2(h)
         
-        out = torch.cat([coords_curr, h], dim=1)
+        out = torch.cat([coords_curr - g.ndata['feat'][:, :2].detach().clone(), h], dim=1)
         # out = h + torch.sum(coords_curr)*0
         
         return out
@@ -726,7 +739,7 @@ class E_GCL_GKN(nn.Module):
             agg = unsorted_segment_mean(trans, row, num_segments=coord.size(0))
         else:
             raise Exception('Wrong coords_agg parameter' % self.coords_agg)
-        coord = agg / self.depth # + coord
+        coord = agg / self.depth + coord
         return coord
 
     def coord2radial(self, edge_index, coord):
