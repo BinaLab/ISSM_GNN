@@ -704,17 +704,17 @@ class E_GCL_GKN(nn.Module):
         coord_mlp.append(layer)
         self.coord_mlp = nn.Sequential(*coord_mlp)
         
-        self.node_mlp = nn.Sequential(
-            nn.Linear(hidden_nf, hidden_nf),
-            act_fn,
-            nn.Linear(hidden_nf, hidden_nf),
-            act_fn,
-            nn.Linear(hidden_nf, hidden_nf),
-            act_fn,
-            nn.Linear(hidden_nf, hidden_nf),
-            act_fn,
-            nn.Linear(hidden_nf, hidden_nf)
-        )
+        # self.node_mlp = nn.Sequential(
+        #     nn.Linear(hidden_nf, hidden_nf),
+        #     act_fn,
+        #     nn.Linear(hidden_nf, hidden_nf),
+        #     act_fn,
+        #     nn.Linear(hidden_nf, hidden_nf),
+        #     act_fn,
+        #     nn.Linear(hidden_nf, hidden_nf),
+        #     act_fn,
+        #     nn.Linear(hidden_nf, hidden_nf)
+        # )
 
         self.reset_parameters()
 
@@ -743,7 +743,8 @@ class E_GCL_GKN(nn.Module):
         if self.bias is not None:
             agg = agg + self.bias
         # agg = self.node_mlp(x)
-        out = self.node_mlp(agg) / self.depth
+        out = agg / self.depth
+        # out = self.node_mlp(agg) / self.depth
         if self.residual:
             out = x + out
         return out
