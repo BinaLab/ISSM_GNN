@@ -366,6 +366,7 @@ def main():
     
     total_params = sum(p.numel() for p in model.parameters())
     if args.local_rank == 0:
+        print(model_name)
         print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
     
     history = {'loss': [], 'val_loss': [], 'time': []}
