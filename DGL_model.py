@@ -636,12 +636,12 @@ class DenseNet(torch.nn.Module):
         return x
 
 class EGKN(torch.nn.Module):
-    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=nn.Tanh()):
+    def __init__(self, width, ker_width, depth, ker_in, in_width=1, out_width=1, device='gpu', act_fn=nn.LeakyReLU()):
         super().__init__()
         self.depth = depth
 
         self.fc1 = torch.nn.Linear(in_width, width)
-        self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], nn.Tanh)
+        self.kernel = DenseNet([ker_in, ker_width // 2, ker_width, width ** 2], nn.LeakyLeRU)
         self.egkn_conv = E_GCL_GKN(width, width, width, self.kernel, depth, act_fn=act_fn)
         self.fc2 = torch.nn.Sequential(torch.nn.Linear(width, width * 2), act_fn, torch.nn.Linear(width * 2, out_width))
 
