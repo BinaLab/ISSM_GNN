@@ -231,7 +231,7 @@ class GCN(nn.Module):
         # self.device = device
     
     def forward(self, g, in_feat):
-        edge_weight = g.edata['weight'].type(torch.float32)
+        edge_weight = None # g.edata['weight'].type(torch.float32)
         h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
