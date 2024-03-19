@@ -373,8 +373,8 @@ def main():
     
     train_files, val_files, test_files = generate_list(region = "PIG", model = "cnn")
     train_dataset = CNN_PIG_Dataset(train_files[:4])
-    val_dataset = CNN_PIG_Dataset(val_files[:4])
-    test_dataset = CNN_PIG_Dataset(test_files[:4])
+    val_dataset = CNN_PIG_Dataset(val_files[:2])
+    test_dataset = CNN_PIG_Dataset(test_files[:2])
     
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
