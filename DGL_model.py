@@ -143,8 +143,9 @@ class FCN(nn.Module):
         self.outconv = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
         
         
-    def forward(self, x, sampling):
-        n_nodes = sampling.shape[0]
+    def forward(self, x, sampling = None):
+        if sample != None:
+            n_nodes = sampling.shape[0]
         n_samples = x.shape[0]
         
         x = self.activation(self.conv1(x))
