@@ -144,7 +144,7 @@ class FCN(nn.Module):
         
         
     def forward(self, x, sampling = None):
-        if sample != None:
+        if sampling != None:
             n_nodes = sampling.shape[0]
         n_samples = x.shape[0]
         
