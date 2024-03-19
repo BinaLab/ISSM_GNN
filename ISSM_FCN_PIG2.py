@@ -28,6 +28,7 @@ from torch.utils.data.distributed import DistributedSampler
 # from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
+from functions import *
 
 import argparse
 import os    
