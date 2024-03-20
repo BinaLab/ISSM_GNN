@@ -433,6 +433,8 @@ def main():
     history = {'loss': [], 'val_loss': [], 'time': []}
     ti = time.time()
     
+    torch.distributed.barrier()
+    
     for epoch in range(n_epochs):
         t0 = time.time()
         model.train()
