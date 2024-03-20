@@ -374,7 +374,7 @@ def main():
     mesh = args.mesh
     
     train_files, val_files, test_files = generate_list(region = "PIG", model = "cnn")
-    train_dataset = CNN_PIG_Dataset(train_files[:10])
+    train_dataset = CNN_PIG_Dataset(train_files[:])
     val_dataset = CNN_PIG_Dataset(val_files[:])
     test_dataset = CNN_PIG_Dataset(test_files[:])
     
