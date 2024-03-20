@@ -339,7 +339,8 @@ def main():
     
     torch.distributed.init_process_group(
         backend=args.backend,
-        init_method='env://'
+        init_method='env://',
+        world_size=world_size
     )
     
     if args.cuda:
@@ -373,9 +374,9 @@ def main():
     mesh = args.mesh
     
     train_files, val_files, test_files = generate_list(region = "PIG", model = "cnn")
-    train_dataset = CNN_PIG_Dataset(train_files[:])
-    val_dataset = CNN_PIG_Dataset(val_files[:])
-    test_dataset = CNN_PIG_Dataset(test_files[:])
+    train_dataset = CNN_PIG_Dataset(train_files[:20])
+    val_dataset = CNN_PIG_Dataset(val_files[:10])
+    test_dataset = CNN_PIG_Dataset(test_files[:10])
     
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
