@@ -374,9 +374,12 @@ def main():
     mesh = args.mesh
     
     train_files, val_files, test_files = generate_list(region = "PIG", model = "cnn")
-    train_dataset = CNN_PIG_Dataset(train_files[:])
+    train_dataset = CNN_PIG_Dataset(train_files[:10])
     val_dataset = CNN_PIG_Dataset(val_files[:])
     test_dataset = CNN_PIG_Dataset(test_files[:])
+    
+    # NaN should be 1 (True)
+    mask = torch.where(torch.tensor(val_dataset[0][0][1]) > 0, 0, 1)
     
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
@@ -422,7 +425,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = nn.MSELoss() #single_loss(mask) #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = single_loss(mask) #single_loss(mask) #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.98)
     
