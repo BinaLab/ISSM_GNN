@@ -146,7 +146,7 @@ def generate_list(region = "Helheim", folder = "../data", model = "gnn"):
         if model == "gnn":
             filelist = glob.glob(f'{folder}/Helheim_r*_030.mat')
         elif model == "cnn":
-            filelist = glob.glob(f'{folder}/Helheim_r*_030.mat')
+            filelist = glob.glob(f'{folder}/Helheim_r*_030_CNN.pkl')
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
             if int(rate) <= 100 and rate != "080":
@@ -389,3 +389,35 @@ def corr(prd, obs):
     
     r = np.ma.corrcoef(np.ma.masked_invalid(prd), np.ma.masked_invalid(obs))[0, 1]
     return r
+
+def sort_xy(x, y):
+    
+    print(len(x))
+
+    x0 = x[0] #200000 #np.median(x)
+    y0 = y[0] #-2450000 #np.median(y)
+    
+    x_sorted = []
+    y_sorted = []
+    
+    i = 0
+
+    while len(x_sorted) < len(x):      
+        
+        dist = ((x-x[i])**2 + (y-y[i])**2)**0.5
+        cand = np.argsort(dist)       
+        
+        r = np.sqrt((x[cand]-x0)**2 + (y[cand]-y0)**2)
+        angles = np.where((y[cand]-y0) > 0, np.arccos((x[cand]-x0)/r), 2*np.pi-np.arccos((x[cand]-x0)/r))     
+        
+        k1 = cand[0] #np.argsort(angles)[0]
+        k2 = cand[1] #np.argsort(angles)[1]
+        
+        for c in cand:
+            if x[c] not in x_sorted:
+                x_sorted.append(x[c])
+                y_sorted.append(y[c])
+                i = c
+                break
+                
+    return x_sorted, y_sorted
