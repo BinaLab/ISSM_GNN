@@ -384,7 +384,7 @@ def main():
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
 
-    n_nodes = val_dataset[0].num_nodes #val_graphs[0].num_nodes()
+    n_nodes = 23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
     in_channels = train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
     
     if args.out_ch > 0:
