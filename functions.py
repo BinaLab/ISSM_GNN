@@ -149,7 +149,7 @@ def generate_list(region = "Helheim", folder = "../data", model = "gnn"):
             filelist = glob.glob(f'{folder}/Helheim_r*_030_CNN.pkl')
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
-            if int(rate) <= 100 and rate != "080":
+            if int(rate) <= 120 and rate != "080":
                 # train_files.append(f)
                 if rate == "075" or rate == "095": #int(f[-11:-8])%10 == 5: # f[-11:-8] == "070" or f[-11:-8] == "080" or f[-11:-8] == "115" or f[-11:-8] == "115":
                     val_files.append(f)
