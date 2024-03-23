@@ -415,7 +415,7 @@ def main():
     elif args.model_type == "fcn":
         model = FCN(in_channels, out_channels, 128)
     
-    model_name = f"torch_dgl_PIG_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
     
     torch.manual_seed(seed)
     
@@ -488,7 +488,7 @@ def main():
         
         t1 = time.time() - t0
         if args.local_rank == 0:
-            if epoch % 2 == 0:            
+            if epoch % 10 == 0:            
                 print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
             if epoch == n_epochs-1:
                 print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))

@@ -421,3 +421,43 @@ def sort_xy(x, y):
                 break
                 
     return x_sorted, y_sorted
+
+def triangle_area(x1, x2, x3, y1, y2, y3):
+    A = abs(x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2)) * 0.5
+    return A
+
+def area_mean(xc, yc, elements, value):
+    area_sum = 0
+    area = 0
+    for i in range(0, elements.shape[0]):
+        p1 = elements[i, 0]
+        p2 = elements[i, 1]
+        p3 = elements[i, 2]
+        A = triangle_area(xc[p1], xc[p2], xc[p3], yc[p1], yc[p2], yc[p3])[0]
+        M = (value[p1] + value[p2] + value[p3])/3
+        area_sum += M*A
+        area += A
+    area_mean = area_sum / area
+    return area_sum, area_mean
+
+def node_area(xc, yc, elements):
+    n_area = np.zeros(xc.shape)
+    for i in range(0, xc.shape[0]):        
+        p1, p2 = np.where(elements == i)
+
+        for p in p1:
+            pi = elements[p, :]
+            n_area[i] += triangle_area(xc[pi[0], 0], xc[pi[1], 0], xc[pi[2], 0], yc[pi[0], 0], yc[pi[1], 0], yc[pi[2], 0])
+        n_area[i] = n_area[i] / len(p1)
+    return n_area
+
+def approx_area(xc, yc, elements):
+    area = np.zeros(xc.shape[0])
+    for i in range(0, xc.shape[0]):
+        A = 0
+        p1, p2 = np.where(elements == i)
+        for p in p1:
+            A += triangle_area(xc[elements[p,0]], xc[elements[p,1]], xc[elements[p,2]], yc[elements[p,0]], yc[elements[p,1]], yc[elements[p,2]])
+        A = A/len(p1)
+        area[i] = A
+    return area / 1e6
