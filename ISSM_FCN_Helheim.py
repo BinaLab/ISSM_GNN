@@ -416,6 +416,7 @@ def main():
         model = FCN(in_channels, out_channels, 128)
     
     model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    print(model_name)
     
     torch.manual_seed(seed)
     
