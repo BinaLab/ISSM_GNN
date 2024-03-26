@@ -347,7 +347,7 @@ def main():
     elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, hidden_channels)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels-2, 128, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
         model = EGCN2(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "sage":

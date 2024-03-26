@@ -95,7 +95,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 ## INPUTS ================================================
                 inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                 inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
-                inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Melting rate (50-150)
+                inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
                 inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
                 inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
@@ -461,3 +461,8 @@ def approx_area(xc, yc, elements):
         A = A/len(p1)
         area[i] = A
     return area / 1e6
+
+def add_vel(y_true0):
+    vel = np.expand_dims((y_true0[:, :, 0]**2 + y_true0[:, :, 1]**2)**0.5, axis = 2)
+    y_true0 = np.append(y_true0, vel, axis = 2)
+    return y_true0
