@@ -113,6 +113,12 @@ def parse_args() -> argparse.Namespace:
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
+        '--hidden-ch',
+        type=int,
+        default=128,
+        help='Number of hidden channels',
+    )
+    parser.add_argument(
         '--epochs',
         type=int,
         default=100,
@@ -337,7 +343,7 @@ def main():
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
-    hidden_channels = 256
+    hidden_channels = args.hidden_ch
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
     elif args.model_type == "gin":
@@ -358,7 +364,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}_ft{hidden_channels}"
     
     torch.manual_seed(seed)
     
