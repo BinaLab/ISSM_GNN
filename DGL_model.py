@@ -139,7 +139,7 @@ class FCN(nn.Module):
         self.conv2 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")       
         self.conv3 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
         self.conv4 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
-        self.conv5 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
+        # self.conv5 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
         self.outconv = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
         
         
@@ -152,7 +152,7 @@ class FCN(nn.Module):
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
-        x = self.activation(self.conv5(x))
+        # x = self.activation(self.conv5(x))
         x = self.outconv(x)
         
         # out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
@@ -222,13 +222,13 @@ class GCN(nn.Module):
         self.conv2 = GraphConv(h_feats, h_feats)
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
-        self.conv5 = GraphConv(h_feats, h_feats)
+        self.conv5 = GraphConv(h_feats, num_classes)
         # self.conv6 = GraphConv(h_feats, h_feats)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
         # self.lin4 = torch.nn.Linear(h_feats, h_feats)
-        self.lin5 = torch.nn.Linear(h_feats, num_classes)
+        # self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
         # self.device = device
     
     def forward(self, g, in_feat):
@@ -244,7 +244,7 @@ class GCN(nn.Module):
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
-        h = self.lin5(h);
+        # h = self.lin5(h);
 
         return h
     

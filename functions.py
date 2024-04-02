@@ -18,6 +18,9 @@ import glob, os
 from torch.utils.data import Dataset
 # from torch.utils.data import DataLoader
 
+def norm(x, mean, std):
+    return (x-mean)/std
+
 ## Dataset for train ===================================
 class GNN_Helheim_Dataset(DGLDataset):
     def __init__(self, filename):
@@ -99,19 +102,28 @@ class GNN_Helheim_Dataset(DGLDataset):
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
                 inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
                 inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
-                inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vx
-                inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Vx
+                inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vy
+                inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Velocity
                 inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
                 inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
                 inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
                 # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                 inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
+                
+                ###### Normalization #####################
+                
+                vx_mean = torch.mean(inputs[:, 5])
+                vy_mean = torch.mean(inputs[:, 6])
+                vel_mean = torch.mean(inputs[:, 7])
+                surf_mean = torch.mean(inputs[:, 8])
+                base_mean = torch.mean(inputs[:, 9])
+                H_mean = torch.mean(inputs[:, 10])
 
                 ## OUTPUTS ===============================================
                 outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
                 outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
                 outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Initial surface elevation
-                outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Initial base elevation
+                outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Initial surface elevation
                 outputs[:, 4] = torch.tensor(H[t, :]/5000) # Initial ice thickness
                 # outputs[:, 5] = torch.tensor(f[t, :]/5000) # Initial floating part 
                 outputs[:, 5] = torch.tensor(ice[t, :]) # Initial floating part 

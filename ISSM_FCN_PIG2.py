@@ -409,11 +409,12 @@ def main():
 #         sampling[i, 0] = k[0].item()
 #         sampling[i, 1] = k[1].item()
     # ==============================================================================
-    
+
+    hidden_channels = 128
     if args.model_type == "cnn":
         model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # convolutional network
     elif args.model_type == "fcn":
-        model = FCN(in_channels, out_channels, 128)
+        model = FCN(in_channels, out_channels, hidden_channels)
     
     model_name = f"torch_dgl_PIG_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
     
