@@ -139,7 +139,7 @@ class FCN(nn.Module):
         self.conv2 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")       
         self.conv3 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
         self.conv4 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
-        # self.conv5 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
+        self.conv5 = nn.Conv2d(n_filters, n_filters, kernel, padding = "same")
         self.outconv = nn.Conv2d(n_filters, n_outputs, kernel, padding = "same")
         
         
@@ -152,7 +152,7 @@ class FCN(nn.Module):
         x = self.activation(self.conv2(x))
         x = self.activation(self.conv3(x))
         x = self.activation(self.conv4(x))
-        # x = self.activation(self.conv5(x))
+        x = self.activation(self.conv5(x))
         x = self.outconv(x)
         
         # out = torch.zeros([n_samples, n_nodes, self.n_outputs]).cuda()
@@ -237,7 +237,7 @@ class GCN(nn.Module):
         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
-        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        h = self.conv5(g, h, edge_weight=edge_weight)
         # h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
