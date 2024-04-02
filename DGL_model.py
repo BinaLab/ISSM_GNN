@@ -198,9 +198,9 @@ class MLP(nn.Module):
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
+        self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         # self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
-        # self.lin6 = torch.nn.Linear(hidden_channels, ch_output)
+        self.outlin = torch.nn.Linear(hidden_channels, ch_output)
 
     def forward(self, g, in_feat):
         
@@ -208,8 +208,8 @@ class MLP(nn.Module):
         x = self.activation(self.lin2(x));
         x = self.activation(self.lin3(x));
         x = self.activation(self.lin4(x));
-        x = self.lin5(x);
-        # x = self.lin6(x);
+        x = self.activation(self.lin5(x));
+        x = self.outlin(x);
         
         return x
     
@@ -222,8 +222,8 @@ class GCN(nn.Module):
         self.conv2 = GraphConv(h_feats, h_feats)
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
-        self.conv5 = GraphConv(h_feats, num_classes)
-        # self.conv6 = GraphConv(h_feats, h_feats)
+        self.conv5 = GraphConv(h_feats, h_feats)
+        self.outconv = GraphConv(h_feats, num_classes)
         # self.lin1 = torch.nn.Linear(h_feats, h_feats)
         # self.lin2 = torch.nn.Linear(h_feats, h_feats)
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
@@ -237,14 +237,14 @@ class GCN(nn.Module):
         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
-        h = self.conv5(g, h, edge_weight=edge_weight)
+        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
-        # h = self.lin5(h);
+        h = self.outconv(h);
 
         return h
     
