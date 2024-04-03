@@ -388,7 +388,7 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                labels = bg.ndata['label'][:, [2,4,5]] # version 2
+                labels = bg.ndata['label'][:, [0, 1, 4]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
             elif out_channels == 4:
@@ -426,7 +426,7 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                labels = bg.ndata['label'][:, [2,4,5]] # version 2
+                labels = bg.ndata['label'][:, [0,1,4]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
             elif out_channels == 4:
@@ -470,7 +470,7 @@ def main():
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                     pickle.dump(history, file)
         
-    if args.local_rank == 0:
+    if args.local_rank == -1:
         ##### TEST ########################
         rates = np.zeros(len(test_set))
         years = np.zeros(len(test_set))
