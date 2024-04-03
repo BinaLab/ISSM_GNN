@@ -410,7 +410,7 @@ def main():
 #         sampling[i, 1] = k[1].item()
     # ==============================================================================
 
-    hidden_channels = 128
+    hidden_channels = 64
     if args.model_type == "cnn":
         model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # convolutional network
     elif args.model_type == "fcn":
