@@ -238,13 +238,14 @@ class GCN(nn.Module):
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        h = self.outconv(g, h, edge_weight=edge_weight);
         # h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
         # h = self.activation(self.conv3(g, h))
         # h = self.activation(self.lin1(h));
         # h = self.activation(self.lin2(h));
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
-        h = self.outconv(h);
+        
 
         return h
     
