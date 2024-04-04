@@ -198,8 +198,8 @@ class MLP(nn.Module):
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        # self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
-        # self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.outlin = torch.nn.Linear(hidden_channels, ch_output)
 
     def forward(self, g, in_feat):
@@ -214,6 +214,29 @@ class MLP(nn.Module):
         return x
     
 ## Graph convolutional network =============================
+# class GCN(nn.Module):
+#     def __init__(self, in_feats, num_classes, h_feats):
+#         super(GCN, self).__init__()
+#         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+#         self.conv1 = GraphConv(in_feats, h_feats)
+#         self.conv2 = GraphConv(h_feats, h_feats)
+#         self.conv3 = GraphConv(h_feats, h_feats)
+#         self.conv4 = GraphConv(h_feats, h_feats)
+#         self.conv5 = GraphConv(h_feats, h_feats)
+#         self.outconv = GraphConv(h_feats, num_classes)
+    
+#     def forward(self, g, in_feat):
+#         edge_weight = None # g.edata['weight'].type(torch.float32)
+#         h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
+#         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
+#         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
+#         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
+#         h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+#         h = self.outconv(g, h, edge_weight=edge_weight);       
+
+#         return h
+
+## Graph convolutional network =============================
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GCN, self).__init__()
@@ -223,13 +246,7 @@ class GCN(nn.Module):
         self.conv3 = GraphConv(h_feats, h_feats)
         self.conv4 = GraphConv(h_feats, h_feats)
         self.conv5 = GraphConv(h_feats, h_feats)
-        self.outconv = GraphConv(h_feats, num_classes)
-        # self.lin1 = torch.nn.Linear(h_feats, h_feats)
-        # self.lin2 = torch.nn.Linear(h_feats, h_feats)
-        # self.lin3 = torch.nn.Linear(h_feats, h_feats)
-        # self.lin4 = torch.nn.Linear(h_feats, h_feats)
-        # self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
-        # self.device = device
+        self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
     
     def forward(self, g, in_feat):
         edge_weight = None # g.edata['weight'].type(torch.float32)
@@ -238,14 +255,7 @@ class GCN(nn.Module):
         h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
         h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
-        h = self.outconv(g, h, edge_weight=edge_weight);
-        # h = self.activation(self.conv6(g, h, edge_weight=edge_weight))
-        # h = self.activation(self.conv3(g, h))
-        # h = self.activation(self.lin1(h));
-        # h = self.activation(self.lin2(h));
-        # h = self.activation(self.lin3(h));
-        # h = self.activation(self.lin4(h));
-        
+        h = self.lin5(h);       
 
         return h
     
