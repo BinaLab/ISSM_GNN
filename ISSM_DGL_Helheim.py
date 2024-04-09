@@ -364,7 +364,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}_ft{hidden_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}"
     
     torch.manual_seed(seed)
     
