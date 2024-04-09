@@ -44,15 +44,19 @@ class GNN_Helheim_Dataset(DGLDataset):
             xc = test['S'][0][0][0]
             yc = test['S'][0][0][1]
             elements = test['S'][0][0][2]-1
-            smb = test['S'][0][0][3]
-            vx = test['S'][0][0][4]
-            vy = test['S'][0][0][5]
-            vel = test['S'][0][0][6]
-            surface = test['S'][0][0][7]
-            base = test['S'][0][0][8]
-            H = test['S'][0][0][9]
-            f = test['S'][0][0][10]
-            mask = test['S'][0][0][11]
+            idx = np.where((xc[:, 0]>220000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
+            xc = xc[idx]
+            yc = yc[idx]
+
+            smb = test['S'][0][0][3][:, idx]
+            vx = test['S'][0][0][4][:, idx]
+            vy = test['S'][0][0][5][:, idx]
+            vel = test['S'][0][0][6][:, idx]
+            surface = test['S'][0][0][7][:, idx]
+            base = test['S'][0][0][8][:, idx]
+            H = test['S'][0][0][9][:, idx]
+            f = test['S'][0][0][10][:, idx]
+            mask = test['S'][0][0][11][:, idx]
             # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
             ice = np.where(mask < 0, mask / 1000000, mask/10000)
@@ -66,20 +70,36 @@ class GNN_Helheim_Dataset(DGLDataset):
                 weight = []
                 slope = []
 
-                for i in range(0, n_sample):        
-                    p1, p2 = np.where(elements == i)
+                for i, i0 in enumerate(idx): #range(0, n_sample):        
+                    p1, p2 = np.where(elements == i0)
                     connect = []
-
+                
                     for p in p1:
-                        for k in elements[p]:
-                            if (k != i) and (k not in connect):
-                                connect.append(k)
+                        for k0 in elements[p]:
+                            if (k0 != i0) and (k0 not in connect) and (k0 in idx):
+                                k = np.where(idx == k0)[0][0]
+                                connect.append(k0)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
                                 weight.append(np.exp(-(dist/1000)))
                                 slope.append([np.exp(-(dist/1000)), (base[0,i]-base[0,k])/dist, (surface[0,i]-surface[0,k])/dist,
                                              (vx[0,i]-vx[0,k])/dist, (vy[0,i]-vy[0,k])/dist]) 
                                 src.append(int(i))
-                                dst.append(int(k))
+                                dst.append(int(np.where(idx == k0)[0][0]))
+
+                # for i in range(0, n_sample):        
+                #     p1, p2 = np.where(elements == i)
+                #     connect = []
+
+                #     for p in p1:
+                #         for k in elements[p]:
+                #             if (k != i) and (k not in connect):
+                #                 connect.append(k)
+                #                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
+                #                 weight.append(np.exp(-(dist/1000)))
+                #                 slope.append([np.exp(-(dist/1000)), (base[0,i]-base[0,k])/dist, (surface[0,i]-surface[0,k])/dist,
+                #                              (vx[0,i]-vx[0,k])/dist, (vy[0,i]-vy[0,k])/dist]) 
+                #                 src.append(int(i))
+                #                 dst.append(int(k))
 
                 src = torch.tensor(src)
                 dst = torch.tensor(dst)
@@ -89,35 +109,49 @@ class GNN_Helheim_Dataset(DGLDataset):
             else:
                 pass                    
 
-            for t in range(0, n_year):
+            for t in range(1, n_year):
                 # INPUT: x/y coordinates, melting rate, time, SMB, Vx0, Vy0, Surface0, Base0, Thickness0, Floating0
                 inputs = torch.zeros([n_sample, 12])
                 # OUTPUT: Vx, Vy, Vel, Surface, Thickness, Floating
                 outputs = torch.zeros([n_sample, 6])
+
+                ## INPUTS (initial) ================================================
+                # inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
+                # inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
+                # inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
+                # inputs[:, 3] = torch.tensor(t/n_year) # Year
+                # inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
+                # inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
+                # inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vy
+                # inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Velocity
+                # inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
+                # inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
+                # inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
+                # # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
+                # inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
 
                 ## INPUTS ================================================
                 inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                 inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                 inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
                 inputs[:, 3] = torch.tensor(t/n_year) # Year
-                inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
-                inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
-                inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vy
-                inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Velocity
-                inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
-                inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
+                inputs[:, 4] = torch.tensor(smb[t-1, :]/20) # Surface mass balance
+                inputs[:, 5] = torch.tensor(vx[t-1, :]/10000) # Initial Vx
+                inputs[:, 6] = torch.tensor(vy[t-1, :]/10000) # Initial Vy
+                inputs[:, 7] = torch.tensor(vel[t-1, :]/10000) # Initial Velocity
+                inputs[:, 8] = torch.tensor(surface[t-1, :]/5000) # Initial surface elevation
+                inputs[:, 9] = torch.tensor(base[t-1, :]/5000) # Initial base elevation
                 inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
                 # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                 inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
                 
-                ###### Normalization #####################
-                
-                vx_mean = torch.mean(inputs[:, 5])
-                vy_mean = torch.mean(inputs[:, 6])
-                vel_mean = torch.mean(inputs[:, 7])
-                surf_mean = torch.mean(inputs[:, 8])
-                base_mean = torch.mean(inputs[:, 9])
-                H_mean = torch.mean(inputs[:, 10])
+                ###### Normalization #####################                
+                # vx_mean = torch.mean(inputs[:, 5])
+                # vy_mean = torch.mean(inputs[:, 6])
+                # vel_mean = torch.mean(inputs[:, 7])
+                # surf_mean = torch.mean(inputs[:, 8])
+                # base_mean = torch.mean(inputs[:, 9])
+                # H_mean = torch.mean(inputs[:, 10])
 
                 ## OUTPUTS ===============================================
                 outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx

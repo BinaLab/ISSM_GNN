@@ -353,7 +353,7 @@ def main():
     elif args.model_type == "gat":
         model = GAT(in_channels, out_channels, hidden_channels)  # Graph convolutional network 
     elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels-2, 128, edge_feat_size) # Equivariant Graph convolutional network
+        model = EGCN(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "egcn2":
         model = EGCN2(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
     elif args.model_type == "sage":
@@ -398,7 +398,11 @@ def main():
         train_count = 0
         for bg in train_loader:
             bg = bg.to(device)
-            feats = bg.ndata['feat'][:, 2:]
+            if in_channels == 10:
+                feats = bg.ndata['feat'][:, 2:]
+            elif in_channels == 
+                feats = bg.ndata['feat'][:, [2,4,5,6,9,10,11]]
+            
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
