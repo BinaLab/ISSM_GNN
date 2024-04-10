@@ -48,18 +48,24 @@ class GNN_Helheim_Dataset(DGLDataset):
             xc = xc[idx]
             yc = yc[idx]
 
-            smb = test['S'][0][0][3][:, idx]
-            vx = test['S'][0][0][4][:, idx]
-            vy = test['S'][0][0][5][:, idx]
-            vel = test['S'][0][0][6][:, idx]
-            surface = test['S'][0][0][7][:, idx]
-            base = test['S'][0][0][8][:, idx]
-            H = test['S'][0][0][9][:, idx]
-            f = test['S'][0][0][10][:, idx]
             mask = test['S'][0][0][11][:, idx]
             # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
-            ice = np.where(mask < 0, mask / 1000000, mask/10000)
+            # ice = np.where(mask < 0, mask / 1000000, mask/10000)
+
+            ice = np.where(mask < 0, mask / 2000, mask/2000)
+            ice[ice > 1] = 1.
+            ice[ice < -1] = -1.
+            ice_mask = np.where(mask < 0, 1, 0)
+
+            smb = test['S'][0][0][3][:, idx] * ice_mask
+            vx = test['S'][0][0][4][:, idx] * ice_mask
+            vy = test['S'][0][0][5][:, idx] * ice_mask
+            vel = test['S'][0][0][6][:, idx] * ice_mask
+            surface = test['S'][0][0][7][:, idx] * ice_mask
+            base = test['S'][0][0][8][:, idx]
+            H = test['S'][0][0][9][:, idx] * ice_mask
+            f = test['S'][0][0][10][:, idx] * ice_mask            
 
             n_year, n_sample = H.shape
 
