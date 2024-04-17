@@ -113,6 +113,12 @@ def parse_args() -> argparse.Namespace:
         help='Number of output channels (6: include all or 3: u, v, h)',
     )
     parser.add_argument(
+        '--in-ch',
+        type=int,
+        default=10,
+        help='Number of input channels',
+    )
+    parser.add_argument(
         '--hidden-ch',
         type=int,
         default=128,
@@ -321,7 +327,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
-    in_channels = 10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
+    in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
     edge_feat_size = val_set[0].edata['slope'].shape[1]
     if args.out_ch > 0:
         out_channels = args.out_ch
