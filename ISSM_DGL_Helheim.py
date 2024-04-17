@@ -452,6 +452,8 @@ def main():
                 feats = bg.ndata['feat'][:, 2:]
             elif in_channels == 7:
                 feats = bg.ndata['feat'][:, [2,4,5,6,9,10,11]]
+            elif in_channels == 8:
+                feats = bg.ndata['feat'][:, [2,3,4,5,6,9,10,11]]
                 
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
@@ -500,7 +502,7 @@ def main():
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                     pickle.dump(history, file)
         
-    if args.local_rank == 0:
+    if args.local_rank == -1:
         ##### TEST ########################
         rates = np.zeros(len(val_set))
         years = np.zeros(len(val_set))
