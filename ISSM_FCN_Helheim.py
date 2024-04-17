@@ -384,8 +384,8 @@ def main():
     train_sampler, train_loader = make_sampler_and_loader(args, train_dataset, shuffle = True) 
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
 
-    n_nodes = 23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
-    in_channels = train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
+    n_nodes = 14517 #23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
+    in_channels = 7 #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
     
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -415,7 +415,7 @@ def main():
     elif args.model_type == "fcn":
         model = FCN(in_channels, out_channels, 128)
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}"
     print(model_name)
     
     torch.manual_seed(seed)
@@ -449,7 +449,11 @@ def main():
         train_loss = 0
         train_count = 0
         for (data, target) in train_loader:
-            data = data[:, 2:]  
+            if in_channels == 10:            
+                data = data[:, 2:]
+            elif in_channels == 7:
+                data = data[:, [2,4,5,6,9,10,11]]
+                
             if out_channels == 4:
                 target = target[:, [0,1,4,5], :, :].to(device)
             elif out_channels > 3:
@@ -471,7 +475,11 @@ def main():
         val_loss = 0
         val_count = 0
         for (data, target) in val_loader:
-            data = data[:, 2:]            
+            if in_channels == 10:            
+                data = data[:, 2:]
+            elif in_channels == 7:
+                data = data[:, [2,4,5,6,9,10,11]]
+                
             if out_channels == 4:
                 target = target[:, [0,1,4,5], :, :].to(device)
             elif out_channels > 3:

@@ -321,7 +321,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
-    in_channels = 7 #val_set[0].ndata['feat'].shape[1] - 2 #-1
+    in_channels = 10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
     edge_feat_size = val_set[0].edata['slope'].shape[1]
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -401,7 +401,9 @@ def main():
             if in_channels == 10:
                 feats = bg.ndata['feat'][:, 2:]
             elif in_channels == 7:
-                feats = bg.ndata['feat'][:, [2,4,5,6,9,10,11]]
+                feats = bg.ndata['feat'][:, [2,4,9,5,6,10,11]]
+            elif in_channels == 8:
+                feats = bg.ndata['feat'][:, [2,3,4,5,6,9,10,11]]
             
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
