@@ -482,8 +482,8 @@ def main():
                 #     # pred = model(bg, feats, coord_feat, edge_feat)
                 #     labels = torch.cat([labels, coord_feat], dim=1)                    
 
-
-            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+            loss = criterion(y_norm_pred*100, y_norm_true*100)
             val_loss += loss.cpu().item()
             val_count += 1
             

@@ -18,12 +18,28 @@ class single_loss(nn.Module):
 
     def forward(self, obs, prd):
         n_outputs = obs.size()[1]
+        
         err_sum = 0
         for i in range(0, n_outputs):
             err = torch.square(obs[:, i, :, :] - prd[:, i, :, :])
             err = torch.mean(err, dim=0)[self.landmask == 0]
             err_sum += torch.mean(err)
         return err_sum
+
+def norm_data(obs, prd):
+    n_channels = obs.size()[-1]
+
+    obs_mean = obs.mean(dim = 0)
+    obs_std = obs.std(dim = 0)
+
+    obs_norm = torch.zeros(obs.size())
+    prd_norm = torch.zeros(prd.size())
+
+    for i in range(0, n_channels):
+        obs_norm[:, i] = (obs[:, i] - obs_mean[i]) / obs_std[i]
+        prd_norm[:, i] = (prd[:, i] - obs_mean[i]) / obs_std[i]
+
+    return obs_norm, prd_norm
     
 class regional_loss(nn.Module):
     def __init__(self):
