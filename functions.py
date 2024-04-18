@@ -79,6 +79,9 @@ class GNN_Helheim_Dataset(DGLDataset):
                 for i, i0 in enumerate(idx): #range(0, n_sample):        
                     p1, p2 = np.where(elements == i0)
                     connect = []
+
+                    src.append(int(i))
+                    dst.append(int(i))
                 
                     for p in p1:
                         for k0 in elements[p]:
