@@ -385,7 +385,7 @@ def main():
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
 
     n_nodes = 14517 #23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
-    in_channels = 7 #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
+    in_channels = 8 #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
     
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -453,6 +453,8 @@ def main():
                 data = data[:, 2:]
             elif in_channels == 7:
                 data = data[:, [2,4,5,6,9,10,11]]
+            elif in_channels == 8:
+                data = data[:, [2,3,4,5,6,9,10,11]]
                 
             if out_channels == 4:
                 target = target[:, [0,1,4,5], :, :].to(device)
@@ -479,6 +481,8 @@ def main():
                 data = data[:, 2:]
             elif in_channels == 7:
                 data = data[:, [2,4,5,6,9,10,11]]
+            elif in_channels == 8:
+                data = data[:, [2,3,4,5,6,9,10,11]]
                 
             if out_channels == 4:
                 target = target[:, [0,1,4,5], :, :].to(device)
