@@ -434,8 +434,10 @@ def main():
             #     labels = torch.cat([labels, coord_feat], dim=1)
             # else:
                 # pred = model(bg, feats)
-            
-            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+
+            y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+            loss = criterion(y_norm_pred*100, y_norm_true*100)
+            # loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -484,6 +486,7 @@ def main():
 
             y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             loss = criterion(y_norm_pred*100, y_norm_true*100)
+            # loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
             val_count += 1
             
