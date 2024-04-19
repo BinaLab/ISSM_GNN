@@ -283,7 +283,7 @@ class GCN(nn.Module):
         h = self.lin5(h);   
 
         if post_combine:
-            combine_binary(h, -1, self.num_classes)
+            h = combine_binary(h, -1, self.num_classes)
 
         return h
     
