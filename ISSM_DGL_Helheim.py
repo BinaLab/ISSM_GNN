@@ -333,6 +333,11 @@ def main():
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
+
+    if args.out_ch == 3:
+        post_combine = True
+    else:
+        post_combine = False
         
     # Region filtering ============================================
     test = sio.loadmat(train_files[0])
@@ -425,7 +430,7 @@ def main():
             else:
                 labels = bg.ndata['label'][:, :]
                 
-            pred = model(bg, feats)
+            pred = model(bg, feats, post_combine)
 
             if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
@@ -436,9 +441,12 @@ def main():
             # else:
                 # pred = model(bg, feats)
 
-            y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            loss = criterion(y_norm_pred*100, y_norm_true*100)
-            # loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+            # loss = criterion(y_norm_pred*100, y_norm_true*100)
+            if post_combine:
+                loss = criterion(pred[:, :out_channels-1]*100, labels[:, :out_channels-1]*100)
+            else:
+                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -474,7 +482,7 @@ def main():
             
             with torch.no_grad():
                 
-                pred = model(bg, feats)
+                pred = model(bg, feats, post_combine)
                 
                 if args.model_type[:4] == "egcn":
                 # pred = model(bg, feats, coord_feat, edge_feat)
@@ -486,9 +494,12 @@ def main():
                 #     # pred = model(bg, feats, coord_feat, edge_feat)
                 #     labels = torch.cat([labels, coord_feat], dim=1)                    
 
-            y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            loss = criterion(y_norm_pred*100, y_norm_true*100)
-            # loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+            # loss = criterion(y_norm_pred*100, y_norm_true*100)
+            if post_combine:
+                loss = criterion(pred[:, :out_channels-1]*100, labels[:, :out_channels-1]*100)
+            else:
+                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
             val_count += 1
             
