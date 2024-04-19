@@ -269,7 +269,7 @@ class GCN(nn.Module):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
-        h = h * h[:, idx:idx+1]
+        h = h[:, idx:idx+1] * h
         
         return h
     
@@ -283,7 +283,7 @@ class GCN(nn.Module):
         h = self.lin5(h);   
 
         if post_combine:
-            h = self.combine_binary(h, -1, self.num_classes)
+            h = self.combine_binary(h, self.num_classes-1, self.num_classes)
 
         return h
     
