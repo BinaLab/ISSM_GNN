@@ -265,7 +265,7 @@ class GCN(nn.Module):
         self.conv5 = GraphConv(h_feats, h_feats)
         self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
 
-    def combine_binary(h, idx, num_classes):
+    def combine_binary(self, h, idx, num_classes):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
