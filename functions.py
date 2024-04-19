@@ -149,7 +149,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
                 inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
                 # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
-                inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
+                inputs[:, 11] = torch.tensor(ice[t-1, :]) # t-1 ice mask
                 
                 ###### Normalization #####################                
                 # vx_mean = torch.mean(inputs[:, 5])

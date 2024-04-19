@@ -454,7 +454,7 @@ def main():
             if in_channels == 10:
                 feats = bg.ndata['feat'][:, 2:]
             elif in_channels == 7:
-                feats = bg.ndata['feat'][:, [2,4,5,6,9,10,11]]
+                feats = bg.ndata['feat'][:, [2,4,9,5,6,10,11]]
             elif in_channels == 8:
                 feats = bg.ndata['feat'][:, [2,3,4,5,6,9,10,11]]
                 
@@ -507,81 +507,9 @@ def main():
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                     pickle.dump(history, file)
         
-    if args.local_rank == -1:
-        ##### TEST ########################
-        rates = np.zeros(len(val_set))
-        years = np.zeros(len(val_set))
-
-        if out_channels == 6:
-            scaling = np.array([5000, 5000, 5000, 4000, 4000, 150])
-        elif out_channels == 5:
-            scaling = np.array([5000, 5000, 4000, 4000, 150])
-        elif out_channels == 3:
-            scaling = np.array([5000, 5000, 4000])
-        elif out_channels == 2:
-            scaling = np.array([5000, 4000])
+    
             
-        y_pred = np.zeros([len(val_set), n_nodes, out_channels])
-        y_true = np.zeros([len(val_set), n_nodes, out_channels])
-
-        x_inputs = np.zeros([len(val_set), n_nodes, in_channels])
-
-        for k, bg in enumerate(val_set):
-            bg = bg.to(device)
-            if in_channels == 10:
-                feats = bg.ndata['feat'][:, 2:]
-            elif in_channels == 7:
-                feats = bg.ndata['feat'][:, [2,4,5,6,9,10,11]]
-                
-            coord_feat = bg.ndata['feat'][:, :2]
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            if out_channels == 3:
-                labels = bg.ndata['label'][:, [2,4,5]] # version 2
-            elif out_channels == 2:
-                labels = bg.ndata['label'][:, [2, 4]]
-            elif out_channels == 4:
-                labels = bg.ndata['label'][:, [0,1,4,5]]
-            elif out_channels == 5:
-                labels = bg.ndata['label'][:, [0,1,3,4,5]]
-            else:
-                labels = bg.ndata['label'][:, :]
-                
-            rates[k] = feats[0, 0]
-            years[k] = feats[0, 1] * 20
-
-            with torch.no_grad():
-                
-                pred = model(bg, feats)
-                
-                if args.model_type[:4] == "egcn":
-                    pred[:, :2] = pred[:, :2] # - coord_feat
-                    # labels = torch.cat([coord_feat + labels[:2], labels[2:]], dim=1)
-                
-                # if args.model_type == "egcn":
-                #     # pred = model(bg, feats, coord_feat, edge_feat)
-                #     labels = torch.cat([labels, coord_feat], dim=1)
-                # elif args.model_type == "egcn2":
-                #     # pred = model(bg, feats, coord_feat, edge_feat)
-                #     labels = torch.cat([labels, coord_feat], dim=1)
-                # else:
-                #     pred = model(bg, feats)
-                    
-                # regional mask ----------------------------
-                # feats = feats[mask, :]
-                # pred = pred[mask, :]
-                # labels = labels[mask, :]
-                ## -----------------------------------------
-                
-                y_pred[k] = pred[:, :out_channels].to('cpu')
-                y_true[k] = labels[:, :out_channels].to('cpu')
-                x_inputs[k] = feats.to('cpu')
-
-        test_save = [rates, years, x_inputs, y_true, y_pred, mask]
-
-        with open(f'../results/test_{model_name}.pkl', 'wb') as file:
-            pickle.dump(test_save, file)
-            
-        print("##### Validation done! #####")
+    # print("##### Validation done! #####")
     dist.destroy_process_group()
 
 ###############################################################################
