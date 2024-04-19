@@ -327,6 +327,7 @@ def main():
     
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
+    n_edges = val_set[0].num_edges()
     in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
     edge_feat_size = val_set[0].edata['slope'].shape[1]
     if args.out_ch > 0:
@@ -350,7 +351,7 @@ def main():
     # =============================================================
     
     if args.local_rank == 0:
-        print(f"## NODE: {n_nodes}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
+        print(f"## NODES: {n_nodes}; EDGES: {n_edges}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
         print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     

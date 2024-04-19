@@ -461,7 +461,7 @@ def main():
             elif out_channels > 3:
                 target = target.to(device)
             elif out_channels == 3:
-                target = target[:, [0,1,3], :, :].to(device)
+                target = target[:, [0,1,5], :, :].to(device)
             
             pred = model(data)
 
