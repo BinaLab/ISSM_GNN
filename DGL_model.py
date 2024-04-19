@@ -208,6 +208,7 @@ class MLP(nn.Module):
     def __init__(self, ch_input, ch_output, hidden_channels = 128):
         super(MLP, self).__init__()
         # torch.manual_seed(1234567)
+        self.ch_output = ch_output
         self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         
         self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
@@ -218,7 +219,15 @@ class MLP(nn.Module):
         self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.outlin = torch.nn.Linear(hidden_channels, ch_output)
 
-    def forward(self, g, in_feat):
+    def combine_binary(self, h, idx, num_classes):
+        # Combine the binary ice mask to h
+        # idx: index of combined channel
+        h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
+        h = h[:, idx:idx+1] * h
+        
+        return h
+
+    def forward(self, g, in_feat, post_combine = False):
         
         x = self.activation(self.lin1(in_feat));
         x = self.activation(self.lin2(x));
@@ -226,6 +235,9 @@ class MLP(nn.Module):
         x = self.activation(self.lin4(x));
         x = self.activation(self.lin5(x));
         x = self.outlin(x);
+
+        if post_combine:
+            x = self.combine_binary(x, self.ch_output-1, self.ch_output)
         
         return x
     
@@ -291,6 +303,7 @@ class GCN(nn.Module):
 class GAT(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
         super(GAT, self).__init__()
+        self.num_classes = num_classes
         self.activation = nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GATConv(in_feats, h_feats, num_heads=3)
         self.conv2 = GATConv(h_feats, h_feats, num_heads=3)        
@@ -304,8 +317,16 @@ class GAT(nn.Module):
         # self.lin3 = torch.nn.Linear(h_feats, h_feats)
         # self.lin4 = torch.nn.Linear(h_feats, h_feats)
         self.lin5 = torch.nn.Linear(h_feats, num_classes)
+
+    def combine_binary(self, h, idx, num_classes):
+        # Combine the binary ice mask to h
+        # idx: index of combined channel
+        h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
+        h = h[:, idx:idx+1] * h
+        
+        return h
     
-    def forward(self, g, in_feat):
+    def forward(self, g, in_feat, post_combine = False):
         h = self.activation(self.conv1(g, in_feat))
         h = torch.mean(h, dim = 1)
         h = self.activation(self.conv2(g, h))
@@ -323,6 +344,9 @@ class GAT(nn.Module):
         # h = self.activation(self.lin3(h));
         # h = self.activation(self.lin4(h));
         h = self.lin5(h);
+
+        if post_combine:
+            h = self.combine_binary(h, self.num_classes-1, self.num_classes)
 
         return h
     
@@ -543,8 +567,16 @@ class EGCN(nn.Module):
         msg_x = self.coord_mlp(msg_h) * edges.data['x_diff'] 
 
         return {'msg_x': msg_x, 'msg_h': msg_h}
+
+    def combine_binary(self, h, idx, num_classes):
+        # Combine the binary ice mask to h
+        # idx: index of combined channel
+        h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
+        h = h[:, idx:idx+1] * h
+        
+        return h
     
-    def forward(self, graph, node_feat):
+    def forward(self, graph, node_feat, post_combine = False):
         r"""
         Description
         -----------
@@ -606,6 +638,10 @@ class EGCN(nn.Module):
             # h = h + torch.sum(x)*0
             out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
+            
+            if post_combine:
+                out = self.combine_binary(out, self.out_size-1, self.out_size)
+                
             return out
 
 
