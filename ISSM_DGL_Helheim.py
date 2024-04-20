@@ -336,7 +336,7 @@ def main():
         out_channels = val_set[0].ndata['label'].shape[1]
 
     if args.out_ch == 3:
-        post_combine = True
+        post_combine = False
     else:
         post_combine = False
         
@@ -498,7 +498,7 @@ def main():
             # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             # loss = criterion(y_norm_pred*100, y_norm_true*100)
             if post_combine:
-                loss = criterion(pred[:, :out_channels-1]*100, labels[:, :out_channels-1]*100)
+                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             else:
                 loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
