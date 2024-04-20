@@ -56,7 +56,7 @@ class mask_loss(nn.Module):
                 err = torch.square(obs_ice - prd_ice)
                 err_sum += torch.mean(err)
             else:
-                err = torch.square(obs[:, i] - prd[:, i])
+                err = torch.square(obs[:, i] - prd[:, i])[obs[:, n_outputs - 1] < 0]
                 err_sum += torch.mean(err)
         return err_sum
     
