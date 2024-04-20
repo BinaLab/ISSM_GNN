@@ -45,7 +45,7 @@ class mask_loss(nn.Module):
     def __init__(self):
         super(mask_loss, self).__init__();
 
-    def forward(self, obs, prd):
+    def forward(self, prd, obs):
         n_outputs = obs.size()[1]
         
         err_sum = 0
@@ -56,7 +56,7 @@ class mask_loss(nn.Module):
                 err = torch.square(obs_ice - prd_ice)
                 err_sum += torch.mean(err)
             else:
-                err = torch.square(obs[:, i] - prd[:, i])[obs[:, n_outputs - 1] < 0]
+                err = torch.square(obs[:, i] - prd[:, i])[obs[:, n_outputs - 1] <= 0]
                 err_sum += torch.mean(err)
         return err_sum
     
