@@ -40,6 +40,25 @@ def norm_data(obs, prd):
         prd_norm[:, i] = (prd[:, i] - obs_mean[i]) / obs_std[i]
 
     return obs_norm, prd_norm
+
+class mask_loss(nn.Module):
+    def __init__(self):
+        super(mask_loss, self).__init__();
+
+    def forward(self, obs, prd):
+        n_outputs = obs.size()[1]
+        
+        err_sum = 0
+        for i in range(0, n_outputs):
+            if i != n_channels - 1:
+                obs_ice = torch.where(obs[:, i] < 0, 1, 0)
+                prd_ice = torch.where(prd[:, i] < 0, 1, 0)
+                err = torch.square(obs_ice - prd_ice)
+                err_sum += torch.mean(err)
+            else:
+                err = torch.square(obs[:, i] - prd[:, i])
+                err_sum += torch.mean(err)
+        return err_sum
     
 class regional_loss(nn.Module):
     def __init__(self):
@@ -223,7 +242,7 @@ class MLP(nn.Module):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
-        h = h[:, idx:idx+1] * h
+        # h = h[:, idx:idx+1] * h
         
         return h
 
@@ -234,7 +253,7 @@ class MLP(nn.Module):
         x = self.activation(self.lin3(x));
         x = self.activation(self.lin4(x));
         x = self.activation(self.lin5(x));
-        x = self.outlin(x);
+        x = self.outlin(x);       
 
         if post_combine:
             x = self.combine_binary(x, self.ch_output-1, self.ch_output)
@@ -281,7 +300,7 @@ class GCN(nn.Module):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
-        h = h[:, idx:idx+1] * h
+        # h = h[:, idx:idx+1] * h
         
         return h
     
@@ -322,7 +341,7 @@ class GAT(nn.Module):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
-        h = h[:, idx:idx+1] * h
+        # h = h[:, idx:idx+1] * h
         
         return h
     
@@ -572,7 +591,7 @@ class EGCN(nn.Module):
         # Combine the binary ice mask to h
         # idx: index of combined channel
         h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
-        h = h[:, idx:idx+1] * h
+        # h = h[:, idx:idx+1] * h
         
         return h
     
