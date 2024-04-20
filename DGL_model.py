@@ -50,7 +50,7 @@ class mask_loss(nn.Module):
         
         err_sum = 0
         for i in range(0, n_outputs):
-            if i != n_channels - 1:
+            if i != n_outputs - 1:
                 obs_ice = torch.where(obs[:, i] < 0, 1, 0)
                 prd_ice = torch.where(prd[:, i] < 0, 1, 0)
                 err = torch.square(obs_ice - prd_ice)
