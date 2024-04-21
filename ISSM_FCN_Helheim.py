@@ -108,6 +108,12 @@ def parse_args() -> argparse.Namespace:
         help='Number of input channels',
     )
     parser.add_argument(
+        '--hidden-ch',
+        type=int,
+        default=128,
+        help='Number of input channels',
+    )
+    parser.add_argument(
         '--out-ch',
         type=int,
         default=5,
@@ -392,7 +398,7 @@ def main():
 
     n_nodes = 14297 #14517 #23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
     in_channels = args.in_ch #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
-    
+    hidden_channels = args.hidden_ch
     if args.out_ch > 0:
         out_channels = args.out_ch
     else:
@@ -417,11 +423,11 @@ def main():
     # ==============================================================================
     
     if args.model_type == "cnn":
-        model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, 32)  # convolutional network
+        model = CNN(in_channels, out_channels, n_nodes, nrow, ncol, hidden_channels)  # convolutional network
     elif args.model_type == "fcn":
-        model = FCN(in_channels, out_channels, 128)
+        model = FCN(in_channels, out_channels, hidden_channels)
     
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}"
+    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}"
     print(model_name)
     
     torch.manual_seed(seed)
