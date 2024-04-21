@@ -232,9 +232,9 @@ class MLP(nn.Module):
         
         self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
-        # self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
-        # self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
-        # self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         # self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
         self.outlin = torch.nn.Linear(hidden_channels, ch_output)
 
@@ -250,9 +250,9 @@ class MLP(nn.Module):
         
         x = self.activation(self.lin1(in_feat));
         x = self.activation(self.lin2(x));
-        # x = self.activation(self.lin3(x));
-        # x = self.activation(self.lin4(x));
-        # x = self.activation(self.lin5(x));
+        x = self.activation(self.lin3(x));
+        x = self.activation(self.lin4(x));
+        x = self.activation(self.lin5(x));
         x = self.outlin(x);       
 
         if post_combine:
@@ -291,9 +291,9 @@ class GCN(nn.Module):
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
         self.conv2 = GraphConv(h_feats, h_feats)
-        # self.conv3 = GraphConv(h_feats, h_feats)
-        # self.conv4 = GraphConv(h_feats, h_feats)
-        # self.conv5 = GraphConv(h_feats, h_feats)
+        self.conv3 = GraphConv(h_feats, h_feats)
+        self.conv4 = GraphConv(h_feats, h_feats)
+        self.conv5 = GraphConv(h_feats, h_feats)
         self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
 
     def combine_binary(self, h, idx, num_classes):
@@ -308,20 +308,20 @@ class GCN(nn.Module):
         edge_weight = None #g.edata['weight'].type(torch.float32)
         h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
-        # h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
-        # h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
-        # h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
-        h = self.lin5(h);   
+        h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        h = self.lin5(h);
 
         if post_combine:
             h = self.combine_binary(h, self.num_classes-1, self.num_classes)
-
+            
         return h
 
 ## Weighted Graph convolutional network =============================
 class WGCN(nn.Module):
     def __init__(self, in_feats, num_classes, h_feats):
-        super(GCN, self).__init__()
+        super(WGCN, self).__init__()
         self.num_classes = num_classes
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
