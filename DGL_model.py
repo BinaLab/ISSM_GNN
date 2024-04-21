@@ -232,10 +232,10 @@ class MLP(nn.Module):
         
         self.lin1 = torch.nn.Linear(ch_input, hidden_channels)
         self.lin2 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        # self.lin3 = torch.nn.Linear(hidden_channels, hidden_channels)
+        # self.lin4 = torch.nn.Linear(hidden_channels, hidden_channels)
+        # self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         # self.lin5 = torch.nn.Linear(hidden_channels, ch_output)
-        self.lin5 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.outlin = torch.nn.Linear(hidden_channels, ch_output)
 
     def combine_binary(self, h, idx, num_classes):
@@ -250,9 +250,9 @@ class MLP(nn.Module):
         
         x = self.activation(self.lin1(in_feat));
         x = self.activation(self.lin2(x));
-        x = self.activation(self.lin3(x));
-        x = self.activation(self.lin4(x));
-        x = self.activation(self.lin5(x));
+        # x = self.activation(self.lin3(x));
+        # x = self.activation(self.lin4(x));
+        # x = self.activation(self.lin5(x));
         x = self.outlin(x);       
 
         if post_combine:
