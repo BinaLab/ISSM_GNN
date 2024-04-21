@@ -291,9 +291,9 @@ class GCN(nn.Module):
         self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
         self.conv1 = GraphConv(in_feats, h_feats)
         self.conv2 = GraphConv(h_feats, h_feats)
-        self.conv3 = GraphConv(h_feats, h_feats)
-        self.conv4 = GraphConv(h_feats, h_feats)
-        self.conv5 = GraphConv(h_feats, h_feats)
+        # self.conv3 = GraphConv(h_feats, h_feats)
+        # self.conv4 = GraphConv(h_feats, h_feats)
+        # self.conv5 = GraphConv(h_feats, h_feats)
         self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
 
     def combine_binary(self, h, idx, num_classes):
@@ -308,9 +308,9 @@ class GCN(nn.Module):
         edge_weight = None #g.edata['weight'].type(torch.float32)
         h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
         h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
-        h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
-        h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
-        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        # h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
+        # h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
+        # h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
         h = self.lin5(h);   
 
         if post_combine:
