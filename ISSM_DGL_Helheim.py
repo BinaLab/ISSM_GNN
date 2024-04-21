@@ -421,8 +421,8 @@ def main():
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [0,1,5]] # velocity & levelset
-                if post_combine:
-                    labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
+                # if post_combine:
+                #     labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
                 # labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
@@ -473,8 +473,8 @@ def main():
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [0,1,5]]
-                if post_combine:
-                    labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
+                # if post_combine:
+                #     labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
                 # labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
