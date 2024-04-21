@@ -390,7 +390,7 @@ def main():
     
     criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
-    scheduler = ExponentialLR(optimizer, gamma=1.0)
+    scheduler = ExponentialLR(optimizer, gamma=0.99)
     
     total_params = sum(p.numel() for p in model.parameters())
     if args.local_rank == 0:
