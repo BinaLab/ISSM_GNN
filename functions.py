@@ -51,9 +51,9 @@ class GNN_Helheim_Dataset(DGLDataset):
             mask = test['S'][0][0][11][:, idx]
             # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
-            # ice = np.where(mask < 0, mask / 1000000, mask/10000)
+            ice = np.where(mask < 0, mask / 1000000, mask/10000)
 
-            ice = np.where(mask < 0, mask / 200000, mask/4000)
+            # ice = np.where(mask < 0, mask / 200000, mask/4000)
             # ice[ice > 1] = 1.
             # ice[ice < -1] = -1.
             ice_mask = np.where(mask < 0, 1, 0)
