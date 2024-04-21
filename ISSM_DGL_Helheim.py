@@ -358,6 +358,8 @@ def main():
     hidden_channels = args.hidden_ch
     if args.model_type == "gcn":
         model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
+    elif args.model_type == "wgcn":
+        model = WGCN(in_channels, out_channels, hidden_channels)  # Weighted graph convolutional network    
     elif args.model_type == "gin":
         model = GIN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
     elif args.model_type == "mlp":
@@ -388,7 +390,7 @@ def main():
     
     criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
-    scheduler = ExponentialLR(optimizer, gamma=0.99)
+    scheduler = ExponentialLR(optimizer, gamma=1.0)
     
     total_params = sum(p.numel() for p in model.parameters())
     if args.local_rank == 0:

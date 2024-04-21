@@ -317,6 +317,41 @@ class GCN(nn.Module):
             h = self.combine_binary(h, self.num_classes-1, self.num_classes)
 
         return h
+
+## Weighted Graph convolutional network =============================
+class WGCN(nn.Module):
+    def __init__(self, in_feats, num_classes, h_feats):
+        super(GCN, self).__init__()
+        self.num_classes = num_classes
+        self.activation = nn.LeakyReLU() #nn.LeakyReLU() #nn.ReLU() #nn.LeakyReLU(negative_slope=0.01) #nn.Tanh()
+        self.conv1 = GraphConv(in_feats, h_feats)
+        self.conv2 = GraphConv(h_feats, h_feats)
+        self.conv3 = GraphConv(h_feats, h_feats)
+        self.conv4 = GraphConv(h_feats, h_feats)
+        self.conv5 = GraphConv(h_feats, h_feats)
+        self.lin5 = torch.nn.Linear(h_feats, num_classes) # Helheim: this one is included
+
+    def combine_binary(self, h, idx, num_classes):
+        # Combine the binary ice mask to h
+        # idx: index of combined channel
+        h[:, idx] = torch.where(h[:, idx] < 0, 1, 0)
+        # h = h[:, idx:idx+1] * h
+        
+        return h
+    
+    def forward(self, g, in_feat, post_combine = False):
+        edge_weight = g.edata['weight'].type(torch.float32)
+        h = self.activation(self.conv1(g, in_feat, edge_weight=edge_weight))
+        h = self.activation(self.conv2(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv3(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv4(g, h, edge_weight=edge_weight))
+        h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
+        h = self.lin5(h);   
+
+        if post_combine:
+            h = self.combine_binary(h, self.num_classes-1, self.num_classes)
+
+        return h
     
 ## Graph attention network =============================
 class GAT(nn.Module):
