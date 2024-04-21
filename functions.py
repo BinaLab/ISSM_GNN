@@ -54,8 +54,8 @@ class GNN_Helheim_Dataset(DGLDataset):
             # ice = np.where(mask < 0, mask / 1000000, mask/10000)
 
             ice = np.where(mask < 0, mask/100000, mask/2000)
-            ice[ice > 1] = 1.
-            ice[ice < -1] = -1.
+            # ice[ice > 1] = 1.
+            # ice[ice < -1] = -1.
             ice_mask = np.where(mask < 0, 1, 0)
 
             smb = test['S'][0][0][3][:, idx] * ice_mask
