@@ -82,7 +82,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 
                     for p in p1:
                         for k0 in elements[p]:
-                            if (k0 not in connect) and (k0 in idx): # and (k0 != i0): 
+                            if (k0 not in connect) and (k0 in idx) and (k0 != i0): 
                                 k = np.where(idx == k0)[0][0]
                                 connect.append(k0)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
@@ -367,6 +367,41 @@ class CNN_PIG_Dataset(Dataset):
             rate = int(filename.split("_r")[1][:3])
             input0 = torch.tensor(input0, dtype=torch.float32)
             output0 = torch.tensor(output0, dtype=torch.float32)
+            
+            if first:
+                self.input = input0
+                self.output = output0
+                first = False
+            else:
+                self.input = torch.cat((self.input, input0), dim = 0)
+                self.output = torch.cat((self.output, output0), dim = 0)
+        
+    def __getitem__(self, i):
+        cnn_input = self.input[i]
+        cnn_input[torch.isnan(cnn_input)] = 0        
+        cnn_output = self.output[i]
+        cnn_output[torch.isnan(cnn_output)] = 0
+        return (cnn_input, cnn_output)
+    
+    def __len__(self):
+        return len(self.output)
+
+class CNN_Helheim_Dataset(Dataset):
+    def __init__(self, files):
+        
+        self.input = torch.tensor([])
+        self.output = torch.tensor([])
+
+        first = True
+        # "READING GRAPH DATA..."
+        for filename in tqdm(files[:]):
+            
+            with open(filename, 'rb') as file:
+                [input0, output0] = pickle.load(file)
+            
+            rate = int(filename.split("_r")[1][:3])
+            input0 = torch.tensor(input0[:, :, 1:108, 129:214], dtype=torch.float32)
+            output0 = torch.tensor(output0[:, :, 1:108, 129:214], dtype=torch.float32)
             
             if first:
                 self.input = input0
