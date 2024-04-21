@@ -102,6 +102,12 @@ def parse_args() -> argparse.Namespace:
         help='filename of dataset',
     )
     parser.add_argument(
+        '--in-ch',
+        type=int,
+        default=10,
+        help='Number of input channels',
+    )
+    parser.add_argument(
         '--out-ch',
         type=int,
         default=5,
@@ -385,7 +391,7 @@ def main():
     val_sampler, val_loader = make_sampler_and_loader(args, val_dataset, shuffle = False)
 
     n_nodes = 14517 #23466 #val_dataset[0].num_nodes #val_graphs[0].num_nodes()
-    in_channels = 8 #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
+    in_channels = args.in_ch #train_dataset[0][0].shape[0] - 2 #val_graphs[0].ndata['feat'].shape[1]-1
     
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -489,7 +495,7 @@ def main():
             elif out_channels > 3:
                 target = target.to(device)
             elif out_channels == 3:
-                target = target[:, [0,1,3], :, :].to(device)
+                target = target[:, [0,1,5], :, :].to(device)
             pred = model(data)
             loss = criterion(pred*100, target*100)
             val_loss += loss.cpu().item()
