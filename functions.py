@@ -58,14 +58,14 @@ class GNN_Helheim_Dataset(DGLDataset):
             # ice[ice < -1] = -1.
             ice_mask = np.where(mask < 0, 1, 0)
 
-            smb = test['S'][0][0][3][:, idx] * ice_mask
-            vx = test['S'][0][0][4][:, idx] * ice_mask
-            vy = test['S'][0][0][5][:, idx] * ice_mask
-            vel = test['S'][0][0][6][:, idx] * ice_mask
-            surface = test['S'][0][0][7][:, idx] * ice_mask
+            smb = test['S'][0][0][3][:, idx] # * ice_mask
+            vx = test['S'][0][0][4][:, idx] # * ice_mask
+            vy = test['S'][0][0][5][:, idx] # * ice_mask
+            vel = test['S'][0][0][6][:, idx] # * ice_mask
+            surface = test['S'][0][0][7][:, idx] # * ice_mask
             base = test['S'][0][0][8][:, idx]
-            H = test['S'][0][0][9][:, idx] * ice_mask
-            f = test['S'][0][0][10][:, idx] * ice_mask            
+            H = test['S'][0][0][9][:, idx] # * ice_mask
+            f = test['S'][0][0][10][:, idx] # * ice_mask            
 
             n_year, n_sample = H.shape
 

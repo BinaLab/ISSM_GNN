@@ -403,9 +403,10 @@ def main():
         out_channels = args.out_ch
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
-    
+
+    row, col = val_dataset[0].shape[:2]
     if args.local_rank == 0:
-        print(f"## IN: {in_channels}; OUT: {out_channels}")
+        print(f"## IN: {in_channels}; OUT: {out_channels} ({row} x {col})")
         print(f"## Train: {len(train_dataset)}; Val: {len(val_dataset)}; Test: {len(test_dataset)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
