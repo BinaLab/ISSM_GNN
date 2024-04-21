@@ -82,7 +82,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 
                     for p in p1:
                         for k0 in elements[p]:
-                            if (k0 not in connect) and (k0 in idx) and (k0 != i0): 
+                            if (k0 not in connect) and (k0 in idx): # and (k0 != i0): 
                                 k = np.where(idx == k0)[0][0]
                                 connect.append(k0)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
