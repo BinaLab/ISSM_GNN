@@ -255,8 +255,8 @@ class MLP(nn.Module):
         x = self.activation(self.lin5(x));
         x = self.outlin(x);       
 
-        # if post_combine:
-        #     x = self.combine_binary(x, self.ch_output-1, self.ch_output)
+        if post_combine:
+            x = self.combine_binary(x, self.ch_output-1, self.ch_output)
         
         return x
     
@@ -313,8 +313,8 @@ class GCN(nn.Module):
         h = self.activation(self.conv5(g, h, edge_weight=edge_weight))
         h = self.lin5(h);   
 
-        # if post_combine:
-        #     h = self.combine_binary(h, self.num_classes-1, self.num_classes)
+        if post_combine:
+            h = self.combine_binary(h, self.num_classes-1, self.num_classes)
 
         return h
     
@@ -364,8 +364,8 @@ class GAT(nn.Module):
         # h = self.activation(self.lin4(h));
         h = self.lin5(h);
 
-        # if post_combine:
-        #     h = self.combine_binary(h, self.num_classes-1, self.num_classes)
+        if post_combine:
+            h = self.combine_binary(h, self.num_classes-1, self.num_classes)
 
         return h
     
