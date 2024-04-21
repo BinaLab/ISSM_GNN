@@ -336,7 +336,7 @@ def main():
         out_channels = val_set[0].ndata['label'].shape[1]
 
     if args.out_ch == 3:
-        post_combine = False
+        post_combine = True
     else:
         post_combine = False
         
@@ -386,7 +386,7 @@ def main():
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
-    criterion = mask_loss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
+    criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.99)
     
@@ -421,6 +421,8 @@ def main():
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [0,1,5]] # velocity & levelset
+                if post_combine:
+                    labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
                 # labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
@@ -471,6 +473,8 @@ def main():
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [0,1,5]]
+                if post_combine:
+                    labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
                 # labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
