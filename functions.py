@@ -44,7 +44,7 @@ class GNN_Helheim_Dataset(DGLDataset):
             xc = test['S'][0][0][0]
             yc = test['S'][0][0][1]
             elements = test['S'][0][0][2]-1
-            idx = np.where((xc[:, 0]>220000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
+            idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
             xc = xc[idx]
             yc = yc[idx]
 
@@ -53,7 +53,7 @@ class GNN_Helheim_Dataset(DGLDataset):
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
             # ice = np.where(mask < 0, mask / 1000000, mask/10000)
 
-            ice = np.where(mask < 0, mask / 2000, mask/2000)
+            ice = np.where(mask < 0, mask/100000, mask/2000)
             ice[ice > 1] = 1.
             ice[ice < -1] = -1.
             ice_mask = np.where(mask < 0, 1, 0)

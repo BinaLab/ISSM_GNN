@@ -336,7 +336,7 @@ def main():
         out_channels = val_set[0].ndata['label'].shape[1]
 
     if args.out_ch == 3:
-        post_combine = True
+        post_combine = False
     else:
         post_combine = False
         
