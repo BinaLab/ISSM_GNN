@@ -400,8 +400,8 @@ class CNN_Helheim_Dataset(Dataset):
                 [input0, output0] = pickle.load(file)
             
             rate = int(filename.split("_r")[1][:3])
-            input0 = torch.tensor(input0[:, :, 1:108, 129:214], dtype=torch.float32)
-            output0 = torch.tensor(output0[:, :, 1:108, 129:214], dtype=torch.float32)
+            input0 = torch.tensor(input0, dtype=torch.float32) #torch.tensor(input0[:, :, 1:108, 129:214], dtype=torch.float32)
+            output0 = torch.tensor(output0, dtype=torch.float32) # torch.tensor(output0[:, :, 1:108, 129:214], dtype=torch.float32)
             
             if first:
                 self.input = input0

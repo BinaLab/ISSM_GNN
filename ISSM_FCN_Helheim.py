@@ -404,7 +404,7 @@ def main():
     else:
         out_channels = val_set[0].ndata['label'].shape[1]
 
-    row, col = val_dataset[0][0].shape[2:]
+    row, col = row, col = val_dataset[0][0].shape[1:]
     if args.local_rank == 0:
         print(f"## IN: {in_channels}; OUT: {out_channels} ({row} x {col})")
         print(f"## Train: {len(train_dataset)}; Val: {len(val_dataset)}; Test: {len(test_dataset)}")
