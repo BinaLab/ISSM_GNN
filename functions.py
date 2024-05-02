@@ -553,3 +553,9 @@ def add_vel(y_true0):
     vel = np.expand_dims((y_true0[:, :, 0]**2 + y_true0[:, :, 1]**2)**0.5, axis = 2)
     y_true0 = np.append(y_true0, vel, axis = 2)
     return y_true0
+
+def convert_binary(levelset, thickness, threshold = 0):
+    levelset = torch.tensor(levelset)
+    output = torch.zeros(levelset.shape)
+    output = torch.where(((levelset > threshold) | (thickness < 20/5000)), 0., 1.) # positive: water, negative: ice
+    return output
