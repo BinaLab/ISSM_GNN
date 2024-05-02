@@ -296,8 +296,6 @@ def main():
     
     # train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
     # val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
-    print(len(train_set))
-    print(len(val_set))
     
     train_loader = get_dataloaders(train_set, seed, batch_size, True, frac_list = [0.7, 0.3, 0.0])
     val_loader = get_dataloaders(val_set, seed, batch_size, True, frac_list = [1.0, 0.0, 0.0])
