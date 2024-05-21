@@ -45,7 +45,8 @@ class GNN_Helheim_Dataset(DGLDataset):
             xc = test['S'][0][0][0]
             yc = test['S'][0][0][1]
             elements = test['S'][0][0][2]-1
-            idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
+            idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
+            # idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
             xc = xc[idx]
             yc = yc[idx]
 
