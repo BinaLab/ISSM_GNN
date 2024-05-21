@@ -24,8 +24,8 @@ def norm(x, mean, std):
 ## Dataset for train ===================================
 class GNN_Helheim_Dataset(DGLDataset):
     def __init__(self, filename, initial = False):
-        super().__init__(name="pig", url = filename)
         self.initial = initial
+        super().__init__(name="pig", url = filename)
         
     def process(self):
         self.graphs = []
