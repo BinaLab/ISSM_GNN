@@ -119,6 +119,11 @@ def parse_args() -> argparse.Namespace:
         help='Number of input channels',
     )
     parser.add_argument(
+        '--initial',
+        default=False,
+        help='Whether using initial condition as input',
+    )
+    parser.add_argument(
         '--hidden-ch',
         type=int,
         default=128,
@@ -314,8 +319,8 @@ def main():
     
     if args.data == "mat":
         train_files, val_files, test_files = generate_list()
-        train_set = GNN_Helheim_Dataset(train_files)
-        val_set = GNN_Helheim_Dataset(val_files)
+        train_set = GNN_Helheim_Dataset(train_files, args.initial)
+        val_set = GNN_Helheim_Dataset(val_files, args.initial)
         # test_set = GNN_Helheim_Dataset(test_files)
     elif args.data == "bin":
         train_set = ISSM_train_dataset(f"../data/DGL_Helheim_train.bin")
@@ -377,8 +382,11 @@ def main():
     else:
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
-    
-    model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}"
+
+    if args.initial == False:
+        model_name = f"torch_dgl_Helheim_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+    else:
+        model_name = f"torch_dgl_HelheimINIT_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
     
     torch.manual_seed(seed)
     
