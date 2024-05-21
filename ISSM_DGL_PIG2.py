@@ -301,7 +301,7 @@ def main():
     mesh = args.mesh
     
     if args.data == "mat":
-        train_files, val_files, test_files = generate_list(region = "PIG", folder = "./data")
+        train_files, val_files, test_files = generate_list(region = "PIG")
         train_set = GNN_PIG_Dataset(train_files)
         val_set = GNN_PIG_Dataset(val_files)
         test_set = GNN_PIG_Dataset(test_files)
