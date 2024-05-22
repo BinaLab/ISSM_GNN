@@ -311,7 +311,7 @@ def main():
     mesh = args.mesh
     
     if args.data == "mat":
-        train_files, val_files, test_files = generate_list(region = "Helheim", folder = "D:\\ISSM\\Helheim")
+        train_files, val_files, test_files = generate_list(region = "Helheim")
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
         print(train_files)
@@ -523,8 +523,6 @@ def main():
             torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
             with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                 pickle.dump(history, file)
-        
-    
             
     # print("##### Validation done! #####")
 
