@@ -385,10 +385,6 @@ def main():
     torch.manual_seed(seed)
     
     model.to(device)
-    if args.no_cuda:
-        model = DistributedDataParallel(model)
-    else:
-        model = DistributedDataParallel(model, device_ids=[args.local_rank])
     
     criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
