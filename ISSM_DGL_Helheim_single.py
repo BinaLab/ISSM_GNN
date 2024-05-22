@@ -403,7 +403,7 @@ def main():
         model.train()
         # The line below ensures all processes use a different
         # random ordering in data loading for each epoch.
-        train_loader.set_epoch(epoch)
+        # train_loader.set_epoch(epoch)
         
         ##### TRAIN ###########################
         train_loss = 0
@@ -514,20 +514,19 @@ def main():
         history['time'].append(time.time() - ti)
         
         t1 = time.time() - t0
-        if args.local_rank == 0:
-            if epoch % 10 == 0:            
-                print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
-            if epoch == n_epochs-1:
-                print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
-                
-                torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
-                with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
-                    pickle.dump(history, file)
+        
+        if epoch % 10 == 0:            
+            print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+        if epoch == n_epochs-1:
+            print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+            
+            torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
+            with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
+                pickle.dump(history, file)
         
     
             
     # print("##### Validation done! #####")
-    dist.destroy_process_group()
 
 ###############################################################################
 if __name__ == '__main__':
