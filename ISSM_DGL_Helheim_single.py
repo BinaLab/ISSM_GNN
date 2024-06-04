@@ -1,4 +1,5 @@
- ### PREDICT ONLY SEA ICE U & V
+#!/usr/bin/env python
+### PREDICT ONLY SEA ICE U & V
 
 # Ignore warning
 import warnings
@@ -9,6 +10,7 @@ from datetime import datetime
 from tqdm import tqdm
 import time
 import pickle
+import os, glob
 
 import torch
 
@@ -90,7 +92,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--batch-size',
         type=int,
-        default=24,
+        default=16,
         metavar='N',
         help='input batch size for training (default: 16)',
     )
@@ -309,9 +311,12 @@ def main():
     torch.cuda.empty_cache()
     
     mesh = args.mesh
+    cwd = os.getcwd()
+    a = glob.glob(cwd + "/*.mat")
+    print(a)
     
     if args.data == "mat":
-        train_files, val_files, test_files = generate_list(region = "Helheim")
+        train_files, val_files, test_files = generate_list(region = "Helheim", folder = "/code")
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
         print(train_files)
@@ -529,4 +534,4 @@ def main():
 ###############################################################################
 if __name__ == '__main__':
     main()
-
+ 
