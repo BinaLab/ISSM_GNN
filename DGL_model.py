@@ -924,7 +924,8 @@ class GConvLSTM_GAT(torch.nn.Module):
         return H, C
         
 #################################################
-        
+
+'''  
 #########################################
 ############ Neural Operator ############
 #########################################
@@ -1137,4 +1138,4 @@ class E_GCL_GKN(nn.Module):
         h = self.node_conv(h, edge_index, edge_feat, node_attr)
 
         return h, coord_curr
-    
+'''
