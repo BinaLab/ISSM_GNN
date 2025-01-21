@@ -106,6 +106,12 @@ def parse_args() -> argparse.Namespace:
         help='filename of dataset',
     )
     parser.add_argument(
+        '--train',
+        type=int,
+        default=1,
+        help='filename of dataset',
+    )
+    parser.add_argument(
         '--data',
         type=str,
         default='mat',
@@ -323,7 +329,18 @@ def main():
     
     mesh = args.mesh    
 
-    train_files, val_files, test_files = generate_list(folder = args.data_dir)
+    if args.train == 1:
+        train_list = ["070", "110"]
+    elif args.train == 2:
+        train_list = ["070", "075"]
+    elif args.train == 3:
+        train_list = ["085", "090"]
+    elif args.train == 4:
+        train_list = ["105", "110"]
+    elif args.train == 5:
+        train_list = ["080", "100"]
+    
+    train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
     train_set = GNN_Helheim_Dataset(train_files, args.initial)
     val_set = GNN_Helheim_Dataset(val_files, args.initial)
         
@@ -380,7 +397,7 @@ def main():
         print("Please put valid model name!!")
         # model = GCN(in_channels, out_channels, 128)  # Fully connected network
 
-    model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+    model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{args.train}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
     
     torch.manual_seed(seed)
     

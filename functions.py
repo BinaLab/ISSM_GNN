@@ -223,7 +223,7 @@ class GNN_Helheim_Dataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
     
-def generate_list(region = "Helheim", folder = "../data", model = "gnn"):
+def generate_list(region = "Helheim", folder = "../data", train = [], model = "gnn"):
     ## MAKE TRAINING AND TESTING DATASETS FOR GNN
     train_files = []
     val_files = []
@@ -236,15 +236,21 @@ def generate_list(region = "Helheim", folder = "../data", model = "gnn"):
             filelist = glob.glob(f'{folder}/Helheim_r*_030_CNN_200m.pkl')
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
-            if (int(rate) >= 70) and (int(rate) <= 100) and (rate != "080"):
-                # train_files.append(f)
-                if rate == "075" or rate == "095": #int(f[-11:-8])%10 == 5: # f[-11:-8] == "070" or f[-11:-8] == "080" or f[-11:-8] == "115" or f[-11:-8] == "115":
-                    val_files.append(f)
-                    test_files.append(f)
-                # elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
-                #     test_files.append(f)
-                else:
-                    train_files.append(f)
+            if rate in train:
+                train_files.append(f)
+            else:
+                val_files.append(f)
+                test_files.append(f)
+            
+            # if (int(rate) >= 70) and (int(rate) <= 100) and (rate != "080"):
+            #     # train_files.append(f)
+            #     if rate == "075" or rate == "095": #int(f[-11:-8])%10 == 5: # f[-11:-8] == "070" or f[-11:-8] == "080" or f[-11:-8] == "115" or f[-11:-8] == "115":
+            #         val_files.append(f)
+            #         test_files.append(f)
+            #     # elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
+            #     #     test_files.append(f)
+            #     else:
+            #         train_files.append(f)
                     
     elif region == "PIG":
         if model == "gnn":
