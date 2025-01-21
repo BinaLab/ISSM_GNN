@@ -72,8 +72,8 @@ class GNN_Helheim_Dataset(DGLDataset):
             if self.initial == "flow":
                 sigmaVM = test['S'][0][0][14][:, idx]
                 cr = test['S'][0][0][15][:, idx]
-                mr = test['S'][0][0][16][:, idx]
-                fc = test['S'][0][0][17][:, idx]
+                mr = test['S'][0][0][18][:, idx]
+                fc = test['S'][0][0][16][:, idx]
 
             n_year, n_sample = H.shape
 
