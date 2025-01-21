@@ -44,9 +44,10 @@ class GNN_Helheim_Dataset(DGLDataset):
 
             xc = test['S'][0][0][0]
             yc = test['S'][0][0][1]
+
             elements = test['S'][0][0][2]-1
-            idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
-            # idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
+            # idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
+            idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
             xc = xc[idx]
             yc = yc[idx]
 
@@ -83,6 +84,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 dst = []
                 weight = []
                 slope = []
+
 
                 for i, i0 in enumerate(idx): #range(0, n_sample):        
                     p1, p2 = np.where(elements == i0)
@@ -124,13 +126,17 @@ class GNN_Helheim_Dataset(DGLDataset):
                 pass                    
 
             for t in range(1, n_year):
-                # INPUT: x/y coordinates, melting rate, time, SMB, Vx0, Vy0, Surface0, Base0, Thickness0, Floating0
-                inputs = torch.zeros([n_sample, 12])
-                # OUTPUT: Vx, Vy, Vel, Surface, Thickness, Floating
-                outputs = torch.zeros([n_sample, 6])
+
+                if self.initial != "flow":
+                    # INPUT: x/y coordinates, melting rate, time, SMB, Vx0, Vy0, Surface0, Base0, Thickness0, Floating0
+                    inputs = torch.zeros([n_sample, 12])
+                    # OUTPUT: Vx, Vy, Vel, Surface, Thickness, Floating
+                    outputs = torch.zeros([n_sample, 6])                    
 
                 ## INPUTS (initial) ================================================
                 if self.initial == "flow":
+                    inputs = torch.zeros([n_sample, 8])
+                    outputs = torch.zeros([n_sample, 3])
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
                     inputs[:, 2] = torch.tensor(smb[t-1, :]/20)
@@ -138,9 +144,10 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 4] = torch.tensor(base[t-1, :]/5000) # Base elevation
                     inputs[:, 5] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
                     inputs[:, 6] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
-                    inputs[:, 7] = torch.tensor(ice[t-1, :]) # Ice mask
+                    inputs[:, 7] = torch.tensor(ice[t-1, :]) # Ice mask                                       
                 
                 elif self.initial == "initial":
+                    print(self.initial)
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                     inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
@@ -157,6 +164,7 @@ class GNN_Helheim_Dataset(DGLDataset):
 
                 ## INPUTS (previous timestep) ================================================
                 else:
+                    print(self.initial)
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                     inputs[:, 2] = torch.tensor((rate-50)/(150-50) * ice_mask[t-1, :])  # Sigma_max
