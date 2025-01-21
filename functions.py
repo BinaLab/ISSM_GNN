@@ -236,11 +236,12 @@ def generate_list(region = "Helheim", folder = "../data", train = [], model = "g
             filelist = glob.glob(f'{folder}/Helheim_r*_030_CNN_200m.pkl')
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
-            if rate in train:
-                train_files.append(f)
-            else:
-                val_files.append(f)
-                test_files.append(f)
+            if int(rate) <= 110:
+                if rate in train:
+                    train_files.append(f)
+                else:
+                    val_files.append(f)
+                    test_files.append(f)
             
             # if (int(rate) >= 70) and (int(rate) <= 100) and (rate != "080"):
             #     # train_files.append(f)
