@@ -131,12 +131,14 @@ class GNN_Helheim_Dataset(DGLDataset):
 
                 ## INPUTS (initial) ================================================
                 if self.initial == "flow":
-                    inputs[:, 0] = torch.tensor(smb[t-1, :]/20)
-                    inputs[:, 1] = torch.tensor(surface[t-1, :]/5000) # Surface elevation
-                    inputs[:, 2] = torch.tensor(base[t-1, :]/5000) # Base elevation
-                    inputs[:, 3] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
-                    inputs[:, 4] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
-                    inputs[:, 5] = torch.tensor(ice[t-1, :]) # Ice mask
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
+                    inputs[:, 2] = torch.tensor(smb[t-1, :]/20)
+                    inputs[:, 3] = torch.tensor(surface[t-1, :]/5000) # Surface elevation
+                    inputs[:, 4] = torch.tensor(base[t-1, :]/5000) # Base elevation
+                    inputs[:, 5] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
+                    inputs[:, 6] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
+                    inputs[:, 7] = torch.tensor(ice[t-1, :]) # Ice mask
                 
                 elif self.initial == True:
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
