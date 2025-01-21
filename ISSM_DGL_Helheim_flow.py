@@ -125,7 +125,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         '--initial',
-        type=str
+        type=str,
         default="flow",
         help='Whether using initial condition as input',
     )
