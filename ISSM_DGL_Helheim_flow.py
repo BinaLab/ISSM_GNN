@@ -338,7 +338,7 @@ def main():
     elif args.train == 4:
         train_list = ["100", "105", "110"]
     elif args.train == 5:
-        train_list = ["080", "090, "100"]
+        train_list = ["080", "090", "100"]
     
     train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
     train_set = GNN_Helheim_Dataset(train_files, args.initial)
