@@ -330,15 +330,15 @@ def main():
     mesh = args.mesh    
 
     if args.train == 1:
-        train_list = ["070", "110"]
+        train_list = ["070", "090", "110"]
     elif args.train == 2:
-        train_list = ["070", "075"]
+        train_list = ["070", "075", "080"]
     elif args.train == 3:
-        train_list = ["085", "090"]
+        train_list = ["085", "090", "095"]
     elif args.train == 4:
-        train_list = ["105", "110"]
+        train_list = ["100", "105", "110"]
     elif args.train == 5:
-        train_list = ["080", "100"]
+        train_list = ["080", "090, "100"]
     
     train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
     train_set = GNN_Helheim_Dataset(train_files, args.initial)
