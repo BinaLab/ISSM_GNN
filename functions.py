@@ -238,9 +238,9 @@ def generate_list(region = "Helheim", folder = "../data", train = [], model = "g
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
             if int(rate) <= 110 and int(rate) >= 70:
-                if rate in train:
+                if (rate in train) and (rate != "080"):
                     train_files.append(f)
-                else:
+                elif rate != "080":
                     val_files.append(f)
                     test_files.append(f)
             
