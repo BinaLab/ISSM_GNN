@@ -140,7 +140,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 6] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
                     inputs[:, 7] = torch.tensor(ice[t-1, :]) # Ice mask
                 
-                elif self.initial == True:
+                elif self.initial == "initial":
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
                     inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
