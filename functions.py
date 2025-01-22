@@ -97,7 +97,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                                 connect.append(k0)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
                                 weight.append(np.exp(-(dist/100)))
-                                slope.append([np.exp(-(dist/1000)), 1-(base[0,i]-base[0,k])/dist, 1-(surface[0,i]-surface[0,k])/dist])
+                                slope.append([np.exp(-(dist/1000))])]) #, 1-(base[0,i]-base[0,k])/dist, 1-(surface[0,i]-surface[0,k])/dist])
                                              # 1-(vx[0,i]-vx[0,k])/dist, 1-(vy[0,i]-vy[0,k])/dist])
                                 src.append(int(i))
                                 dst.append(int(np.where(idx == k0)[0][0]))
@@ -140,9 +140,9 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
                     inputs[:, 2] = torch.tensor(H[t-1, :]/5000) # Surface elevation
-                    inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation
-                    inputs[:, 4] = torch.tensor(ice_mask[t-1, :]) # Ice mask 
-                    inputs[:, 5] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
+                    inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation                    
+                    inputs[:, 4] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
+                    inputs[:, 5] = torch.tensor(ice_mask[t-1, :]) # Ice mask 
                     
                     # inputs[:, 6] = torch.tensor(smb[t-1, :]/20)
                     # inputs[:, 7] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
