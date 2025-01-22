@@ -126,7 +126,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--in-ch',
         type=int,
-        default=5,
+        default=4,
         help='Number of input channels',
     )
     parser.add_argument(
