@@ -440,6 +440,8 @@ def main():
                 
             pred = model(bg, feats, post_combine)
 
+            print(labels.shape, pred.shape)
+
             # if args.model_type[:4] == "egcn":
             #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
 
