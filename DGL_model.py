@@ -693,8 +693,8 @@ class EGCN(nn.Module):
             out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
             
-            if post_combine:
-                out = self.combine_binary(out, self.out_size-1, self.out_size)
+            # if post_combine:
+            #     out = self.combine_binary(out, self.out_size-1, self.out_size)
                 
             return out
 
@@ -870,8 +870,8 @@ class EGNN(nn.Module):
             out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
             
-            if post_combine:
-                out = self.combine_binary(out, self.out_size-1, self.out_size)
+            # if post_combine:
+            #     out = self.combine_binary(out, self.out_size-1, self.out_size)
                 
             return out
 
