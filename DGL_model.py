@@ -682,7 +682,7 @@ class EGCN(nn.Module):
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
             # print(self.vel_mlp(node_feat).shape, node_feat[:, [3, 4]].shape)
-            x_neigh = x_neigh + self.vel_mlp(node_feat) * node_feat[:, [3, 4]]
+            x_neigh = x_neigh + self.vel_mlp(node_feat) * node_feat[:, [0, 1]]
 
             h = self.node_mlp(
                 torch.cat([node_feat, h_neigh], dim=-1)
@@ -859,7 +859,7 @@ class EGNN(nn.Module):
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
             # print(self.vel_mlp(node_feat).shape, node_feat[:, [3, 4]].shape)
-            x_neigh = x_neigh + self.vel_mlp(node_feat) * node_feat[:, [3, 4]]
+            x_neigh = x_neigh + self.vel_mlp(node_feat) # * node_feat[:, [3, 4]]
 
             h = self.node_mlp(
                 torch.cat([node_feat, h_neigh], dim=-1)
