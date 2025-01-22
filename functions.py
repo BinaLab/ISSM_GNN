@@ -144,7 +144,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 4] = torch.tensor(base[t-1, :]/5000) # Base elevation
                     inputs[:, 5] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
                     inputs[:, 6] = torch.tensor(ice[t-1, :]) # Ice mask 
-                    inputs[:, 7] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
+                    # inputs[:, 7] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
                                                           
                 
                 elif self.initial == "initial":
