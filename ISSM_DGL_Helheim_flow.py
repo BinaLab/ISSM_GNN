@@ -440,8 +440,8 @@ def main():
                 
             pred = model(bg, feats, post_combine)
 
-            if args.model_type[:4] == "egcn":
-                labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
+            # if args.model_type[:4] == "egcn":
+            #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
 
             # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             # loss = criterion(y_norm_pred*100, y_norm_true*100)
@@ -470,8 +470,8 @@ def main():
                 
                 pred = model(bg, feats, post_combine)
                 
-                if args.model_type[:4] == "egcn":
-                    labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)                   
+                # if args.model_type[:4] == "egcn":
+                #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)                   
 
             # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             # loss = criterion(y_norm_pred*100, y_norm_true*100)
