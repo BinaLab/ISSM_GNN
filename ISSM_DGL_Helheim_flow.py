@@ -435,10 +435,14 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
+
+            idx = np.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000) & (feats[:, 0] > 15/5000))[0]
+            # Spatial & ice thickness filtering for model training
+            
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            labels = bg.ndata['label']
+            labels = bg.ndata['label'][:, :out_channels]
                 
-            pred = model(bg, feats, post_combine)
+            pred = model(bg, feats[:, :in_channels], post_combine)
 
             # print(labels.shape, pred.shape)
 
@@ -448,9 +452,9 @@ def main():
             # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             # loss = criterion(y_norm_pred*100, y_norm_true*100)
             if post_combine:
-                loss = criterion(pred[:, :]*100, labels[:, :]*100)
+                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
             else:
-                loss = criterion(pred[:, :]*100, labels[:, :]*100)
+                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -465,12 +469,16 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
+            
+            idx = np.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000) & (feats[:, 0] > 15/5000))[0]
+            # Spatial & ice thickness filtering for model training
+            
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            labels = bg.ndata['label']
+            labels = bg.ndata['label'][:, :out_channels]
             
             with torch.no_grad():
                 
-                pred = model(bg, feats, post_combine)
+                pred = model(bg, feats[:, :in_channels], post_combine)
                 
                 # if args.model_type[:4] == "egcn":
                 #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)                   
@@ -478,9 +486,9 @@ def main():
             # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
             # loss = criterion(y_norm_pred*100, y_norm_true*100)
             if post_combine:
-                loss = criterion(pred[:, :]*100, labels[:, :]*100)
+                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
             else:
-                loss = criterion(pred[:, :]*100, labels[:, :]*100)
+                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
             val_loss += loss.cpu().item()
             val_count += 1
             

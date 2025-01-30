@@ -46,15 +46,15 @@ class GNN_Helheim_Dataset(DGLDataset):
             yc = test['S'][0][0][1]
 
             elements = test['S'][0][0][2]-1
-            # idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
-            idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
+            idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
+            # idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
             xc = xc[idx]
             yc = yc[idx]
 
             mask = test['S'][0][0][11][:, idx]
             # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
-            ice = np.where(mask < 0, mask / 1000000, mask/10000)
+            ice = mask / 1000000 # np.where(mask < 0, mask / 1000000, mask/10000)
 
             # ice = np.where(mask < 0, mask / 200000, mask/4000)
             # ice[ice > 1] = 1.
@@ -135,17 +135,17 @@ class GNN_Helheim_Dataset(DGLDataset):
 
                 ## INPUTS (initial) ================================================
                 if self.initial == "flow":
-                    inputs = torch.zeros([n_sample, 6])
-                    outputs = torch.zeros([n_sample, 3])
+                    inputs = torch.zeros([n_sample, 10])
+                    outputs = torch.zeros([n_sample, 6])
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
-                    inputs[:, 2] = torch.tensor(H[t-1, :]/5000) # Surface elevation
-                    inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation                    
-                    inputs[:, 4] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
-                    inputs[:, 5] = torch.tensor(ice_mask[t-1, :]) # Ice mask 
-                    
-                    # inputs[:, 6] = torch.tensor(smb[t-1, :]/20)
-                    # inputs[:, 7] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
+                    inputs[:, 2] = torch.tensor(H[t, :]/5000) # Ice thickness
+                    inputs[:, 3] = torch.tensor(base[t, :]/5000) # Base elevation                    
+                    inputs[:, 4] = torch.tensor(fc[t, :]/12000) # Basal friction coefficient
+                    inputs[:, 5] = torch.tensor(ice[t, :]) # Ice mask                     
+                    inputs[:, 6] = torch.tensor(smb[t, :]/20)
+                    inputs[:, 7] = torch.tensor(mr[t, :]/3000) # Ocean melting rate
+                    inputs[:, 8] = torch.tensor(rate)
                                                           
                 
                 elif self.initial == "initial":
@@ -194,7 +194,10 @@ class GNN_Helheim_Dataset(DGLDataset):
                 if self.initial == "flow":
                     outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
                     outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
-                    outputs[:, 2] = torch.tensor(sigmaVM[t, :]/(1.5*1e6)) # Initial surface elevation
+                    outputs[:, 2] = torch.tensor(cr[t, :]*(rate * 1e4))/(1e4*1e6) #torch.tensor(sigmaVM[t, :]/(1.5*1e6)) # Initial surface elevation
+                    outputs[:, 3] = torch.tensor(H[t, :]/5000)
+                    outputs[:, 4] = torch.tensor(ice[t, :])
+                    outputs[:, 5] = torch.tensor(cr[t, :])
                     
                 else:
                     outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
@@ -558,6 +561,20 @@ def triangle_area(x1, x2, x3, y1, y2, y3):
     return A
 
 def area_mean(xc, yc, elements, value):
+    area_sum = 0
+    area = 0
+    for i in range(0, elements.shape[0]):
+        p1 = elements[i, 0]
+        p2 = elements[i, 1]
+        p3 = elements[i, 2]
+        A = triangle_area(xc[p1], xc[p2], xc[p3], yc[p1], yc[p2], yc[p3])[0]
+        M = (value[p1] + value[p2] + value[p3])/3
+        area_sum += M*A
+        area += A
+    area_mean = area_sum / area
+    return area_sum, area_mean
+
+def mesh_gradient(xc, yc, elements, value):
     area_sum = 0
     area = 0
     for i in range(0, elements.shape[0]):
