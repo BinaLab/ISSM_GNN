@@ -70,7 +70,7 @@ class GNN_Helheim_Dataset(DGLDataset):
             H = test['S'][0][0][9][:, idx] # * ice_mask
             f = test['S'][0][0][10][:, idx] # * ice_mask   
 
-            if self.initial == "flow":
+            if self.initial[:4] == "flow":
                 sigmaVM = test['S'][0][0][14][:, idx]
                 cr = test['S'][0][0][15][:, idx]
                 mr = test['S'][0][0][18][:, idx]
@@ -148,7 +148,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 8] = torch.tensor(rate)
                 
                 elif self.initial == "flowt":
-                    inputs = torch.zeros([n_sample, 10])
+                    inputs = torch.zeros([n_sample, 11])
                     outputs = torch.zeros([n_sample, 6])
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
                     inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
