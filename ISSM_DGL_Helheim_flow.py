@@ -402,7 +402,7 @@ def main():
             print("Please put valid model name!!")
             # model = GCN(in_channels, out_channels, 128)  # Fully connected network
     
-        model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{args.train}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+        model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
         
         torch.manual_seed(seed)
         
