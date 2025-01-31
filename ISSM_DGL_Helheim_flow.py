@@ -436,7 +436,7 @@ def main():
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
 
-            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000) & (feats[:, 0] > 15/5000))[0].to(device)
+            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000))[0].to(device)
             # Spatial & ice thickness filtering for model training
             
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
@@ -470,7 +470,7 @@ def main():
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
             
-            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000) & (feats[:, 0] > 15/5000))[0].to(device)
+            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000))[0].to(device)
             # Spatial & ice thickness filtering for model training
             
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
