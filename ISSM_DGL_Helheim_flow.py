@@ -342,9 +342,6 @@ def main():
             train_list = ["100", "105", "110"]
         elif train_num == 5:
             train_list = ["080", "090", "100"]
-
-        print("\n############################################################")
-        print(train_num, train_list)
     
         train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
@@ -421,6 +418,8 @@ def main():
         
         total_params = sum(p.numel() for p in model.parameters())
         if args.local_rank == 0:
+            print("\n############################################################")
+            print(train_num, train_list)
             print(model_name)
             print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
         
