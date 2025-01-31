@@ -408,7 +408,7 @@ def main():
         model = DistributedDataParallel(model)
     else:
         model = DistributedDataParallel(model, device_ids=[args.local_rank])
-    
+
     criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr)
     scheduler = ExponentialLR(optimizer, gamma=0.99)
@@ -436,8 +436,8 @@ def main():
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
 
-            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000))[0].to(device)
             # Spatial & ice thickness filtering for model training
+            idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)
             
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             labels = bg.ndata['label'][:, :out_channels]
@@ -469,9 +469,9 @@ def main():
             bg = bg.to(device)
             feats = bg.ndata['feat'][:, 2:]                
             coord_feat = bg.ndata['feat'][:, :2]
-            
-            idx = torch.where((coord_feat[:, 0]>230000/10000) & (coord_feat[:, 1] < -2500000/10000))[0].to(device)
+
             # Spatial & ice thickness filtering for model training
+            idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)            
             
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             labels = bg.ndata['label'][:, :out_channels]

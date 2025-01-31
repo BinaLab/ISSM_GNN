@@ -26,6 +26,19 @@ class single_loss(nn.Module):
             err_sum += torch.mean(err)
         return err_sum
 
+class custom_loss(nn.Module):
+    def __init__(self, idx):
+        super(custom_loss, self).__init__();
+        self.mask = idx
+        
+    def forward(self, obs, prd):
+        idx = self.mask
+
+        err = torch.square(obs[idx, :]*100 - prd[idx, :]*100)
+        err_sum = torch.nanmean(err)
+
+        return err_sum
+
 def norm_data(obs, prd):
     n_channels = obs.size()[-1]
 
