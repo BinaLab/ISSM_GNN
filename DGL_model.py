@@ -36,7 +36,38 @@ class custom_loss(nn.Module):
 
         err = torch.square(obs[idx, :]*100 - prd[idx, :]*100)
         err_sum = torch.nanmean(err)
+        
+        sic_o = obs[:, 2, :, :]*100
+        sic_p = prd[:, 2, :, :]*100
+        u_o = obs[:, 0, :, :]*30; v_o = obs[:, 1, :, :]*30
+        u_p = prd[:, 0, :, :]*30; v_p = prd[:, 1, :, :]*30
+        vel_o = (u_o**2 + v_o**2)**0.5
+        vel_p = (u_p**2 + v_p**2)**0.5
+        
+        # sic_max = torch.amax(obs[:, 2*f:3*f, :, :], dim=0)
 
+        err_u = torch.square(u_o - u_p) #[sic > 0]
+        err_v = torch.square(v_o - v_p) #[sic > 0]
+        err_vel = torch.square(vel_o - vel_p) #[sic > 0]
+        
+        err1 = torch.nanmean(err_u + err_v, dim=0)[torch.where((self.landmask == 0))] # * (self.landmask == 0)  #[torch.where((self.landmask == 0))] # & (sic_max > 0))]
+        err_sum = torch.nanmean(err1)*10
+
+        err_sic = torch.square(sic_o - sic_p)
+        
+        # neg_sic = torch.where(prd[:, 2*f:3*f, :, :] < 0, abs(prd[:, 2*f:3*f, :, :]), 0)
+        err2 = torch.nanmean(err_sic, dim=0)[torch.where((self.landmask == 0))] # * (self.landmask == 0)  #[torch.where((self.landmask == 0))] # & (sic_max > 0))]
+        err_sum += torch.nanmean(err2)*10
+        
+        # if obs.size()[1] > 3:
+        #     err_sit = torch.abs(obs[:, 3, :, :]-prd[:, 3, :, :])  
+        #     neg_sit = torch.where(prd[:, 3, :, :] < 0, abs(prd[:, 3, :, :]), 0)
+        #     err3 = torch.mean(err_sit, dim=0)[torch.where(self.landmask == 0)]   
+        #     err_sum += torch.mean(err3)*5000
+        
+        # err_sum += torch.mean(err_sic + err_sit)*100
+        # err_sum += torch.nanmean(err_theta)*0.5/3.141592
+        # err_sum = tf.sqrt(tf.reduce_mean(err_u*err_sic)) + tf.sqrt(tf.reduce_mean(err_v*err_sic))
         return err_sum
 
 def norm_data(obs, prd):
@@ -851,7 +882,7 @@ class EGNN(nn.Module):
         """
         with graph.local_scope():
             coord_feat = graph.ndata['feat'][:, :2]
-            edge_feat = graph.edata['slope'][:, :, 0].type(torch.float32) #graph.edata['weight'].float()
+            edge_feat = graph.edata['slope'][:, :].type(torch.float32) #graph.edata['weight'].float()
             # print(edge_feat.shape, coord_feat.shape, node_feat.shape)
             # node feature
             graph.ndata['h'] = node_feat
@@ -872,6 +903,7 @@ class EGNN(nn.Module):
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
             # print(self.vel_mlp(node_feat).shape, node_feat[:, [3, 4]].shape)
+            v = self.vel_mlp(node_feat)
             x_neigh = x_neigh + self.vel_mlp(node_feat) # * node_feat[:, [3, 4]]
 
             h = self.node_mlp(
@@ -880,7 +912,7 @@ class EGNN(nn.Module):
             h = self.linh(h)
             x = x_neigh # coord_feat + 
             # h = h + torch.sum(x)*0
-            out = torch.cat([x, h], dim=1)
+            out = torch.cat([v, h], dim=1)
             # out = h + torch.sum(x)*0
             
             # if post_combine:
