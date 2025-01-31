@@ -260,11 +260,11 @@ class ISSM_test_dataset(DGLDataset):
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
 
-def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
+def get_dataloaders(dataset, seed, batch_size=32, shuffle = False, frac = 1.0):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[1.0, 0.0, 0.0],
-                                                 shuffle=True,
+                                                 frac_list=[frac, 1-frac, 0.0],
+                                                 shuffle=shuffle,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
     val_loader = GraphDataLoader(val_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
@@ -347,8 +347,8 @@ def main():
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
             
-        train_loader, _ = get_dataloaders(train_set, seed, batch_size, True)
-        val_loader, _ = get_dataloaders(val_set, seed, batch_size, True)
+        train_loader, _ = get_dataloaders(train_set, seed, batch_size, True, 1.0)
+        val_loader, _ = get_dataloaders(val_set, seed, batch_size, True, 0.5)
         n_nodes = val_set[0].num_nodes()
         n_edges = val_set[0].num_edges()
         in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
