@@ -373,9 +373,11 @@ def main():
         # =============================================================
         
         if args.local_rank == 0:
+            print("\n############################################################")
+            print("## Train list: ", train_num, train_list)
             print(f"## NODES: {n_nodes}; EDGES: {n_edges}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
             print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
-            print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
+            print("########### TRAINING/VALIDATION DATA IS PREPARED #############")   
         
         hidden_channels = args.hidden_ch
         if args.model_type == "gcn":
@@ -418,8 +420,6 @@ def main():
         
         total_params = sum(p.numel() for p in model.parameters())
         if args.local_rank == 0:
-            print("\n############################################################")
-            print(train_num, train_list)
             print(model_name)
             print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
         
