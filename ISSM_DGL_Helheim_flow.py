@@ -327,185 +327,191 @@ def main():
     
     torch.cuda.empty_cache()
     
-    mesh = args.mesh    
+    mesh = args.mesh
 
-    if args.train == 1:
-        train_list = ["070", "090", "110"]
-    elif args.train == 2:
-        train_list = ["070", "075", "080"]
-    elif args.train == 3:
-        train_list = ["085", "090", "095"]
-    elif args.train == 4:
-        train_list = ["100", "105", "110"]
-    elif args.train == 5:
-        train_list = ["080", "090", "100"]
+    # train_num = args.train;
+    for train_num in range(1, 5):
+
+        if train_num == 1:
+            train_list = ["070", "090", "110"]
+        elif train_num == 2:
+            train_list = ["070", "075", "080"]
+        elif train_num == 3:
+            train_list = ["085", "090", "095"]
+        elif train_num == 4:
+            train_list = ["100", "105", "110"]
+        elif train_num == 5:
+            train_list = ["080", "090", "100"]
+
+        print("\n############################################################")
+        print(train_num, train_list)
     
-    train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
-    train_set = GNN_Helheim_Dataset(train_files, args.initial)
-    val_set = GNN_Helheim_Dataset(val_files, args.initial)
-        
-    train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
-    n_nodes = val_set[0].num_nodes()
-    n_edges = val_set[0].num_edges()
-    in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
-    edge_feat_size = val_set[0].edata['slope'].shape[1]
-    if args.out_ch > 0:
-        out_channels = args.out_ch
-    else:
-        out_channels = val_set[0].ndata['label'].shape[1]
-
-    if args.out_ch == 3:
-        post_combine = False
-    else:
-        post_combine = False
-        
-    # Region filtering ============================================
-    test = sio.loadmat(train_files[0])
-    mask = np.where(test['S'][0][0][11][0] > -100000)[0]
-    for i in range(0, batch_size):
-        if i == 0:
-            mask_batch = mask
+        train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
+        train_set = GNN_Helheim_Dataset(train_files, args.initial)
+        val_set = GNN_Helheim_Dataset(val_files, args.initial)
+            
+        train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
+        n_nodes = val_set[0].num_nodes()
+        n_edges = val_set[0].num_edges()
+        in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
+        edge_feat_size = val_set[0].edata['slope'].shape[1]
+        if args.out_ch > 0:
+            out_channels = args.out_ch
         else:
-            mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
-    # =============================================================
+            out_channels = val_set[0].ndata['label'].shape[1]
     
-    if args.local_rank == 0:
-        print(f"## NODES: {n_nodes}; EDGES: {n_edges}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
-        print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
-        print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
-    
-    hidden_channels = args.hidden_ch
-    if args.model_type == "gcn":
-        model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
-    elif args.model_type == "wgcn":
-        model = WGCN(in_channels, out_channels, hidden_channels)  # Weighted graph convolutional network    
-    elif args.model_type == "gin":
-        model = GIN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
-    elif args.model_type == "mlp":
-        model = MLP(in_channels, out_channels, hidden_channels)  # Fully connected network
-    elif args.model_type == "gat":
-        model = GAT(in_channels, out_channels, hidden_channels)  # Graph convolutional network 
-    elif args.model_type == "egcn":
-        model = EGCN(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
-    elif args.model_type == "egnn":
-        model = EGNN(in_channels, out_channels-2, hidden_channels, edge_feat_size)
-    elif args.model_type == "egcn2":
-        model = EGCN2(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
-    elif args.model_type == "sage":
-        model = SAGE(in_channels, out_channels, hidden_channels) # Equivariant Graph convolutional network
-    elif args.model_type == "cheb":
-        model = ChebGCN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
-    else:
-        print("Please put valid model name!!")
-        # model = GCN(in_channels, out_channels, 128)  # Fully connected network
-
-    model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{args.train}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
-    
-    torch.manual_seed(seed)
-    
-    model.to(device)
-    if args.no_cuda:
-        model = DistributedDataParallel(model)
-    else:
-        model = DistributedDataParallel(model, device_ids=[args.local_rank])
-
-    criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
-    optimizer = Adam(model.parameters(), lr)
-    scheduler = ExponentialLR(optimizer, gamma=0.99)
-    
-    total_params = sum(p.numel() for p in model.parameters())
-    if args.local_rank == 0:
-        print(model_name)
-        print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
-    
-    history = {'loss': [], 'val_loss': [], 'time': []}
-    ti = time.time()
-    
-    for epoch in range(n_epochs):
-        t0 = time.time()
-        model.train()
-        # The line below ensures all processes use a different
-        # random ordering in data loading for each epoch.
-        train_loader.set_epoch(epoch)
-        
-        ##### TRAIN ###########################
-        train_loss = 0
-        train_count = 0
-        for bg in train_loader:
-            bg = bg.to(device)
-            feats = bg.ndata['feat'][:, 2:]                
-            coord_feat = bg.ndata['feat'][:, :2]
-
-            # Spatial & ice thickness filtering for model training
-            idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)
+        if args.out_ch == 3:
+            post_combine = False
+        else:
+            post_combine = False
             
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            labels = bg.ndata['label'][:, :out_channels]
-                
-            pred = model(bg, feats[:, :in_channels], post_combine)
-
-            # print(labels.shape, pred.shape)
-
-            # if args.model_type[:4] == "egcn":
-            #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
-
-            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            # loss = criterion(y_norm_pred*100, y_norm_true*100)
-            if post_combine:
-                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+        # Region filtering ============================================
+        test = sio.loadmat(train_files[0])
+        mask = np.where(test['S'][0][0][11][0] > -100000)[0]
+        for i in range(0, batch_size):
+            if i == 0:
+                mask_batch = mask
             else:
-                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
-            train_loss += loss.cpu().item()
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            train_count += 1
-        scheduler.step()
+                mask_batch = np.append(mask_batch, mask+i*mask.shape[0])
+        # =============================================================
         
-        ##### VALIDATION ######################
-        val_loss = 0
-        val_count = 0
-        for bg in val_loader:
-            bg = bg.to(device)
-            feats = bg.ndata['feat'][:, 2:]                
-            coord_feat = bg.ndata['feat'][:, :2]
-
-            # Spatial & ice thickness filtering for model training
-            idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)            
-            
-            edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
-            labels = bg.ndata['label'][:, :out_channels]
-            
-            with torch.no_grad():
-                
-                pred = model(bg, feats[:, :in_channels], post_combine)
-                
-                # if args.model_type[:4] == "egcn":
-                #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)                   
-
-            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            # loss = criterion(y_norm_pred*100, y_norm_true*100)
-            if post_combine:
-                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
-            else:
-                loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
-            val_loss += loss.cpu().item()
-            val_count += 1
-            
-        history['loss'].append(train_loss/train_count)
-        history['val_loss'].append(val_loss/val_count)
-        history['time'].append(time.time() - ti)
-        
-        t1 = time.time() - t0
         if args.local_rank == 0:
-            if epoch % 10 == 0:            
-                print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
-            if epoch == n_epochs-1:
-                print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+            print(f"## NODES: {n_nodes}; EDGES: {n_edges}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
+            print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
+            print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
+        
+        hidden_channels = args.hidden_ch
+        if args.model_type == "gcn":
+            model = GCN(in_channels, out_channels, hidden_channels)  # Graph convolutional network    
+        elif args.model_type == "wgcn":
+            model = WGCN(in_channels, out_channels, hidden_channels)  # Weighted graph convolutional network    
+        elif args.model_type == "gin":
+            model = GIN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
+        elif args.model_type == "mlp":
+            model = MLP(in_channels, out_channels, hidden_channels)  # Fully connected network
+        elif args.model_type == "gat":
+            model = GAT(in_channels, out_channels, hidden_channels)  # Graph convolutional network 
+        elif args.model_type == "egcn":
+            model = EGCN(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
+        elif args.model_type == "egnn":
+            model = EGNN(in_channels, out_channels-2, hidden_channels, edge_feat_size)
+        elif args.model_type == "egcn2":
+            model = EGCN2(in_channels, out_channels-2, hidden_channels, edge_feat_size) # Equivariant Graph convolutional network
+        elif args.model_type == "sage":
+            model = SAGE(in_channels, out_channels, hidden_channels) # Equivariant Graph convolutional network
+        elif args.model_type == "cheb":
+            model = ChebGCN(in_channels, out_channels, hidden_channels)  # Equivariant Graph convolutional network
+        else:
+            print("Please put valid model name!!")
+            # model = GCN(in_channels, out_channels, 128)  # Fully connected network
+    
+        model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{args.train}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+        
+        torch.manual_seed(seed)
+        
+        model.to(device)
+        if args.no_cuda:
+            model = DistributedDataParallel(model)
+        else:
+            model = DistributedDataParallel(model, device_ids=[args.local_rank])
+    
+        criterion = nn.MSELoss() #nn.MSELoss() #regional_loss() #nn.MSELoss() #nn.CrossEntropyLoss()
+        optimizer = Adam(model.parameters(), lr)
+        scheduler = ExponentialLR(optimizer, gamma=0.99)
+        
+        total_params = sum(p.numel() for p in model.parameters())
+        if args.local_rank == 0:
+            print(model_name)
+            print(f"MODEL: {args.model_type}; Number of parameters: {total_params}")
+        
+        history = {'loss': [], 'val_loss': [], 'time': []}
+        ti = time.time()
+        
+        for epoch in range(n_epochs):
+            t0 = time.time()
+            model.train()
+            # The line below ensures all processes use a different
+            # random ordering in data loading for each epoch.
+            train_loader.set_epoch(epoch)
+            
+            ##### TRAIN ###########################
+            train_loss = 0
+            train_count = 0
+            for bg in train_loader:
+                bg = bg.to(device)
+                feats = bg.ndata['feat'][:, 2:]                
+                coord_feat = bg.ndata['feat'][:, :2]
+    
+                # Spatial & ice thickness filtering for model training
+                idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)
                 
-                torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
-                with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
-                    pickle.dump(history, file)
+                edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+                labels = bg.ndata['label'][:, :out_channels]
+                    
+                pred = model(bg, feats[:, :in_channels], post_combine)
+    
+                # print(labels.shape, pred.shape)
+    
+                # if args.model_type[:4] == "egcn":
+                #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
+    
+                # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+                # loss = criterion(y_norm_pred*100, y_norm_true*100)
+                if post_combine:
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+                else:
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+                train_loss += loss.cpu().item()
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                train_count += 1
+            scheduler.step()
+            
+            ##### VALIDATION ######################
+            val_loss = 0
+            val_count = 0
+            for bg in val_loader:
+                bg = bg.to(device)
+                feats = bg.ndata['feat'][:, 2:]                
+                coord_feat = bg.ndata['feat'][:, :2]
+    
+                # Spatial & ice thickness filtering for model training
+                idx = torch.where((coord_feat[:, 0]>15) & (coord_feat[:, 1] < 10))[0].to(device)            
+                
+                edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
+                labels = bg.ndata['label'][:, :out_channels]
+                
+                with torch.no_grad():
+                    
+                    pred = model(bg, feats[:, :in_channels], post_combine)
+                    
+                    # if args.model_type[:4] == "egcn":
+                    #     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)                   
+    
+                # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
+                # loss = criterion(y_norm_pred*100, y_norm_true*100)
+                if post_combine:
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+                else:
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+                val_loss += loss.cpu().item()
+                val_count += 1
+                
+            history['loss'].append(train_loss/train_count)
+            history['val_loss'].append(val_loss/val_count)
+            history['time'].append(time.time() - ti)
+            
+            t1 = time.time() - t0
+            if args.local_rank == 0:
+                if epoch % 10 == 0:            
+                    print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+                if epoch == n_epochs-1:
+                    print('Epoch {0} >> Train loss: {1:.4f}; Val loss: {2:.4f} [{3:.2f} sec]'.format(str(epoch).zfill(3), train_loss/train_count, val_loss/val_count, t1))
+                    
+                    torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
+                    with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
+                        pickle.dump(history, file)
         
     
             
