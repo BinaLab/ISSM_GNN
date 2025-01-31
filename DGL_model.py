@@ -822,7 +822,7 @@ class EGNN(nn.Module):
             act_fn,
             nn.Linear(hidden_size, hidden_size),
             act_fn,
-            nn.Linear(hidden_size, 1, bias = False)
+            nn.Linear(hidden_size, 2, bias = False)
         )
         
         self.linh = torch.nn.Linear(hidden_size, out_size)
@@ -903,7 +903,7 @@ class EGNN(nn.Module):
 
             h_neigh, x_neigh = graph.ndata['h_neigh'], graph.ndata['x_neigh']
             # print(self.vel_mlp(node_feat).shape, node_feat[:, [3, 4]].shape)
-            v = self.vel_mlp(node_feat)
+            
             x_neigh = x_neigh + self.vel_mlp(node_feat) # * node_feat[:, [3, 4]]
 
             h = self.node_mlp(
@@ -912,7 +912,7 @@ class EGNN(nn.Module):
             h = self.linh(h)
             x = x_neigh # coord_feat + 
             # h = h + torch.sum(x)*0
-            out = torch.cat([v, h], dim=1)
+            out = torch.cat([x, h], dim=1)
             # out = h + torch.sum(x)*0
             
             # if post_combine:
