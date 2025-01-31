@@ -378,8 +378,8 @@ def main():
         if args.initial == "flow":
             model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
         elif args.initial == "flowt":
-            model_name = f"torch_dgl_HelheimFLOWT_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
             in_channels = 7; out_channels = 4
+            model_name = f"torch_dgl_HelheimFLOWT_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
 
         if args.local_rank == 0:
             print("\n############################################################")
