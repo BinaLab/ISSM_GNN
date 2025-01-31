@@ -379,6 +379,12 @@ def main():
             print(f"## NODES: {n_nodes}; EDGES: {n_edges}; IN: {in_channels}; OUT: {out_channels}; EDGE FEATURES: {edge_feat_size}")
             print(f"## Total: {len(train_set)}; Train: {len(train_loader)*batch_size*world_size}; Val: {len(val_loader)*batch_size*world_size}; Test: {len(val_set)}")
             print("########### TRAINING/VALIDATION DATA IS PREPARED #############")   
+
+        if args.initial == "flow":
+            model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+        elif args.initial == "flowt":
+            model_name = f"torch_dgl_HelheimFLOWT_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
+            in_channnels = 7; out_channels = 4
         
         hidden_channels = args.hidden_ch
         if args.model_type == "gcn":
@@ -404,8 +410,6 @@ def main():
         else:
             print("Please put valid model name!!")
             # model = GCN(in_channels, out_channels, 128)  # Fully connected network
-    
-        model_name = f"torch_dgl_HelheimFLOW_{args.model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
         
         torch.manual_seed(seed)
         

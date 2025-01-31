@@ -146,6 +146,21 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 6] = torch.tensor(smb[t, :]/20)
                     inputs[:, 7] = torch.tensor(mr[t, :]/3000) # Ocean melting rate
                     inputs[:, 8] = torch.tensor(rate)
+                
+                elif self.initial == "flowt":
+                    inputs = torch.zeros([n_sample, 10])
+                    outputs = torch.zeros([n_sample, 6])
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
+                    inputs[:, 2] = torch.tensor(H[t-1, :]/5000) # Ice thickness
+                    inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation                    
+                    inputs[:, 4] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
+                    inputs[:, 5] = torch.tensor(ice[t-1, :]) # Ice mask                     
+                    inputs[:, 6] = torch.tensor(vx[t-1, :]/10000)
+                    inputs[:, 7] = torch.tensor(vy[t-1, :]/10000)
+                    inputs[:, 8] = torch.tensor(smb[t-1, :]/20)
+                    inputs[:, 9] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
+                    inputs[:, 10] = torch.tensor(rate)
                                                           
                 
                 elif self.initial == "initial":
@@ -191,7 +206,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                 # H_mean = torch.mean(inputs[:, 10])
 
                 ## OUTPUTS ===============================================
-                if self.initial == "flow":
+                if self.initial[:4] == "flow":
                     outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
                     outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
                     outputs[:, 2] = torch.tensor(cr[t, :]*(rate * 1e4))/(1e4*1e6) #torch.tensor(sigmaVM[t, :]/(1.5*1e6)) # Initial surface elevation
