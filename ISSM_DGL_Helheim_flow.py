@@ -263,7 +263,7 @@ from dgl.dataloading import GraphDataLoader
 def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
     # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
-                                                 frac_list=[0.7, 0.3, 0.0],
+                                                 frac_list=[1.0, 0.0, 0.0],
                                                  shuffle=True,
                                                  random_state=seed)
     train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=shuffle)
@@ -347,7 +347,8 @@ def main():
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
             
-        train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
+        train_loader, _ = get_dataloaders(train_set, seed, batch_size, True)
+        val_loader, _ = get_dataloaders(val_set, seed, batch_size, True)
         n_nodes = val_set[0].num_nodes()
         n_edges = val_set[0].num_edges()
         in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
