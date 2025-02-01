@@ -381,7 +381,7 @@ def main():
         for model_type in ["gcn", "gat", "egnn"]:
         
             if args.initial == "flow":
-                 in_channels = 4; out_channels = 3;
+                in_channels = 4; out_channels = 3;
                 model_name = f"torch_dgl_HelheimFLOW_{model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
             elif args.initial == "flowt":
                 in_channels = 7; out_channels = 4;
