@@ -351,7 +351,7 @@ def main():
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
             
         train_loader, _ = get_dataloaders(train_set, seed, batch_size, True, 1.0)
-        val_loader, _ = get_dataloaders(val_set, seed, batch_size, True, 0.5)
+        val_loader, _ = get_dataloaders(val_set, seed, batch_size, True, 0.3)
         n_nodes = val_set[0].num_nodes()
         n_edges = val_set[0].num_edges()
         in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
