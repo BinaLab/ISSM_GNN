@@ -331,7 +331,7 @@ def main():
     model_type = args.model_type
 
     # train_num = args.train;
-    for train_num in [1, 5]:
+    for train_num in [5]:
 
         if train_num == 1:
             train_list = ["075", "090", "105"]
