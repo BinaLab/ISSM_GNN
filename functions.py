@@ -5,6 +5,10 @@ import numpy as np
 import math
 from datetime import datetime
 
+import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.tri as tri 
+
 import scipy.io as sio
 from scipy.interpolate import griddata
 import pickle
@@ -30,36 +34,28 @@ class GNN_Helheim_Dataset(DGLDataset):
     def process(self):
         self.graphs = []
         files = self.url
-        
-        # # Region filtering
-        # filename = f'D:\\ISSM\\Helheim\\Helheim_r100_030.mat'
-        # test = sio.loadmat(filename)
-        # mask = test['S'][0][0][11][0]
 
         first = True
         # "READING GRAPH DATA..."
         for filename in tqdm(files[:]):
-            rate = int(filename[-11:-8])
+            rate = int(filename.split("_r")[1][:3])
             test = sio.loadmat(filename)
 
             xc = test['S'][0][0][0]
             yc = test['S'][0][0][1]
 
             elements = test['S'][0][0][2]-1
-            idx = np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
+            idx = np.where(abs(xc) > 0)[0] # np.where((xc[:, 0]>-230000) & (yc[:, 0] < 2500000))[0] # Spatial filtering
             # idx = np.where((xc[:, 0]>230000) & (yc[:, 0] < -2500000))[0] # Spatial filtering
             xc = xc[idx]
             yc = yc[idx]
 
             mask = test['S'][0][0][11][:, idx]
-            # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice
+            # ice = np.zeros(mask.shape) # Negative: ice; Positive: no-ice; Value: distance from the ice margin
             # ice[mask > 0] = 0.5 # ice = 0; no-ice = 1
             ice = mask / 1000000 # np.where(mask < 0, mask / 1000000, mask/10000)
 
-            # ice = np.where(mask < 0, mask / 200000, mask/4000)
-            # ice[ice > 1] = 1.
-            # ice[ice < -1] = -1.
-            ice_mask = np.where(mask < 0, -0.5, 0.5)
+            ice_mask = np.where(mask < 0, -0.5, 0.5) # binary setting
 
             smb = test['S'][0][0][3][:, idx] # * ice_mask
             vx = test['S'][0][0][4][:, idx] # * ice_mask
@@ -85,11 +81,11 @@ class GNN_Helheim_Dataset(DGLDataset):
                 weight = []
                 slope = []
 
-
                 for i, i0 in enumerate(idx): #range(0, n_sample):        
                     p1, p2 = np.where(elements == i0)
                     connect = []
-                
+
+                    # Set the connectivity between nodes
                     for p in p1:
                         for k0 in elements[p]:
                             if (k0 not in connect) and (k0 in idx) and (k0 != i0): 
@@ -97,25 +93,9 @@ class GNN_Helheim_Dataset(DGLDataset):
                                 connect.append(k0)
                                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
                                 weight.append(np.exp(-(dist/100)))
-                                slope.append([np.exp(-(dist/1000)), 1-(base[0,i]-base[0,k])/dist, 1-(surface[0,i]-surface[0,k])/dist]) # np.exp(-(dist/1000)), 
-                                             # 1-(vx[0,i]-vx[0,k])/dist, 1-(vy[0,i]-vy[0,k])/dist])
+                                slope.append([np.exp(-(dist/1000)), 1-(base[0,i]-base[0,k])/dist, 1-(surface[0,i]-surface[0,k])/dist])
                                 src.append(int(i))
                                 dst.append(int(np.where(idx == k0)[0][0]))
-
-                # for i in range(0, n_sample):        
-                #     p1, p2 = np.where(elements == i)
-                #     connect = []
-
-                #     for p in p1:
-                #         for k in elements[p]:
-                #             if (k != i) and (k not in connect):
-                #                 connect.append(k)
-                #                 dist = ((xc[i]-xc[k])**2+(yc[i]-yc[k])**2)**0.5                                
-                #                 weight.append(np.exp(-(dist/1000)))
-                #                 slope.append([np.exp(-(dist/1000)), (base[0,i]-base[0,k])/dist, (surface[0,i]-surface[0,k])/dist,
-                #                              (vx[0,i]-vx[0,k])/dist, (vy[0,i]-vy[0,k])/dist]) 
-                #                 src.append(int(i))
-                #                 dst.append(int(k))
 
                 src = torch.tensor(src)
                 dst = torch.tensor(dst)
@@ -148,8 +128,8 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 8] = torch.tensor((rate-50)/(150-50)) # Sigma_max
                 
                 elif self.initial == "flowt" or self.initial == "flowa":
-                    # "flowt": GNN predicts velocity + mass balance (separated calving)
-                    # "flowa": GNN predicts velocity + mass balance + calving
+                    # "flowt": GNN predicts velocity + mass balance (thickness) (separated calving)
+                    # "flowa": GNN predicts velocity + mass balance (thickness) + calving
                     inputs = torch.zeros([n_sample, 11])
                     outputs = torch.zeros([n_sample, 6])
                     inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
@@ -158,16 +138,16 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation                    
                     inputs[:, 4] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
                     inputs[:, 5] = torch.tensor(ice[t-1, :]) # Ice mask                     
-                    inputs[:, 6] = torch.tensor(vx[t-1, :]/10000)
-                    inputs[:, 7] = torch.tensor(vy[t-1, :]/10000)
-                    inputs[:, 8] = torch.tensor(smb[t-1, :]/20)
+                    inputs[:, 6] = torch.tensor(vx[t-1, :]/10000) # X velocity
+                    inputs[:, 7] = torch.tensor(vy[t-1, :]/10000) # Y velocity
+                    inputs[:, 8] = torch.tensor(smb[t-1, :]/20) # surface mass balance
                     inputs[:, 9] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
                     inputs[:, 10] = torch.tensor((rate-50)/(150-50)) # Sigma_max                    
                 
                 elif self.initial == "initial":
                     print(self.initial)
-                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
-                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # X coordinate
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # Y coordinate
                     inputs[:, 2] = torch.tensor((rate-50)/(150-50)) # Sigma_max
                     inputs[:, 3] = torch.tensor(t/n_year) # Year
                     inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
@@ -183,8 +163,8 @@ class GNN_Helheim_Dataset(DGLDataset):
                 ## INPUTS (previous timestep) ================================================
                 else:
                     print(self.initial)
-                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
-                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # X coordinate
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # Y coordinate
                     inputs[:, 2] = torch.tensor((rate-50)/(150-50) * ice_mask[t-1, :])  # Sigma_max
                     inputs[:, 3] = torch.tensor(t/n_year) # Year
                     inputs[:, 4] = torch.tensor(smb[t-1, :]/20) # Surface mass balance
@@ -197,45 +177,31 @@ class GNN_Helheim_Dataset(DGLDataset):
                     # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                     inputs[:, 11] = torch.tensor(ice[t-1, :]) # t-1 ice mask
                     inputs[:, 12] = torch.tensor(ice[t-1, :]) # t-1 ice mask
-                
-                ###### Normalization #####################                
-                # vx_mean = torch.mean(inputs[:, 5])
-                # vy_mean = torch.mean(inputs[:, 6])
-                # vel_mean = torch.mean(inputs[:, 7])
-                # surf_mean = torch.mean(inputs[:, 8])
-                # base_mean = torch.mean(inputs[:, 9])
-                # H_mean = torch.mean(inputs[:, 10])
 
                 ## OUTPUTS ===============================================
                 if self.initial == "flow" or self.initial == "flowt":
-                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
-                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
-                    outputs[:, 2] = torch.tensor(cr[t, :]*(rate * 1e4))/(1e4*1e6) #torch.tensor(sigmaVM[t, :]/(1.5*1e6)) # Initial surface elevation
-                    outputs[:, 3] = torch.tensor(H[t, :]/5000)
-                    outputs[:, 4] = torch.tensor(ice[t, :])
-                    outputs[:, 5] = torch.tensor(cr[t, :])
+                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Vx at time t
+                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Vx at time t
+                    outputs[:, 2] = torch.tensor(cr[t, :]*(rate * 1e4))/(1e4*1e6) # Sigma value (stress) at time t
+                    outputs[:, 3] = torch.tensor(H[t, :]/5000) # Ice thickness at time t
+                    outputs[:, 4] = torch.tensor(ice[t, :]) # ice mask at time t
+                    outputs[:, 5] = torch.tensor(cr[t, :]) # Calving rate at time t
 
                 elif self.initial == "flowa":
-                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
-                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
-                    outputs[:, 2] = torch.tensor(ice[t, :])
-                    outputs[:, 3] = torch.tensor(H[t, :]/5000)                    
-                    outputs[:, 4] = torch.tensor(cr[t, :])
+                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Vx at time t
+                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Vy at time t
+                    outputs[:, 2] = torch.tensor(ice[t, :]) # Ice mask at time t
+                    outputs[:, 3] = torch.tensor(H[t, :]/5000) # Ice thickness at time t   
+                    outputs[:, 4] = torch.tensor(cr[t, :]) # Calving rate at time t
                     
                 else:
-                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
-                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
-                    outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Initial surface elevation
-                    outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Initial surface elevation
-                    outputs[:, 4] = torch.tensor(H[t, :]/5000) # Initial ice thickness
-                    # outputs[:, 5] = torch.tensor(f[t, :]/5000) # Initial floating part 
-                    outputs[:, 5] = torch.tensor(ice[t, :]) # Initial floating part 
-
-                # for i in range(0, n_sample):        
-                #     inputs[i, :] = torch.tensor([(xc[i, 0]-xc.min())/(xc.max()-xc.min()), (yc[i, 0]-yc.min())/(yc.max()-yc.min()), rate*0.001, t/n_year, smb[t,i],
-                #                                  vx[0, i]/5000, vy[0, i]/5000, surface[0, i]/4000, base[0,i]/4000, H[0,i]/4000, f[0,i]/3000
-                #                                 ])
-                #     outputs[i, :] = torch.tensor([vx[t, i]/5000, vy[t, i]/5000, vel[t,i]/5000, surface[t, i]/4000, H[t,i]/4000, f[t,i]/3000])
+                    outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Vx at time t
+                    outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Vy at time t
+                    outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Velocity at time t
+                    outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Surface elevation at time t
+                    outputs[:, 4] = torch.tensor(H[t, :]/5000) # Ice thickness at time t
+                    # outputs[:, 5] = torch.tensor(f[t, :]/5000) # Floating at time t
+                    outputs[:, 5] = torch.tensor(ice[t, :]) # Ice mask at time t 
 
                 g = dgl.graph((src, dst), num_nodes=n_sample)
                 g.ndata['feat'] = inputs
@@ -265,21 +231,12 @@ def generate_list(region = "Helheim", folder = "../data", train = [], model = "g
         for f in sorted(filelist):
             rate = f.split("_r")[1][:3]
             if int(rate) <= 110 and int(rate) >= 70:
+                # if melting rate 80 MPa simulation had a problem
                 if (rate in train) and (rate != "080"):
                     train_files.append(f)
                 elif rate != "080":
                     val_files.append(f)
                     test_files.append(f)
-            
-            # if (int(rate) >= 70) and (int(rate) <= 100) and (rate != "080"):
-            #     # train_files.append(f)
-            #     if rate == "075" or rate == "095": #int(f[-11:-8])%10 == 5: # f[-11:-8] == "070" or f[-11:-8] == "080" or f[-11:-8] == "115" or f[-11:-8] == "115":
-            #         val_files.append(f)
-            #         test_files.append(f)
-            #     # elif f[-11:-8] == "085" or f[-11:-8] == "105" or f[-11:-8] == "125":
-            #     #     test_files.append(f)
-            #     else:
-            #         train_files.append(f)
                     
     elif region == "PIG":
         if model == "gnn":
@@ -297,19 +254,15 @@ def generate_list(region = "Helheim", folder = "../data", train = [], model = "g
     
     return train_files, val_files, test_files
 
-## Dataset for train ===================================
+## Dataset for train PIG ===================================
 class GNN_PIG_Dataset(DGLDataset):
-    def __init__(self, filename):
+    def __init__(self, filename, initial = False):
+        self.initial = initial
         super().__init__(name="pig", url = filename)
         
     def process(self):
         self.graphs = []
         files = self.url
-        
-        # # Region filtering
-        # filename = f'D:\\ISSM\\Helheim\\Helheim_r100_030.mat'
-        # test = sio.loadmat(filename)
-        # mask = test['S'][0][0][11][0]
 
         first = True
         # "READING GRAPH DATA..."
@@ -376,36 +329,46 @@ class GNN_PIG_Dataset(DGLDataset):
                 inputs = torch.zeros([n_sample, 12])
                 # OUTPUT: Vx, Vy, Vel, Surface, Thickness, Floating
                 outputs = torch.zeros([n_sample, 6])
-
-                ## INPUTS ================================================
-                inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # torch.tensor(xc[0, :]/10000) # torch.tensor((xc[:, 0]-xc.min())/(xc.max()-xc.min())) # X coordinate
-                inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # torch.tensor(yc[0, :]/10000) # torch.tensor((yc[:, 0]-yc.min())/(yc.max()-yc.min())) # Y coordinate
-                inputs[:, 2] = torch.where(torch.tensor(f[0, :]) < 0, rate/100, 0) # Melting rate (0-100)
-                inputs[:, 3] = torch.tensor(t/n_year) # Year
-                inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
-                inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
-                inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vx
-                inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Vel
-                inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
-                inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
-                inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
-                inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
-                # inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
+                                
+                if self.initial == "flowt" or self.initial == "flowa":
+                    # "flowt": GNN predicts velocity + mass balance (separated calving)
+                    # "flowa": GNN predicts velocity + mass balance + calving
+                    inputs = torch.zeros([n_sample, 11])
+                    outputs = torch.zeros([n_sample, 6])
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000)
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000)
+                    inputs[:, 2] = torch.tensor(H[t-1, :]/5000) # Ice thickness
+                    inputs[:, 3] = torch.tensor(base[t-1, :]/5000) # Base elevation                    
+                    inputs[:, 4] = torch.tensor(fc[t-1, :]/12000) # Basal friction coefficient
+                    inputs[:, 5] = torch.tensor(ice[t-1, :]) # Ice mask                     
+                    inputs[:, 6] = torch.tensor(vx[t-1, :]/10000)
+                    inputs[:, 7] = torch.tensor(vy[t-1, :]/10000)
+                    inputs[:, 8] = torch.tensor(smb[t-1, :]/20)
+                    inputs[:, 9] = torch.tensor(mr[t-1, :]/3000) # Ocean melting rate
+                    inputs[:, 10] = torch.tensor((rate-50)/(150-50)) # Sigma_max   
+                else:
+                    ## INPUTS ================================================
+                    inputs[:, 0] = torch.tensor((xc[:, 0]-xc.min())/10000) # X coordinate
+                    inputs[:, 1] = torch.tensor((yc[:, 0]-yc.min())/10000) # Y coordinate
+                    inputs[:, 2] = torch.where(torch.tensor(f[0, :]) < 0, rate/100, 0) # Melting rate (0-100)
+                    inputs[:, 3] = torch.tensor(t/n_year) # Year
+                    inputs[:, 4] = torch.tensor(smb[t, :]/20) # Surface mass balance
+                    inputs[:, 5] = torch.tensor(vx[0, :]/10000) # Initial Vx
+                    inputs[:, 6] = torch.tensor(vy[0, :]/10000) # Initial Vx
+                    inputs[:, 7] = torch.tensor(vel[0, :]/10000) # Initial Vel
+                    inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
+                    inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
+                    inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
+                    inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
+                    # inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
 
                 ## OUTPUTS ===============================================
-                outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Initial Vx
-                outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Initial Vx
-                outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Initial surface elevation
-                outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Initial base elevation
-                outputs[:, 4] = torch.tensor(H[t, :]/5000) # Initial ice thickness
-                outputs[:, 5] = torch.tensor(f[t, :]/5000) # Initial floating part 
-                # outputs[:, 5] = torch.tensor(ice[t, :]) # Initial floating part 
-
-                # for i in range(0, n_sample):        
-                #     inputs[i, :] = torch.tensor([(xc[i, 0]-xc.min())/(xc.max()-xc.min()), (yc[i, 0]-yc.min())/(yc.max()-yc.min()), rate*0.001, t/n_year, smb[t,i],
-                #                                  vx[0, i]/5000, vy[0, i]/5000, surface[0, i]/4000, base[0,i]/4000, H[0,i]/4000, f[0,i]/3000
-                #                                 ])
-                #     outputs[i, :] = torch.tensor([vx[t, i]/5000, vy[t, i]/5000, vel[t,i]/5000, surface[t, i]/4000, H[t,i]/4000, f[t,i]/3000])
+                outputs[:, 0] = torch.tensor(vx[t, :]/10000) # Vx at time t
+                outputs[:, 1] =  torch.tensor(vy[t, :]/10000) # Vy at time t
+                outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Velocity at time t
+                outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Surface elevation at time t
+                outputs[:, 4] = torch.tensor(H[t, :]/5000) # Ice thickness at timet t
+                outputs[:, 5] = torch.tensor(f[t, :]/5000) # Ice floating at time t
 
                 g = dgl.graph((src, dst), num_nodes=n_sample)
                 g.ndata['feat'] = inputs
@@ -643,3 +606,133 @@ def convert_binary(levelset, thickness, threshold = 0):
     output = torch.zeros(levelset.shape)
     output = torch.where(((levelset > threshold) | (thickness < 20/5000)), 0., 1.) # positive: water, negative: ice
     return output
+
+def get_massbalance(xc, yc, H, vx, vy, triang, smb, dt = 0.05):
+
+    trihx = tri.LinearTriInterpolator(triang, H * vx)
+    trihy= tri.LinearTriInterpolator(triang, H * vy)
+    
+    # zi_lin = b(paths[:, 0], paths[:, 1])
+    dxh = trihx.gradient(xc[:, 0], yc[:, 0])[0].data
+    dyh = trihy.gradient(xc[:, 0], yc[:, 0])[1].data
+    
+    value = (-(dxh + dyh) + smb[i]) * dt
+    H2 = value + H
+    
+    return H2
+
+def get_levelset(xc, yc, H, vx, vy, triang, sigmaVM, sigma_max, ls, mr, dt = 0.05):
+    # xc, yc: X and Y coordinates
+    # H: ice thickness
+    # vx, vy: X and Y velocity
+    # triang: triangular meshses from graph nodes
+    # sigmaVM: VM sigma stress
+    # sigma_max: VM sigma_mxax value
+    # ls: previous levelset
+    # mr: melting rate,
+    # dt: time step (unit: year)
+
+    v_abs = (vx**2 + vy**2)**0.5       
+
+    c0 = sigmaVM / sigma_max
+    
+    trils = tri.LinearTriInterpolator(triang, ls)
+    trivx = tri.LinearTriInterpolator(triang, vx)
+    trivy = tri.LinearTriInterpolator(triang, vy)
+    tric = tri.LinearTriInterpolator(triang, c0)
+    
+    a = plt.tricontour(xc[:,0], yc[:,0], ls, levels = [0])
+    paths = a.collections[0].get_paths()[0].vertices #.properties()['paths'][0]
+    paths = paths[paths[:, 0] <= 314000]
+    xf = paths[:, 0]-20 # trix(paths[:, 0], paths[:,1]).data
+    yf = paths[:, 1] # triy(paths[:, 0], paths[:,1]).data
+    plt.close()
+    
+    vxf = trivx(xf, yf).data
+    vyf = trivy(xf, yf).data
+    c = tric(xf, yf).data
+    
+    dxls = trils.gradient(xf, yf)[0].data
+    dyls = trils.gradient(xf, yf)[1].data    
+    n_abs = (dxls**2 + dyls**2)**0.5
+    vx_n = dxls/n_abs
+    vy_n = dyls/n_abs
+
+    # n_abs = (vxf**2 + vyf**2) ** 0.5    
+    # vx_n = vxf / n_abs # dxls/n_abs # vxf / vf_abs #vx[i]/v_abs # dx_levelset / n_abs #vx[i]/v_abs
+    # vy_n = vyf / n_abs # dyls/n_abs # vyf / vf_abs #vy[i]/v_abs # dy_levelset / n_abs #vy[i]/v_abs
+    # w_d = np.where(abs(levelset2[i-1]) < th_d, 1-(abs(levelset2[i-1])/th_d)**0.5, 0)
+    
+    dvx = ( vxf - (c + mr[i])*vx_n ) * 0.05 # * w_d
+    dvy = ( vyf - (c + mr[i])*vy_n ) * 0.05 # * w_d    
+
+    xf2 = xf + dvx
+    yf2 = yf + dvy
+    
+    xf2 = xf2[None, :]
+    yf2 = yf2[None, :]  
+
+    dist = np.zeros([xc.shape[0], xf2.shape[0]])
+    dist = ((xc-xf2)**2 + (yc-yf2)**2) ** 0.5
+    dist_idx = np.argmin(abs(dist), axis = 1)
+    dist_min = np.nanmin(abs(dist), axis = 1)
+
+    dist_vx = dvx[dist_idx]
+    dist_vy = dvy[dist_idx]
+    dist_vel = np.nanmax((dist_vx**2 + dist_vy**2)**0.5)
+    
+    xc2 = xc[:, 0] + dist_vx
+    yc2 = yc[:, 0] + dist_vy
+    
+    ls1 = np.where(abs(dist_min) < dist_vel, trils(xc2, yc2), ls) #trils(xc2[:], yc2[:])
+
+    pm = ls/abs(ls) * ls1/abs(ls1) * ls/abs(ls)
+    ls2 = dist_min * pm
+    # ls3[np.isnan(ls3)] = levelset2[i-1]
+    
+    ls2 = np.where(np.isnan(ls2), ls, ls2)
+
+    return ls2
+
+def get_levelset_num(xc, yc, H, vx, vy, triang, sigmaVM, sigma_max, ls, mr, dt = 0.05):
+    # xc, yc: X and Y coordinates
+    # H: ice thickness
+    # vx, vy: X and Y velocity
+    # triang: triangular meshses from graph nodes
+    # sigmaVM: VM sigma stress
+    # sigma_max: VM sigma_mxax value
+    # ls: previous levelset
+    # mr: melting rate,
+    # dt: time step (unit: year)
+
+    v_abs = (vx**2 + vy**2)**0.5       
+
+    c0 = sigmaVM / sigma_max
+    
+    trils = tri.LinearTriInterpolator(triang, ls)
+    trivx = tri.LinearTriInterpolator(triang, vx)
+    trivy = tri.LinearTriInterpolator(triang, vy)
+    tric = tri.LinearTriInterpolator(triang, c0)
+    
+    dxls = trils.gradient(xc[:,0], yc[:,0])[0].data
+    dyls = trils.gradient(xc[:,0], yc[:,0])[1].data    
+    n_abs = (dxls**2 + dyls**2)**0.5
+    vx_n = dxls/n_abs
+    vy_n = dyls/n_abs
+
+    n_abs = (vx**2 + vy**2) ** 0.5    
+    vx_n = vx / n_abs # dxls/n_abs # vxf / vf_abs #vx[i]/v_abs # dx_levelset / n_abs #vx[i]/v_abs
+    vy_n = vy / n_abs # dyls/n_abs # vyf / vf_abs #vy[i]/v_abs # dy_levelset / n_abs #vy[i]/v_abs
+
+    # w_d = np.where(abs(levelset2[i-1]) < th_d, 1-(abs(levelset2[i-1])/th_d)**0.5, 0)
+    
+    dvx = ( vx - (c0 + mr)*vx_n ) * dt # * w_d
+    dvy = ( vy - (c0 + mr)*vy_n ) * dt # * w_d    
+
+    dls = (dvx*dxls) + (dvy*dyls)
+
+    ls2 = ls - dls
+    
+    ls2 = np.where(np.isnan(ls2), ls, ls2)
+
+    return ls2

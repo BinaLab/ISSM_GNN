@@ -1,5 +1,3 @@
- ### PREDICT ONLY SEA ICE U & V
-
 # Ignore warning
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,8 +21,6 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 # from torch_geometric.loader import DataLoader
- 
-# from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
 from functions import *
@@ -32,19 +28,6 @@ from functions import *
 import argparse
 import os    
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
-def save_checkpoint(
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    filepath: str,
-) -> None:
-    """Save model checkpoint."""
-    state = {
-        'model': model.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }
-    torch.save(state, filepath)
-
 
 def parse_args() -> argparse.Namespace:
     """Get cmd line args."""
@@ -55,22 +38,6 @@ def parse_args() -> argparse.Namespace:
         '--model-dir',
         default='../model',
         help='Model directory',
-    )
-    parser.add_argument(
-        '--log-dir',
-        default='./logs/torch_unet',
-        help='TensorBoard/checkpoint directory',
-    )
-    parser.add_argument(
-        '--checkpoint-format',
-        default='checkpoint_unet_{epoch}.pth.tar',
-        help='checkpoint file format',
-    )
-    parser.add_argument(
-        '--checkpoint-freq',
-        type=int,
-        default=10,
-        help='epochs between checkpoints',
     )
     parser.add_argument(
         '--no-cuda',
@@ -93,12 +60,6 @@ def parse_args() -> argparse.Namespace:
         default=24,
         metavar='N',
         help='input batch size for training (default: 16)',
-    )
-    parser.add_argument(
-        '--phy',
-        type=str,
-        default='nophy',
-        help='filename of dataset',
     )
     parser.add_argument(
         '--data',
@@ -148,12 +109,6 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="gcn",
         help='types of the neural network model (e.g. unet, cnn, fc)',
-    )
-    parser.add_argument(
-        '--mesh',
-        type=int,
-        default=10000,
-        help='meshsize of the finite element of ISSM model (select 5000, 10000, or 20000)',
     )
     
     parser.add_argument(
@@ -233,23 +188,10 @@ class ISSM_test_dataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
 
-###############################################################################
-# Data Loader Preparation
-# -----------------------
-#
-# We split the dataset into training, validation and test subsets. In dataset
-# splitting, we need to use a same random seed across processes to ensure a
-# same split. We follow the common practice to train with multiple GPUs and
-# evaluate with a single GPU, thus only set `use_ddp` to True in the
-# :func:`~dgl.dataloading.pytorch.GraphDataLoader` for the training set, where 
-# `ddp` stands for :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
-
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
 
 def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
-    # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
                                                  frac_list=[0.7, 0.3, 0.0],
                                                  shuffle=True,
@@ -260,11 +202,6 @@ def get_dataloaders(dataset, seed, batch_size=32, shuffle = False):
 
     return train_loader, val_loader #, test_loader
 
-###############################################################################
-# To ensure same initial model parameters across processes, we need to set the
-# same random seed before model initialization. Once we construct a model
-# instance, we wrap it with :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
@@ -290,23 +227,12 @@ def main():
     if args.cuda:
         torch.cuda.set_device(args.local_rank)
         torch.cuda.manual_seed(args.seed)
-        
-    # for r in range(torch.distributed.get_world_size()):
-    #     if r == torch.distributed.get_rank():
-    #         print(
-    #             f'Global rank {torch.distributed.get_rank()} initialized: '
-    #             f'local_rank = {args.local_rank}, '
-    #             f'world_size = {torch.distributed.get_world_size()}',
-    #         )
-    #     torch.distributed.barrier()
     
     model_dir = args.model_dir
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
     lr = args.base_lr
-
-    phy = args.phy ## PHYSICS OR NOT
     
     if args.no_cuda:
         device = torch.device('cpu')
@@ -327,13 +253,10 @@ def main():
         val_set = ISSM_val_dataset(f"../data/DGL_Helheim_val.bin")
         # test_set = ISSM_test_dataset(f"../data/DGL_Helheim_test.bin")
     
-    # train_loader = GraphDataLoader(train_set, use_ddp=True, batch_size=batch_size, shuffle=False)
-    # val_loader = GraphDataLoader(val_set, batch_size=batch_size, shuffle=False)
-    
     train_loader, val_loader = get_dataloaders(train_set, seed, batch_size, True)
     n_nodes = val_set[0].num_nodes()
     n_edges = val_set[0].num_edges()
-    in_channels = args.in_ch #10 #val_set[0].ndata['feat'].shape[1] - 2 #-1
+    in_channels = args.in_ch
     edge_feat_size = val_set[0].edata['slope'].shape[1]
     if args.out_ch > 0:
         out_channels = args.out_ch
@@ -411,8 +334,6 @@ def main():
     for epoch in range(n_epochs):
         t0 = time.time()
         model.train()
-        # The line below ensures all processes use a different
-        # random ordering in data loading for each epoch.
         train_loader.set_epoch(epoch)
         
         ##### TRAIN ###########################
@@ -430,37 +351,22 @@ def main():
             coord_feat = bg.ndata['feat'][:, :2]
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
-                # labels = bg.ndata['label'][:, [0,1,5]] # velocity & levelset
-                labels = bg.ndata['label'][:, [0,1,4]] # velocity & thickness
-                # if post_combine:
-                #     labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
-                # labels = bg.ndata['label'][:, [2,4,5]] # version 2
+                labels = bg.ndata['label'][:, [0,1,4]] # Vx, Vy & thickness
             elif out_channels == 2:
-                labels = bg.ndata['label'][:, [2, 4]]
+                labels = bg.ndata['label'][:, [2, 4]] # Velocity & thickness
             elif out_channels == 4:
-                labels = bg.ndata['label'][:, [0,1,4,5]]
+                labels = bg.ndata['label'][:, [0,1,4,5]] # Vx, Vy, thickness, ice mask
             elif out_channels == 5:
-                labels = bg.ndata['label'][:, [0,1,3,4,5]]
+                labels = bg.ndata['label'][:, [0,1,3,4,5]] # Vx, Vy, surface elevatoin, thickness, ice mask
             else:
                 labels = bg.ndata['label'][:, :]
                 
             pred = model(bg, feats, post_combine)
 
             if args.model_type[:4] == "egcn":
-                # pred = model(bg, feats, coord_feat, edge_feat)
                 labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
-            # elif args.model_type == "egcn2":
-            #     # pred = model(bg, feats, coord_feat, edge_feat)
-            #     labels = torch.cat([labels, coord_feat], dim=1)
-            # else:
-                # pred = model(bg, feats)
 
-            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            # loss = criterion(y_norm_pred*100, y_norm_true*100)
-            if post_combine:
-                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
-            else:
-                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             train_loss += loss.cpu().item()
             optimizer.zero_grad()
             loss.backward()
@@ -484,9 +390,6 @@ def main():
             edge_feat = bg.edata['weight'].float() #.repeat(1, 2)
             if out_channels == 3:
                 labels = bg.ndata['label'][:, [0,1,5]]
-                # if post_combine:
-                #     labels[:, out_channels-1] = torch.where(labels[:, out_channels-1] < 0, 1, 0)
-                # labels = bg.ndata['label'][:, [2,4,5]] # version 2
             elif out_channels == 2:
                 labels = bg.ndata['label'][:, [2, 4]]
             elif out_channels == 4:
@@ -501,21 +404,9 @@ def main():
                 pred = model(bg, feats, post_combine)
                 
                 if args.model_type[:4] == "egcn":
-                # pred = model(bg, feats, coord_feat, edge_feat)
                     labels = torch.cat([labels[:, :2], labels[:, 2:]], dim=1)
-                # if args.model_type == "egcn":
-                #     # pred = model(bg, feats, coord_feat, edge_feat)
-                #     labels = torch.cat([labels, coord_feat], dim=1)
-                # elif args.model_type == "egcn2":
-                #     # pred = model(bg, feats, coord_feat, edge_feat)
-                #     labels = torch.cat([labels, coord_feat], dim=1)                    
 
-            # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-            # loss = criterion(y_norm_pred*100, y_norm_true*100)
-            if post_combine:
-                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
-            else:
-                loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
+            loss = criterion(pred[:, :out_channels]*100, labels[:, :out_channels]*100)
             val_loss += loss.cpu().item()
             val_count += 1
             
@@ -532,9 +423,7 @@ def main():
                 
                 torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
-                    pickle.dump(history, file)
-        
-    
+                    pickle.dump(history, file)   
             
     # print("##### Validation done! #####")
     dist.destroy_process_group()

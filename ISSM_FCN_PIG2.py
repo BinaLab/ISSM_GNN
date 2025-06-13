@@ -34,19 +34,6 @@ import argparse
 import os    
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-def save_checkpoint(
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    filepath: str,
-) -> None:
-    """Save model checkpoint."""
-    state = {
-        'model': model.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }
-    torch.save(state, filepath)
-
-
 def parse_args() -> argparse.Namespace:
     """Get cmd line args."""
     
@@ -56,22 +43,6 @@ def parse_args() -> argparse.Namespace:
         '--model-dir',
         default='../model',
         help='Model directory',
-    )
-    parser.add_argument(
-        '--log-dir',
-        default='./logs/torch_unet',
-        help='TensorBoard/checkpoint directory',
-    )
-    parser.add_argument(
-        '--checkpoint-format',
-        default='checkpoint_unet_{epoch}.pth.tar',
-        help='checkpoint file format',
-    )
-    parser.add_argument(
-        '--checkpoint-freq',
-        type=int,
-        default=10,
-        help='epochs between checkpoints',
     )
     parser.add_argument(
         '--no-cuda',
@@ -94,12 +65,6 @@ def parse_args() -> argparse.Namespace:
         default=24,
         metavar='N',
         help='input batch size for training (default: 16)',
-    )
-    parser.add_argument(
-        '--phy',
-        type=str,
-        default='nophy',
-        help='filename of dataset',
     )
     parser.add_argument(
         '--out-ch',
@@ -265,16 +230,6 @@ def make_sampler_and_loader(args, train_dataset, shuffle = True):
     return train_sampler, train_loader
 
 ###############################################################################
-# Data Loader Preparation
-# -----------------------
-#
-# We split the dataset into training, validation and test subsets. In dataset
-# splitting, we need to use a same random seed across processes to ensure a
-# same split. We follow the common practice to train with multiple GPUs and
-# evaluate with a single GPU, thus only set `use_ddp` to True in the
-# :func:`~dgl.dataloading.pytorch.GraphDataLoader` for the training set, where 
-# `ddp` stands for :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
 
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
@@ -292,20 +247,10 @@ def get_dataloaders(dataset, seed, batch_size=32):
     return train_loader, val_loader #, test_loader
 
 ###############################################################################
-# To ensure same initial model parameters across processes, we need to set the
-# same random seed before model initialization. Once we construct a model
-# instance, we wrap it with :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-###############################################################################
-# Main Function for Each Process
-# -----------------------------
-#
-# Define the model evaluation function as in the single-GPU setting.
-#
 
 def evaluate(model, dataloader, device):
     model.eval()
@@ -326,8 +271,6 @@ def evaluate(model, dataloader, device):
     return 1.0 * total_correct / total
 
 ###############################################################################
-# Define the main function for each process.
-#
 
 from torch.optim import Adam
 
@@ -346,15 +289,6 @@ def main():
     if args.cuda:
         torch.cuda.set_device(args.local_rank)
         torch.cuda.manual_seed(args.seed)
-        
-    # for r in range(torch.distributed.get_world_size()):
-    #     if r == torch.distributed.get_rank():
-    #         print(
-    #             f'Global rank {torch.distributed.get_rank()} initialized: '
-    #             f'local_rank = {args.local_rank}, '
-    #             f'world_size = {torch.distributed.get_world_size()}',
-    #         )
-    #     torch.distributed.barrier()
     
     model_dir = args.model_dir   
 
@@ -397,17 +331,6 @@ def main():
         print(f"## Train: {len(train_dataset)}; Val: {len(val_dataset)}; Test: {len(test_dataset)}")
         print("######## TRAINING/VALIDATION DATA IS PREPARED ########")   
     
-    # Sampling index for FCN (Convert grid into points) ======================================================
-#     xy = train_graphs[0].ndata['feat'][:, 0:2]
-#     sampling = torch.zeros(xy.shape, dtype=torch.int)
-#     xy_grid = torch.tensor(train_grid_input[0, 0:2], dtype=torch.float32)
-#     xy_grid[torch.isnan(xy_grid)] = -1
-
-#     for i in range(0, xy.shape[0]):
-#         distance = (xy_grid[0]-xy[i,0])**2 + (xy_grid[1]-xy[i,1])**2
-#         k = torch.where(distance == torch.min(distance))
-#         sampling[i, 0] = k[0].item()
-#         sampling[i, 1] = k[1].item()
     # ==============================================================================
 
     hidden_channels = 64
@@ -497,47 +420,6 @@ def main():
                 torch.save(model.state_dict(), f'{model_dir}/{model_name}.pth')
                 with open(f'{model_dir}/history_{model_name}.pkl', 'wb') as file:
                     pickle.dump(history, file)
-        
-#     if args.local_rank == 0:
-#         ##### TEST ######################## 
-#         rates = np.zeros(len(test_dataset))
-#         years = np.zeros(len(test_dataset))
-
-#         if out_channels == 6:
-#             scaling = np.array([1, 5000, 5000, 5000, 4000, 3000])
-#         elif out_channels == 3:
-#             scaling = np.array([5000, 5000, 4000])
-            
-#         y_pred = np.zeros([len(test_dataset), n_nodes, out_channels])
-#         y_true = np.zeros([len(test_dataset), n_nodes, out_channels])
-
-#         x_inputs = np.zeros([len(test_dataset), n_nodes, in_channels])
-
-#         for k, (data, target) in enumerate(DataLoader(test_dataset, batch_size = 1)):
-#             data = data[:, :-1]
-
-#             if out_channels > 3:
-#                 target = target.to(device)
-#             elif out_channels == 3:
-#                 target = target[:, [0,1,3], :, :].to(device)
-                
-#             rates[k] = test_graphs[k].ndata['feat'][0, 2]
-#             years[k] = test_graphs[k].ndata['feat'][0, 3] * 20
-
-#             with torch.no_grad():
-#                 pred = model(data)
-#                 for n in range(0, n_nodes):
-#                     y_pred[k, n, :] = pred[:, :out_channels, sampling[n][0], sampling[n][1]].cpu()
-#                 # y_pred[k] = pred[0, :, :out_channels].to('cpu')
-#                 y_true[k] = test_graphs[k].ndata['label'][:, [0,1,3]].to('cpu')
-#                 x_inputs[k] = test_graphs[k].ndata['feat'][:, :-1].to('cpu')
-
-#         test_save = [rates, years, x_inputs, y_true, y_pred]
-
-#         with open(f'../results/test_{model_name}.pkl', 'wb') as file:
-#             pickle.dump(test_save, file)
-            
-#         print("##### Validation done! #####")
         
     dist.destroy_process_group()
 

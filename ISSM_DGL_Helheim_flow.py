@@ -1,5 +1,3 @@
- ### PREDICT ONLY SEA ICE U & V
-
 # Ignore warning
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,8 +21,6 @@ from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 # from torch_geometric.loader import DataLoader
- 
-# from torch.utils.tensorboard import SummaryWriter
 
 from DGL_model import *
 from functions import *
@@ -32,19 +28,6 @@ from functions import *
 import argparse
 import os    
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
-def save_checkpoint(
-    model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    filepath: str,
-) -> None:
-    """Save model checkpoint."""
-    state = {
-        'model': model.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }
-    torch.save(state, filepath)
-
 
 def parse_args() -> argparse.Namespace:
     """Get cmd line args."""
@@ -54,28 +37,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--model-dir',
         default='../model',
-        help='Model directory',
+        help='Model directory (where to save models)',
     )
     parser.add_argument(
         '--data-dir',
         default='../data',
-        help='Model directory',
-    )
-    parser.add_argument(
-        '--log-dir',
-        default='./logs/torch_unet',
-        help='TensorBoard/checkpoint directory',
-    )
-    parser.add_argument(
-        '--checkpoint-format',
-        default='checkpoint_unet_{epoch}.pth.tar',
-        help='checkpoint file format',
-    )
-    parser.add_argument(
-        '--checkpoint-freq',
-        type=int,
-        default=10,
-        help='epochs between checkpoints',
+        help='Data directory (where the data is stored)',
     )
     parser.add_argument(
         '--no-cuda',
@@ -98,12 +65,6 @@ def parse_args() -> argparse.Namespace:
         default=24,
         metavar='N',
         help='input batch size for training (default: 16)',
-    )
-    parser.add_argument(
-        '--phy',
-        type=str,
-        default='nophy',
-        help='filename of dataset',
     )
     parser.add_argument(
         '--train',
@@ -160,12 +121,6 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="gcn",
         help='types of the neural network model (e.g. unet, cnn, fc)',
-    )
-    parser.add_argument(
-        '--mesh',
-        type=int,
-        default=10000,
-        help='meshsize of the finite element of ISSM model (select 5000, 10000, or 20000)',
     )
     
     parser.add_argument(
@@ -245,23 +200,10 @@ class ISSM_test_dataset(DGLDataset):
     def __len__(self):
         return len(self.graphs)
 
-###############################################################################
-# Data Loader Preparation
-# -----------------------
-#
-# We split the dataset into training, validation and test subsets. In dataset
-# splitting, we need to use a same random seed across processes to ensure a
-# same split. We follow the common practice to train with multiple GPUs and
-# evaluate with a single GPU, thus only set `use_ddp` to True in the
-# :func:`~dgl.dataloading.pytorch.GraphDataLoader` for the training set, where 
-# `ddp` stands for :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
-
 from dgl.data import split_dataset
 from dgl.dataloading import GraphDataLoader
 
 def get_dataloaders(dataset, seed, batch_size=32, shuffle = False, frac = 1.0):
-    # Use a 80:10:10 train-val-test split
     train_set, val_set, test_set = split_dataset(dataset,
                                                  frac_list=[frac, 1-frac, 0.0],
                                                  shuffle=shuffle,
@@ -272,11 +214,6 @@ def get_dataloaders(dataset, seed, batch_size=32, shuffle = False, frac = 1.0):
 
     return train_loader, val_loader #, test_loader
 
-###############################################################################
-# To ensure same initial model parameters across processes, we need to set the
-# same random seed before model initialization. Once we construct a model
-# instance, we wrap it with :func:`~torch.nn.parallel.DistributedDataParallel`.
-#
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
@@ -302,23 +239,12 @@ def main():
     if args.cuda:
         torch.cuda.set_device(args.local_rank)
         torch.cuda.manual_seed(args.seed)
-        
-    # for r in range(torch.distributed.get_world_size()):
-    #     if r == torch.distributed.get_rank():
-    #         print(
-    #             f'Global rank {torch.distributed.get_rank()} initialized: '
-    #             f'local_rank = {args.local_rank}, '
-    #             f'world_size = {torch.distributed.get_world_size()}',
-    #         )
-    #     torch.distributed.barrier()
     
     model_dir = args.model_dir
 
     n_epochs = args.epochs
     batch_size = args.batch_size  # size of each batch
     lr = args.base_lr
-
-    phy = args.phy ## PHYSICS OR NOT
     
     if args.no_cuda:
         device = torch.device('cpu')
@@ -327,12 +253,12 @@ def main():
     
     torch.cuda.empty_cache()
     
-    mesh = args.mesh
     model_type = args.model_type
 
-    # train_num = args.train;
+    train_num = args.train;
     for train_num in [5]:
 
+        # Select different training dataset settings by different sigma_max values
         if train_num == 1:
             train_list = ["075", "090", "105"]
         elif train_num == 2:
@@ -343,13 +269,17 @@ def main():
             train_list = ["100", "105", "110"]
         elif train_num == 5:
             train_list = ["070", "075", "080", "090", "095", "100", "105", "110"]
-    
+
+        # List of training and validation files based on sigma_max values
         train_files, val_files, test_files = generate_list(folder = args.data_dir, train = train_list)
         if len(val_files) == 0:
             val_files = train_files
+
+        # Generate training dataset optimzed for GNN with initializing settings
         train_set = GNN_Helheim_Dataset(train_files, args.initial)
         val_set = GNN_Helheim_Dataset(val_files, args.initial)
-            
+
+        # Divide train and validation dataset (frac = training ratio)
         train_loader, _ = get_dataloaders(train_set, seed, batch_size, True, 1.0)
         val_loader, _ = get_dataloaders(val_set, seed, batch_size, True, 0.3)
         n_nodes = val_set[0].num_nodes()
@@ -361,10 +291,7 @@ def main():
         else:
             out_channels = val_set[0].ndata['label'].shape[1]
     
-        if args.out_ch == 3:
-            post_combine = False
-        else:
-            post_combine = False
+        post_combine = False
             
         # Region filtering ============================================
         test = sio.loadmat(train_files[0])
@@ -379,7 +306,8 @@ def main():
         hidden_channels = args.hidden_ch
 
         for model_type in ["gcn", "gat", "egnn"]:
-        
+
+            # Setting output model name (filename for saved model file)
             if args.initial == "flow":
                 in_channels = 4; out_channels = 3;
                 model_name = f"torch_dgl_HelheimFLOW_{model_type}_{n_nodes}_train{train_num}_lr{lr}_in{in_channels}_ch{out_channels}_ft{hidden_channels}_gpu{world_size}"
@@ -464,12 +392,7 @@ def main():
                         
                     pred = model(bg, feats[:, :in_channels], post_combine)
         
-                    # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-                    # loss = criterion(y_norm_pred*100, y_norm_true*100)
-                    if post_combine:
-                        loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
-                    else:
-                        loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
                     train_loss += loss.cpu().item()
                     optimizer.zero_grad()
                     loss.backward()
@@ -494,13 +417,8 @@ def main():
                     with torch.no_grad():
                         
                         pred = model(bg, feats[:, :in_channels], post_combine)               
-        
-                    # y_norm_true, y_norm_pred = norm_data(labels[:, :out_channels], pred[:, :out_channels])
-                    # loss = criterion(y_norm_pred*100, y_norm_true*100)
-                    if post_combine:
-                        loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
-                    else:
-                        loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
+
+                    loss = criterion(pred[idx, :]*100, labels[idx, :]*100)
                     val_loss += loss.cpu().item()
                     val_count += 1
                     
