@@ -157,7 +157,6 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
                     inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
                     inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
-                    # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                     inputs[:, 11] = torch.tensor(ice[0, :]) # Initial ice mask
 
                 ## INPUTS (previous timestep) ================================================
@@ -174,9 +173,7 @@ class GNN_Helheim_Dataset(DGLDataset):
                     inputs[:, 8] = torch.tensor(surface[0, :]/5000) # Initial surface elevation
                     inputs[:, 9] = torch.tensor(base[0, :]/5000) # Initial base elevation
                     inputs[:, 10] = torch.tensor(H[0, :]/5000) # Initial ice thickness
-                    # inputs[:, 11] = torch.tensor(f[0, :]/5000) # Initial floating part
                     inputs[:, 11] = torch.tensor(ice[t-1, :]) # t-1 ice mask
-                    inputs[:, 12] = torch.tensor(ice[t-1, :]) # t-1 ice mask
 
                 ## OUTPUTS ===============================================
                 if self.initial == "flow" or self.initial == "flowt":
@@ -200,7 +197,6 @@ class GNN_Helheim_Dataset(DGLDataset):
                     outputs[:, 2] = torch.tensor(vel[t, :]/10000) # Velocity at time t
                     outputs[:, 3] = torch.tensor(surface[t, :]/5000) # Surface elevation at time t
                     outputs[:, 4] = torch.tensor(H[t, :]/5000) # Ice thickness at time t
-                    # outputs[:, 5] = torch.tensor(f[t, :]/5000) # Floating at time t
                     outputs[:, 5] = torch.tensor(ice[t, :]) # Ice mask at time t 
 
                 g = dgl.graph((src, dst), num_nodes=n_sample)
