@@ -2,14 +2,16 @@
 Deep learning emulators for ISSM (Ice-sheet and Sea-level System Model) ice sheet model using graph neural networks (GNNs)
 
 ## Experiments for Pine Island Glacier (PIG), Antarctica
-(1) Data generation 
-Read_PIG.ipynb: Prepare regular-grid data from ISSM meshes for training CNN (convolutional neural network) benchmark models
+(1) Data generation
+- Read_PIG.ipynb: Prepare regular-grid data from ISSM meshes for training CNN (convolutional neural network) benchmark models
+
 (2) Model training
-ISSM_DGL_PIG2.py: Train GNN emulators on multi-GPU environments
-ISSM_DGL_PIG2_single.py: Train GNN emulators on single-GPU environments
-ISSM_FCN_PIG2.py: Train CNN emulators on multi-GPU environments
+- ISSM_DGL_PIG2.py: Train GNN emulators on multi-GPU environments
+- ISSM_DGL_PIG2_single.py: Train GNN emulators on single-GPU environments
+- ISSM_FCN_PIG2.py: Train CNN emulators on multi-GPU environments
+
 (3) Result analysis and visualization
-PIG2_results_cleanup.ipynb: Analyze emulator results and visualize maps
+- PIG2_results_cleanup.ipynb: Analyze emulator results and visualize maps
 
 ## Experiments for Helheim Glacier, Greenland
 (1) Data generation 
